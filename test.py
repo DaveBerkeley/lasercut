@@ -1,24 +1,23 @@
 #!/usr/bin/python
 
-import laser
+from laser import Rectangle, Config, Material
 
-# https://pypi.python.org/pypi/SDXF
-import sdxf
-
-# or use :
 # https://pypi.python.org/pypi/dxfwrite/
-# ?
+from dxfwrite import DXFEngine as dxf
 
 #
 #
 
 kerf = 0.5
-material = laser.Material(w=200, h=200, t=4)
+material = Material(w=200, h=200, t=4)
 
-config = laser.Config(kerf=kerf, material=material)
+config = Config(kerf=kerf, material=material)
 
-drawing = sdxf.Drawing()
+drawing = dxf.drawing("test.dxf")
 
-drawing.saveas("test.dxf")
+shape = Rectangle(config, (0, 0), (20, 30), hole=False)
+shape.draw(drawing, config.cut())
+
+drawing.save()
 
 # FIN
