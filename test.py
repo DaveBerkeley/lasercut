@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from laser import Rectangle, Config, Material, TCut, splice
+from laser import Rectangle, Polygon, Config, Material, TCut, splice
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
@@ -26,7 +26,7 @@ lout = lin + margin
 
 side = Rectangle(config, (0, 0), (lout, win))
 
-nut_x = 15
+nut_x = 22
 
 nut = m4.make_elev((nut_x, 0), 180)
 side = splice(side, nut)
@@ -34,11 +34,43 @@ side = splice(side, nut)
 nut = m4.make_elev((lout - nut_x, 0), 180)
 side = splice(side, nut)
 
-#nut = m4.make_elev((nut_x, win), 0)
-#side = splice(side, nut)
+nut = m4.make_elev((nut_x, win), 0)
+side = splice(side, nut)
 
-#nut = m4.make_elev((lout - nut_x, win), 0)
-#side = splice(side, nut)
+nut = m4.make_elev((lout - nut_x, win), 0)
+side = splice(side, nut)
+
+def make_cutout(s):
+    poly = Polygon()
+    w = thick / 2.0
+    poly.add(-w, 0)
+    poly.add(-w, s)
+    poly.add(thick-w, s)
+    poly.add(thick-w, 0)
+    poly.origin = 0, 0
+    return poly
+
+cut_len = 8
+cut_in = 7
+cutout = make_cutout(cut_len)
+
+c = cutout.copy()
+c.translate(cut_in, 0)
+side = splice(side, c)
+
+c = cutout.copy()
+c.translate(lout-cut_in, 0)
+side = splice(side, c)
+
+c = cutout.copy()
+c.rotate(180)
+c.translate(lout-cut_in, win)
+side = splice(side, c)
+
+c = cutout.copy()
+c.rotate(180)
+c.translate(cut_in, win)
+side = splice(side, c)
 
 side.draw(drawing, config.cut())
 
