@@ -34,7 +34,14 @@ def distance_from_line(xy, line):
     a = x0 * (y2 - y1)
     b = y0 * (x2 - x1)
     a = a - b + (x2 * y1) - (y2 * x1)
-    return math.abs(a) / q
+    return abs(a) / q
+
+def distance(xy0, xy1):
+    x0, y0 = xy0
+    x1, y1 = xy1
+    dx = x0 - x1
+    dy = y0 - y1
+    return math.sqrt((dx*dx) + (dy*dy))
 
 #
 #
@@ -69,8 +76,9 @@ class Config:
 #
 
 class Polygon:
-    def __init__(self):
+    def __init__(self, xy=None):
         self.points = []
+        self.origin = xy
 
     def add(self, x, y):
         self.points.append((x, y))
@@ -134,7 +142,7 @@ class TCut:
         self.nut_t = nut_t
 
     def make_elev(self, xy, orient):
-        shape = Polygon()
+        shape = Polygon(xy)
         width = self.w / 2.0
         n_width = self.nut_w / 2.0
         shape.add(-width, 0)
@@ -152,9 +160,47 @@ class TCut:
         shape.add(width, 0)
 
         shape.rotate(orient)
-        x, y = xy
-        shape.translate(x, y)
+        shape.translate(*xy)
 
         return shape
+
+#
+#
+
+def replace(line, shape):
+    points = shape.points[:]
+    start, end = points[0], points[-1]
+    print line, start, end
+
+    dstart = distance(line[0], start)
+    dend = distance(line[0], end)
+
+    if dend < dstart:
+        points.reverse()
+        start, end = end, start
+
+    poly = Polygon()
+    poly.add(*line[0])
+    for point in points:
+        poly.add(*point)
+
+    poly.add(*line[1])
+    return poly.lines()
+
+def splice(shape, item):
+    lines = []
+    for line in shape.lines():
+        if distance_from_line(item.origin, line) < 0.0001:
+            print "found", line
+            for line in replace(line, item):
+                lines.append(line)
+        else:
+            lines.append(line)
+
+    shape = Polygon(shape.origin)
+    shape.add(*lines[0][0])
+    for line in lines:
+        shape.add(*line[1])
+    return shape
 
 # FIN
