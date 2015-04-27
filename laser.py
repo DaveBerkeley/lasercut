@@ -100,6 +100,8 @@ class Polygon:
         self.points = points
         for arc in self.arcs:
             arc.rotate(degrees)
+        if self.origin:
+            self.origin = rotate_2d(rad, x, y)
 
     def translate(self, dx, dy):
         points = []
@@ -108,6 +110,8 @@ class Polygon:
         self.points = points
         for arc in self.arcs:
             arc.translate(dx, dy)
+        if self.origin:
+            self.origin = self.origin[0] + dx, self.origin[1] + dy
 
     def draw(self, drawing, colour):
         for xy0, xy1 in self.lines():
@@ -136,9 +140,8 @@ class Rectangle(Polygon):
 
 class Arc:
 
-    def __init__(self, x, y, radius, start_angle, end_angle):
-        self.x = x
-        self.y = y
+    def __init__(self, xy, radius, start_angle, end_angle):
+        self.x, self.y = xy
         self.radius = radius
         self.start_angle = start_angle
         self.end_angle = end_angle
@@ -152,7 +155,7 @@ class Arc:
         self.y += dy
 
     def copy(self):
-        return Arc(self.x, self.y, self.radius, self.start_angle, self.end_angle)
+        return Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
 
     def draw(self, drawing, colour):
         item = dxf.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
@@ -165,8 +168,8 @@ class Arc:
 #
 
 class Circle(Arc):
-    def __init__(self, x, y, radius):
-        Arc.__init__(self, x, y, radius, 0, 360)
+    def __init__(self, xy, radius):
+        Arc.__init__(self, xy, radius, 0, 360)
 
 
 #
@@ -183,7 +186,7 @@ class TCut:
         self.stress_hole = stress_hole
 
     def make_elev(self, xy, orient):
-        shape = Polygon(xy)
+        shape = Polygon()
         width = self.w / 2.0
         n_width = self.nut_w / 2.0
         shape.add(-width, 0)
@@ -201,11 +204,12 @@ class TCut:
         shape.add(width, 0)
 
         if self.stress_hole:
-            shape.add_arc(Circle(-n_width, -self.shank, self.stress_hole))
-            shape.add_arc(Circle(n_width, -self.shank, self.stress_hole))
+            shape.add_arc(Circle((-n_width, -self.shank), self.stress_hole))
+            shape.add_arc(Circle((n_width, -self.shank), self.stress_hole))
 
         shape.rotate(orient)
         shape.translate(*xy)
+        shape.origin = xy
 
         return shape
 
@@ -234,13 +238,25 @@ def replace(line, shape):
 #
 #
 
+def on_segment(xy, line):
+    d = distance_from_line(xy, line)
+    if d > 0.01:
+        return False
+    (x0, y0), (x1, y1) = line
+    if x1 < x0:
+        x0, x1 = x1, x0
+    if y1 < y0:
+        y0, y1 = y1, y0
+    # are we on the segment?
+    return (x0 <= xy[0] <= x1) and (y0 <= xy[1] <= y1)
+
 def splice(src, item):
     lines = []
     arcs = []
     for line in src.lines():
-        if distance_from_line(item.origin, line) < 0.0001:
-            for line in replace(line, item):
-                lines.append(line)
+        if on_segment(item.origin, line):
+            for subst in replace(line, item):
+                lines.append(subst)
             arcs += item.arcs
         else:
             lines.append(line)

@@ -8,30 +8,39 @@ from dxfwrite import DXFEngine as dxf
 #
 #
 
-kerf = 0.5
-material = Material(w=200, h=200, t=4)
+thick = 4
+material = Material(w=200, h=200, t=thick)
 
-config = Config(kerf=kerf, material=material)
+config = Config(material=material)
 
 drawing = dxf.drawing("test.dxf")
 
-shape = Rectangle(config, (0, 0), (50, 30))
-
 m4 = TCut(w=4, d=11, shank=6, nut_w=10, nut_t=3, stress_hole=0.25)
 
-item = m4.make_elev((0, 15), 90)
-#item.draw(drawing, config.cut())
-shape = splice(shape, item)
+win = 39
+lin = 75
+hin = 21
+margin = (thick * 2) + 2
+wout = win + margin
+lout = lin + margin
 
-item = m4.make_elev((50, 15), -90)
-shape = splice(shape, item)
+side = Rectangle(config, (0, 0), (lout, win))
 
-item = m4.make_elev((25, 0), -180)
-shape = splice(shape, item)
+nut_x = 15
 
-#shape.rotate(30)
+nut = m4.make_elev((nut_x, 0), 180)
+side = splice(side, nut)
 
-shape.draw(drawing, config.cut())
+nut = m4.make_elev((lout - nut_x, 0), 180)
+side = splice(side, nut)
+
+#nut = m4.make_elev((nut_x, win), 0)
+#side = splice(side, nut)
+
+#nut = m4.make_elev((lout - nut_x, win), 0)
+#side = splice(side, nut)
+
+side.draw(drawing, config.cut())
 
 drawing.save()
 
