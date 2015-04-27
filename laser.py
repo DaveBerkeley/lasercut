@@ -79,18 +79,31 @@ class Rectangle(Polygon):
 
 class TCut:
 
-    def __init__(self, config, nut_size, nut_length):
-        self.config = config
-        self.nut_size = nut_size
-        self.nut_length = nut_length
+    def __init__(self, w, d, shank, nut_w, nut_t):
+        self.w = w
+        self.d = d
+        self.shank = shank
+        self.nut_w = nut_w
+        self.nut_t = nut_t
 
-    def set_drawing(self, drawing):
-        self.drawing = drawing
+    def make_elev(self, xy, orient):
+        shape = Polygon()
+        x, y = xy
+        width = self.w / 2.0
+        n_width = self.nut_w / 2.0
+        shape.add(x - width, y)
+        shape.add(x - width, y - self.shank)
+        shape.add(x - n_width, y - self.shank)
+        shape.add(x - n_width, y - (self.shank + self.nut_t))
+        shape.add(x - width, y - (self.shank + self.nut_t))
+        shape.add(x - width, y - self.d)
 
-    def draw_elev(self, x, y):
-        pass
-
-    def draw_plan(self, x, y):
-        pass
+        shape.add(x + width, y - self.d)
+        shape.add(x + width, y - (self.shank + self.nut_t))
+        shape.add(x + n_width, y - (self.shank + self.nut_t))
+        shape.add(x + n_width, y - self.shank)
+        shape.add(x + width, y - self.shank)
+        shape.add(x + width, y)
+        return shape
 
 # FIN
