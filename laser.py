@@ -71,7 +71,7 @@ class Config:
 #
 
 class Polygon:
-    def __init__(self, xy=None):
+    def __init__(self, xy=(0, 0)):
         self.points = []
         self.arcs = []
         self.origin = xy
@@ -120,6 +120,31 @@ class Polygon:
         if self.origin:
             self.origin = self.origin[0] + dx, self.origin[1] + dy
 
+    def move(self, x, y):
+        self.translate(x - self.origin[0], y - self.origin[1])
+
+    def extent(self):
+        class Extent:
+            def __init__(self):
+                self.mina = None
+                self.maxa = None
+            def add(self, a):
+                if self.mina is None:
+                    self.mina = a
+                    self.maxa = a
+                    return
+                if a > self.mina:
+                    self.mina = a
+                elif a > self.maxa:
+                    self.maxa = a
+
+        xx = Extent()
+        yy = Extent()
+        for x, y in self.points:
+            xx.add(x)
+            yy.add(y)
+        return xx.mina, xx.maxa, yy.mina, yy.maxa
+
     def draw(self, drawing, colour):
         for xy0, xy1 in self.lines():
             item = dxf.line(xy0, xy1, color=colour)
@@ -131,7 +156,7 @@ class Polygon:
 #
 
 class Rectangle(Polygon):
-    def __init__(self, config, xy0, xy1):
+    def __init__(self, xy0, xy1):
         Polygon.__init__(self)
 
         x0, y0 = xy0
@@ -245,9 +270,9 @@ def replace(line, shape):
 #
 #
 
-def on_segment(xy, line):
+def on_segment(xy, line, margin=0.01):
     d = distance_from_line(xy, line)
-    if d > 0.01:
+    if d > margin:
         return False
     (x0, y0), (x1, y1) = line
     if x1 < x0:
@@ -255,16 +280,22 @@ def on_segment(xy, line):
     if y1 < y0:
         y0, y1 = y1, y0
     # are we on the segment?
-    return (x0 <= xy[0] <= x1) and (y0 <= xy[1] <= y1)
+    def within(x, x0, x1):
+        if x0 > x1:
+            x0, x1 = x1, x0
+        return (x0-margin) <= x <= (x1+margin)
+    return within(xy[0], x0, x1) and within(xy[1], y0, y1)
 
 def splice(src, item):
     lines = []
     arcs = []
+    found = False
     for line in src.lines():
         if on_segment(item.origin, line):
             for subst in replace(line, item):
                 lines.append(subst)
             arcs += item.arcs
+            found = True
         else:
             lines.append(line)
 
@@ -274,6 +305,8 @@ def splice(src, item):
         shape.add(*line[1])
     shape.arcs = src.arcs[:]
     shape.arcs += [ arc.copy() for arc in arcs ]
+    if not found:
+        print "no match found for", item
     return shape
 
 #
