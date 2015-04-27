@@ -73,10 +73,14 @@ class Config:
 class Polygon:
     def __init__(self, xy=None):
         self.points = []
+        self.arcs = []
         self.origin = xy
 
     def add(self, x, y):
         self.points.append((x, y))
+
+    def add_arc(self, arc):
+        self.arcs.append(arc)
 
     def close(self):
         self.points.append(self.points[0])
@@ -94,17 +98,23 @@ class Polygon:
         for x, y in self.points:
             points.append(rotate_2d(rad, x, y))
         self.points = points
+        for arc in self.arcs:
+            arc.rotate(degrees)
 
     def translate(self, dx, dy):
         points = []
         for x, y in self.points:
             points.append((x + dx, y + dy))
         self.points = points
+        for arc in self.arcs:
+            arc.translate(dx, dy)
 
     def draw(self, drawing, colour):
         for xy0, xy1 in self.lines():
             item = dxf.line(xy0, xy1, color=colour)
             drawing.add(item)
+        for arc in self.arcs:
+            arc.draw(drawing, colour)
 
 #
 #
@@ -124,14 +134,53 @@ class Rectangle(Polygon):
 #
 #
 
+class Arc:
+
+    def __init__(self, x, y, radius, start_angle, end_angle):
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.start_angle = start_angle
+        self.end_angle = end_angle
+
+    def rotate(self, degrees):
+        rad = radians(degrees)
+        self.x, self.y = rotate_2d(rad, self.x, self.y)
+
+    def translate(self, dx, dy):
+        self.x += dx
+        self.y += dy
+
+    def copy(self):
+        return Arc(self.x, self.y, self.radius, self.start_angle, self.end_angle)
+
+    def draw(self, drawing, colour):
+        item = dxf.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
+        drawing.add(item)
+
+    def __repr__(self):
+        return "Arc(%s,%s,%s,%s,%s)" % (self.x, self.y, self.radius, self.start_angle, self.end_angle)
+
+#
+#
+
+class Circle(Arc):
+    def __init__(self, x, y, radius):
+        Arc.__init__(self, x, y, radius, 0, 360)
+
+
+#
+#
+
 class TCut:
 
-    def __init__(self, w, d, shank, nut_w, nut_t):
+    def __init__(self, w, d, shank, nut_w, nut_t, stress_hole=None):
         self.w = w
         self.d = d
         self.shank = shank
         self.nut_w = nut_w
         self.nut_t = nut_t
+        self.stress_hole = stress_hole
 
     def make_elev(self, xy, orient):
         shape = Polygon(xy)
@@ -150,6 +199,10 @@ class TCut:
         shape.add(n_width, -self.shank)
         shape.add(width, -self.shank)
         shape.add(width, 0)
+
+        if self.stress_hole:
+            shape.add_arc(Circle(-n_width, -self.shank, self.stress_hole))
+            shape.add_arc(Circle(n_width, -self.shank, self.stress_hole))
 
         shape.rotate(orient)
         shape.translate(*xy)
@@ -181,19 +234,23 @@ def replace(line, shape):
 #
 #
 
-def splice(shape, item):
+def splice(src, item):
     lines = []
-    for line in shape.lines():
+    arcs = []
+    for line in src.lines():
         if distance_from_line(item.origin, line) < 0.0001:
             for line in replace(line, item):
                 lines.append(line)
+            arcs += item.arcs
         else:
             lines.append(line)
 
-    shape = Polygon(shape.origin)
+    shape = Polygon(src.origin)
     shape.add(*lines[0][0])
     for line in lines:
         shape.add(*line[1])
+    shape.arcs = src.arcs[:]
+    shape.arcs += [ arc.copy() for arc in arcs ]
     return shape
 
 # FIN

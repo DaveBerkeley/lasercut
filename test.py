@@ -17,9 +17,10 @@ drawing = dxf.drawing("test.dxf")
 
 shape = Rectangle(config, (0, 0), (50, 30))
 
-m4 = TCut(w=4, d=11, shank=6, nut_w=10, nut_t=3)
+m4 = TCut(w=4, d=11, shank=6, nut_w=10, nut_t=3, stress_hole=0.25)
 
 item = m4.make_elev((0, 15), 90)
+#item.draw(drawing, config.cut())
 shape = splice(shape, item)
 
 item = m4.make_elev((50, 15), -90)
