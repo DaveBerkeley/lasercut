@@ -19,7 +19,7 @@ drawing = dxf.drawing("test.dxf")
 #shape.draw(drawing, config.cut())
 
 tcut = TCut(w=4, d=11, shank=6, nut_w=10, nut_t=3)
-shape = tcut.make_elev((0, 0), 0)
+shape = tcut.make_elev((0, 0), 30)
 shape.draw(drawing, config.cut())
 
 drawing.save()

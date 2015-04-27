@@ -1,6 +1,24 @@
 
+import math
+import cmath
+
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
+
+#
+#
+
+def radians(degrees):
+    return math.pi * degrees / 180.0
+
+#def degrees(rad):
+#    return 180.0 * rad / math.pi
+
+def rotate_2d(theta, x, y):
+    """Rotate point by theta"""
+    cangle = cmath.exp(theta * 1j)
+    cx = cangle * complex(x, y)
+    return cx.real, cx.imag
 
 #
 #
@@ -50,6 +68,13 @@ class Polygon:
             line = (x0, y0), (x, y)
             x0, y0 = x, y
             yield line
+
+    def rotate(self, degrees):
+        points = []
+        rad = radians(degrees)
+        for x, y in self.points:
+            points.append(rotate_2d(rad, x, y))
+        self.points = points
 
     def draw(self, drawing, colour):
         for xy0, xy1 in self.lines():
@@ -104,6 +129,9 @@ class TCut:
         shape.add(x + n_width, y - self.shank)
         shape.add(x + width, y - self.shank)
         shape.add(x + width, y)
+
+        shape.rotate(orient)
+
         return shape
 
 # FIN
