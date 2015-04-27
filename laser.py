@@ -276,4 +276,17 @@ def splice(src, item):
     shape.arcs += [ arc.copy() for arc in arcs ]
     return shape
 
+#
+#
+
+def cutout(width, depth):
+    poly = Polygon()
+    width /= 2.0
+    poly.add(-width, 0)
+    poly.add(-width, depth)
+    poly.add(width, depth)
+    poly.add(width, 0)
+    poly.origin = 0, 0
+    return poly
+
 # FIN
