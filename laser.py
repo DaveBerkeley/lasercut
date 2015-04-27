@@ -64,11 +64,6 @@ class Config:
         self.data["engrave"] = 2
         self.data["kisscut"] = 1
 
-    def offset(self):
-        return 0.0 # TODO
-        kerf = self.data["kerf"]
-        return kerf / 2.0
-
     def cut(self):
         return self.data["cut"]
 
@@ -115,14 +110,11 @@ class Polygon:
 #
 
 class Rectangle(Polygon):
-    def __init__(self, config, xy0, xy1, hole):
+    def __init__(self, config, xy0, xy1):
         Polygon.__init__(self)
-        offset = config.offset()
-        if not hole:
-            offset = -offset
 
-        x0, y0 = xy0[0] + offset, xy0[1] + offset
-        x1, y1 = xy1[0] - offset, xy1[1] - offset
+        x0, y0 = xy0
+        x1, y1 = xy1
         self.add(x0, y0)
         self.add(x1, y0)
         self.add(x1, y1)
@@ -170,7 +162,6 @@ class TCut:
 def replace(line, shape):
     points = shape.points[:]
     start, end = points[0], points[-1]
-    print line, start, end
 
     dstart = distance(line[0], start)
     dend = distance(line[0], end)
@@ -187,11 +178,13 @@ def replace(line, shape):
     poly.add(*line[1])
     return poly.lines()
 
+#
+#
+
 def splice(shape, item):
     lines = []
     for line in shape.lines():
         if distance_from_line(item.origin, line) < 0.0001:
-            print "found", line
             for line in replace(line, item):
                 lines.append(line)
         else:

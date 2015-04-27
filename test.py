@@ -15,15 +15,21 @@ config = Config(kerf=kerf, material=material)
 
 drawing = dxf.drawing("test.dxf")
 
-rect = Rectangle(config, (0, 0), (20, 30), hole=False)
-#rect.draw(drawing, config.cut())
+shape = Rectangle(config, (0, 0), (50, 30))
 
 m4 = TCut(w=4, d=11, shank=6, nut_w=10, nut_t=3)
 
-shape = m4.make_elev((0, 15), 90)
-#shape.draw(drawing, config.cut())
+item = m4.make_elev((0, 15), 90)
+shape = splice(shape, item)
 
-shape = splice(rect, shape)
+item = m4.make_elev((50, 15), -90)
+shape = splice(shape, item)
+
+item = m4.make_elev((25, 0), -180)
+shape = splice(shape, item)
+
+#shape.rotate(30)
+
 shape.draw(drawing, config.cut())
 
 drawing.save()
