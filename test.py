@@ -64,6 +64,10 @@ work = add_cutouts(work, cut_locs, template)
 work.draw(drawing, config.cut())
 
 x, x, x, maxy = work.extent()
+work.move(0, maxy + between_work)
+work.draw(drawing, config.cut())
+
+x, x, x, maxy = work.extent()
 
 end_w = win + thick + thick
 work = Rectangle((0, 0), (end_w, hin))
