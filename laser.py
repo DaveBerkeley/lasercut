@@ -23,6 +23,22 @@ def rotate_2d(theta, x, y):
 #
 #
 
+def distance_from_line(xy, line):
+    # see http://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+    x0, y0 = xy
+    (x1, y1), (x2, y2) = line
+    a = y2 - y1
+    b = x2 - x1
+    a = (a * a) + (b * b)
+    q = math.sqrt(a)
+    a = x0 * (y2 - y1)
+    b = y0 * (x2 - x1)
+    a = a - b + (x2 * y1) - (y2 * x1)
+    return math.abs(a) / q
+
+#
+#
+
 class Material:
 
     def __init__(self, w, h, t):
@@ -76,6 +92,12 @@ class Polygon:
             points.append(rotate_2d(rad, x, y))
         self.points = points
 
+    def translate(self, dx, dy):
+        points = []
+        for x, y in self.points:
+            points.append((x + dx, y + dy))
+        self.points = points
+
     def draw(self, drawing, colour):
         for xy0, xy1 in self.lines():
             item = dxf.line(xy0, xy1, color=colour)
@@ -113,24 +135,25 @@ class TCut:
 
     def make_elev(self, xy, orient):
         shape = Polygon()
-        x, y = xy
         width = self.w / 2.0
         n_width = self.nut_w / 2.0
-        shape.add(x - width, y)
-        shape.add(x - width, y - self.shank)
-        shape.add(x - n_width, y - self.shank)
-        shape.add(x - n_width, y - (self.shank + self.nut_t))
-        shape.add(x - width, y - (self.shank + self.nut_t))
-        shape.add(x - width, y - self.d)
+        shape.add(-width, 0)
+        shape.add(-width, -self.shank)
+        shape.add(-n_width, -self.shank)
+        shape.add(-n_width, -(self.shank + self.nut_t))
+        shape.add(-width, -(self.shank + self.nut_t))
+        shape.add(-width, -self.d)
 
-        shape.add(x + width, y - self.d)
-        shape.add(x + width, y - (self.shank + self.nut_t))
-        shape.add(x + n_width, y - (self.shank + self.nut_t))
-        shape.add(x + n_width, y - self.shank)
-        shape.add(x + width, y - self.shank)
-        shape.add(x + width, y)
+        shape.add(width, -self.d)
+        shape.add(width, -(self.shank + self.nut_t))
+        shape.add(n_width, -(self.shank + self.nut_t))
+        shape.add(n_width, -self.shank)
+        shape.add(width, -self.shank)
+        shape.add(width, 0)
 
         shape.rotate(orient)
+        x, y = xy
+        shape.translate(x, y)
 
         return shape
 
