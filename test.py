@@ -61,13 +61,34 @@ template = cutout(thick, cut_len)
 
 work = add_cutouts(work, cut_locs, template)
 
+tab_in = 14
+tab_len = 6
+cut_locs = [
+    [ tab_in, 0, 180 ],
+    [ lout-tab_in, 0, 180 ],
+    [ lout/2.0, 0, 180 ],
+    [ tab_in, hin, 0 ],
+    [ lout-tab_in, hin, 0 ],
+    [ lout/2.0, hin, 0 ],
+]
+
+template = cutout(tab_len, thick)
+
+work = add_cutouts(work, cut_locs, template)
+
+ex = work.extent()
+
 work.draw(drawing, config.cut())
 
-x, x, x, maxy = work.extent()
-work.move(0, maxy + between_work)
+#
+
+wdy = ex.corner[1] - ex.origin[1]
+work.move(0, wdy + between_work)
 work.draw(drawing, config.cut())
 
-x, x, x, maxy = work.extent()
+#
+
+ex = work.extent()
 
 end_w = win + thick + thick
 work = Rectangle((0, 0), (end_w, hin))
@@ -81,12 +102,25 @@ template = cutout(10, thick)
 
 work = add_cutouts(work, cut_locs, template)
 
-work.move(0, maxy + between_work)
+cut_locs = [
+    [ end_w/2.0, 0, 180 ],
+    [ end_w/2.0, hin, 0 ],
+]
+
+template = cutout(tab_len, thick)
+
+work = add_cutouts(work, cut_locs, template)
+
+wdy = ex.corner[1]
+work.move(0, wdy + between_work)
 
 work.draw(drawing, config.cut())
 
-x, x, x, maxy = work.extent()
-work.move(0, maxy + between_work)
+#
+
+ex = work.extent()
+wdy = ex.corner[1] - ex.origin[1]
+work.translate(0, wdy + between_work)
 
 work.draw(drawing, config.cut())
 

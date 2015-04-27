@@ -133,7 +133,7 @@ class Polygon:
                     self.mina = a
                     self.maxa = a
                     return
-                if a > self.mina:
+                if a < self.mina:
                     self.mina = a
                 elif a > self.maxa:
                     self.maxa = a
@@ -143,7 +143,8 @@ class Polygon:
         for x, y in self.points:
             xx.add(x)
             yy.add(y)
-        return xx.mina, xx.maxa, yy.mina, yy.maxa
+        # TODO : needs extent of arcs too
+        return Rectangle((xx.mina, yy.mina), (xx.maxa, yy.maxa))
 
     def draw(self, drawing, colour):
         for xy0, xy1 in self.lines():
@@ -157,15 +158,20 @@ class Polygon:
 
 class Rectangle(Polygon):
     def __init__(self, xy0, xy1):
-        Polygon.__init__(self)
-
         x0, y0 = xy0
         x1, y1 = xy1
+        Polygon.__init__(self, (x0, y0))
+        self.corner = x1, y1
+
         self.add(x0, y0)
         self.add(x1, y0)
         self.add(x1, y1)
         self.add(x0, y1)
         self.close()
+        self.str = "Rectangle((%d,%d),(%d,%d))" % (x0, y0, x1, y1)
+
+    def __repr__(self):
+        return self.str
 
 #
 #
