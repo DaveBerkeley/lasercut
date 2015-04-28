@@ -2,7 +2,8 @@
 
 import sys
 
-from laser import Rectangle, Polygon, Collection, Config, Material, TCut, splice, cutout
+from laser import Rectangle, Polygon, Circle, Collection, Config, Material
+from laser import TCut, splice, cutout
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
@@ -47,20 +48,42 @@ lout = lin + (thick) + (2 * cut_in)
 
 if 1:
     overhang = 3
+    lid_w = wout + (2 * overhang)
     work = Collection()
-    c = Rectangle((0, 0), (lout, wout+(2 * overhang)))
+    c = Rectangle((0, 0), (lout, lid_w))
     work.add(c)
 
     to_side = (thick / 2.0) + overhang
     nut_locs = [
         [ nut_x, to_side, 0 ],
         [ lout-nut_x, to_side, 0 ],
-        [ nut_x, wout-to_side, 0 ],
-        [ lout-nut_x, wout-to_side, 0 ],
+        [ nut_x, lid_w-to_side, 0 ],
+        [ lout-nut_x, lid_w-to_side, 0 ],
     ]
 
     for x, y, rot in nut_locs:
         c = m4.make_plan((x, y), rot);
+        work.add(c)
+
+    c_to_side = to_side # + (thick/2.0)
+    slot_1 = Rectangle((-cut_len/2.0, -thick/2.0), (cut_len/2.0, thick/2.0))
+    slot_2 = Rectangle((-thick/2.0, -tab_len/2.0), (thick/2.0, tab_len/2.0))
+    cut_locs = [
+        [ tab_in, c_to_side, slot_1 ],
+        [ lout-tab_in, c_to_side, slot_1 ],
+        [ tab_in, lid_w-c_to_side, slot_1 ],
+        [ lout-tab_in, lid_w-c_to_side, slot_1 ],
+        [ lout/2.0, c_to_side, slot_1 ],
+        [ lout/2.0, lid_w-c_to_side, slot_1 ],
+
+        [ cut_in, lid_w/2.0, slot_2 ],
+        [ lout-cut_in, lid_w/2.0, slot_2 ],
+    ]
+
+    for x, y, slot in cut_locs:
+        c = slot.copy()
+        c.rotate(rot)
+        c.translate(x, y)
         work.add(c)
 
     #work.rotate(30)

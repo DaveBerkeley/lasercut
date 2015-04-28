@@ -194,6 +194,10 @@ class Arc:
         self.x += dx
         self.y += dy
 
+    def move(self, x, y):
+        self.x  = x
+        self.y = y
+
     def copy(self):
         return Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
 
@@ -217,6 +221,8 @@ class Circle(Arc):
 class Collection:
     def __init__(self):
         self.data = []
+        self.origin = None
+        self.arcs = []
     def add(self, obj):
         self.data.append(obj)
     def draw(self, drawing, colour):
@@ -231,6 +237,10 @@ class Collection:
     def move(self, x, y):
         for data in self.data:
             data.move(x, y)
+    def lines(self):
+        for data in self.data:
+            for line in data.lines():
+                yield line
 
 #
 #
