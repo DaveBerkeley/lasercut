@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import sys
+
 from laser import Rectangle, Polygon, Config, Material, TCut, splice, cutout
 
 # https://pypi.python.org/pypi/dxfwrite/
@@ -26,22 +28,33 @@ config = Config(material=material)
 
 drawing = dxf.drawing("test.dxf")
 
-m4 = TCut(w=3, d=7, shank=3, nut_w=5, nut_t=2, stress_hole=0.25)
+m4 = TCut(w=3, d=7, shank=3, nut_w=6, nut_t=2, stress_hole=0.25)
 
 win = 39
 lin = 75
 hin = 21
-margin = (thick * 2) + 2
-wout = win + margin
-lout = lin + margin
 
-nut_x = 22
+nut_x = 24
 cut_len = 6
 cut_in = 7
 between_work = 1
 
 tab_in = 14
 tab_len = 6
+
+wout = win + (thick * 2)
+lout = lin + (thick) + (2 * cut_in)
+
+if 0:
+    work = Rectangle((0, 0), (lout, wout))
+
+    work.draw(drawing, config.cut())
+
+    drawing.save()
+    sys.exit()
+
+#
+#   Side plate
 
 work = Rectangle((0, 0), (lout, hin))
 
@@ -125,14 +138,12 @@ work.draw(drawing, config.cut())
 #
 
 ex = work.extent()
-wdy = ex.corner[1] - ex.origin[1]
-work.translate(0, wdy + between_work)
+wdx = ex.corner[0] - ex.origin[0]
+work.translate(wdx + between_work, 0)
 work.draw(drawing, config.cut())
 
 #
 #
-
-
 
 drawing.save()
 
