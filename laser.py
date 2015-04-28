@@ -93,11 +93,12 @@ class Polygon:
         self.points.append(self.points[0])
 
     def lines(self):
-        x0, y0 = self.points[0]
-        for x, y in self.points[1:]:
-            line = (x0, y0), (x, y)
-            x0, y0 = x, y
-            yield line
+        if self.points:
+            x0, y0 = self.points[0]
+            for x, y in self.points[1:]:
+                line = (x0, y0), (x, y)
+                x0, y0 = x, y
+                yield line
 
     def rotate(self, degrees):
         points = []
@@ -108,7 +109,7 @@ class Polygon:
         for arc in self.arcs:
             arc.rotate(degrees)
         if self.origin:
-            self.origin = rotate_2d(rad, x, y)
+            self.origin = rotate_2d(rad, self.origin[0], self.origin[1])
 
     def translate(self, dx, dy):
         points = []
@@ -270,6 +271,14 @@ class TCut:
         shape.translate(*xy)
         shape.origin = xy
 
+        return shape
+
+    def make_plan(self, xy, orient):
+        shape = Polygon()
+        shape.add_arc(Circle((0, 0), self.w / 2.0))
+        shape.rotate(orient)
+        shape.translate(*xy)
+        shape.origin = xy
         return shape
 
 #

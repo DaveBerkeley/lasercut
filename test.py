@@ -2,7 +2,7 @@
 
 import sys
 
-from laser import Rectangle, Polygon, Config, Material, TCut, splice, cutout
+from laser import Rectangle, Polygon, Collection, Config, Material, TCut, splice, cutout
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
@@ -45,9 +45,25 @@ tab_len = 6
 wout = win + (thick * 2)
 lout = lin + (thick) + (2 * cut_in)
 
-if 0:
-    work = Rectangle((0, 0), (lout, wout))
+if 1:
+    overhang = 3
+    work = Collection()
+    c = Rectangle((0, 0), (lout, wout+(2 * overhang)))
+    work.add(c)
 
+    to_side = (thick / 2.0) + overhang
+    nut_locs = [
+        [ nut_x, to_side, 0 ],
+        [ lout-nut_x, to_side, 0 ],
+        [ nut_x, wout-to_side, 0 ],
+        [ lout-nut_x, wout-to_side, 0 ],
+    ]
+
+    for x, y, rot in nut_locs:
+        c = m4.make_plan((x, y), rot);
+        work.add(c)
+
+    #work.rotate(30)
     work.draw(drawing, config.cut())
 
     drawing.save()
