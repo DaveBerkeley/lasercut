@@ -13,6 +13,9 @@ def add_cutouts(work, locs, template):
         work = splice(work, c)
     return work
 
+def move_margin(work):
+    work.translate(10, 20)
+
 #
 #
 
@@ -36,6 +39,9 @@ nut_x = 22
 cut_len = 6
 cut_in = 7
 between_work = 1
+
+tab_in = 14
+tab_len = 6
 
 work = Rectangle((0, 0), (lout, hin))
 
@@ -61,8 +67,6 @@ template = cutout(thick, cut_len)
 
 work = add_cutouts(work, cut_locs, template)
 
-tab_in = 14
-tab_len = 6
 cut_locs = [
     [ tab_in, 0, 180 ],
     [ lout-tab_in, 0, 180 ],
@@ -78,12 +82,14 @@ work = add_cutouts(work, cut_locs, template)
 
 ex = work.extent()
 
+move_margin(work)
 work.draw(drawing, config.cut())
 
 #
 
 wdy = ex.corner[1] - ex.origin[1]
 work.move(0, wdy + between_work)
+move_margin(work)
 work.draw(drawing, config.cut())
 
 #
@@ -113,7 +119,7 @@ work = add_cutouts(work, cut_locs, template)
 
 wdy = ex.corner[1]
 work.move(0, wdy + between_work)
-
+work.translate(10, 0)
 work.draw(drawing, config.cut())
 
 #
@@ -121,8 +127,12 @@ work.draw(drawing, config.cut())
 ex = work.extent()
 wdy = ex.corner[1] - ex.origin[1]
 work.translate(0, wdy + between_work)
-
 work.draw(drawing, config.cut())
+
+#
+#
+
+
 
 drawing.save()
 
