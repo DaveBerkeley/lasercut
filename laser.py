@@ -187,6 +187,7 @@ class Arc:
     def rotate(self, degrees):
         rad = radians(degrees)
         self.x, self.y = rotate_2d(rad, self.x, self.y)
+        # TODO needs to rotate start/end angles too
 
     def translate(self, dx, dy):
         self.x += dx
@@ -209,6 +210,26 @@ class Circle(Arc):
     def __init__(self, xy, radius):
         Arc.__init__(self, xy, radius, 0, 360)
 
+#
+#
+
+class Collection:
+    def __init__(self):
+        self.data = []
+    def add(self, obj):
+        self.data.append(obj)
+    def draw(self, drawing, colour):
+        for data in self.data:
+            data.draw(drawing, colour)
+    def rotate(self, degrees):
+        for data in self.data:
+            data.rotate(degrees)
+    def translate(self, dx, dy):
+        for data in self.data:
+            data.translate(dx, dy)
+    def move(self, x, y):
+        for data in self.data:
+            data.move(x, y)
 
 #
 #
@@ -327,5 +348,29 @@ def cutout(width, depth):
     poly.add(width, 0)
     poly.origin = 0, 0
     return poly
+
+#
+#
+
+def hinge(work, xy0, xy1, on, off, pitch):
+    c = Collection()
+    c.add(work)
+
+    y0, y1 = xy0[1], xy1[1]
+    x0, x1 = xy0[0], xy1[0]
+    for x in range(int(x0), int(x1), pitch*2):
+        for y in range(int(y0), int(y1), int(on+off)):
+            poly = Polygon()
+            poly.add(x, y)
+            poly.add(x, y+on)
+            c.add(poly)
+    for x in range(int(x0+pitch), int(x1), pitch*2):
+        for y in range(int(y0+off), int(y1), int(on+off)):
+            poly = Polygon()
+            poly.add(x, y)
+            poly.add(x, y+on)
+            c.add(poly)
+
+    return c
 
 # FIN
