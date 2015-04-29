@@ -34,8 +34,8 @@ drawing = dxf.drawing("test.dxf")
 
 nut = TCut(w=3, d=12-thick, shank=3, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
-win = 43 + thick
-lin = 75
+win = 43
+lin = 70
 hin = 25
 
 nut_x = 24
@@ -92,15 +92,39 @@ if 1:
         c.translate(x, y)
         work.add(c)
 
+    prev = work.copy()
     move_margin(work)
     work.draw(drawing, config.cut())
-
-    #drawing.save()
 
 #
 #   Bottom plate
 
-work.translate(0, lid_w + between_work)
+work = Collection()
+work.add(prev)
+
+# need fixing holes in botom plate for relay board
+
+relay_dy = 33
+relay_dx = 44
+relay_edge = 3
+relay_hole = 3
+
+c = Circle((0, 0), relay_hole/2.0)
+d = c.copy()
+d.translate(lout - cut_in - thick - relay_edge, (lid_w/2.0) - (relay_dy/2.0))
+work.add(d)
+d = d.copy()
+d.translate(-relay_dx, 0)
+work.add(d)
+
+d = c.copy()
+d.translate(lout - cut_in - thick - relay_edge, (lid_w/2.0) + (relay_dy/2.0))
+work.add(d)
+d = d.copy()
+d.translate(-relay_dx, 0)
+work.add(d)
+
+work.translate(x_margin, y_margin + lid_w + between_work)
 work.draw(drawing, config.cut())
 
 #

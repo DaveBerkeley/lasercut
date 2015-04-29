@@ -241,6 +241,12 @@ class Collection:
         for data in self.data:
             for line in data.lines():
                 yield line
+    def copy(self):
+        c = Collection()
+        for data in self.data:
+            c.add(data.copy())
+        return c
+        
 
 #
 #
