@@ -398,16 +398,21 @@ def hinge(work, xy0, xy1, on, off, pitch):
     c = Collection()
     c.add(work)
 
+    def frange(a, b, step):
+        while a < b:
+            yield a
+            a += step
+
     y0, y1 = xy0[1], xy1[1]
     x0, x1 = xy0[0], xy1[0]
-    for x in range(int(x0), int(x1), pitch*2):
-        for y in range(int(y0), int(y1), int(on+off)):
+    for x in frange(x0, x1, pitch*2):
+        for y in frange(y0, y1, on+off):
             poly = Polygon()
             poly.add(x, y)
             poly.add(x, y+on)
             c.add(poly)
-    for x in range(int(x0+pitch), int(x1), pitch*2):
-        for y in range(int(y0+off), int(y1), int(on+off)):
+    for x in frange(x0+pitch, x1, pitch*2):
+        for y in frange(y0+off, y1, on+off):
             poly = Polygon()
             poly.add(x, y)
             poly.add(x, y+on)
