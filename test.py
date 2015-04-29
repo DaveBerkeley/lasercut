@@ -239,24 +239,29 @@ template = cutout(tab_len, thick)
 work = add_cutouts(work, cut_locs, template)
 prev = work.copy()
 
-work.translate(x_margin + lout + between_work, y_margin + (hin * 2) + (thick*4) + (2 * between_work))
+work.rotate(90)
+work.translate(hin + thick, 0)
+work.translate(x_margin + lout + between_work, y_margin + (hin * 2) + (thick*3) + (2 * between_work))
 work.draw(drawing, config.cut())
 
 #
 #   Second end plate
 
-c = prev.copy()
-work = Collection()
-work.add(c)
+if 1:
+    c = prev.copy()
+    work = Collection()
+    work.add(c)
 
-# add the cable holes
-c = Circle((2*end_w/3.0, hin/2.0), cable_r)
-work.add(c)
-c = Circle((end_w/3.0, hin/2.0), cable_r)
-work.add(c)
+    # add the cable holes
+    c = Circle((2*end_w/3.0, hin/2.0), cable_r)
+    work.add(c)
+    c = Circle((end_w/3.0, hin/2.0), cable_r)
+    work.add(c)
 
-work.translate(x_margin + lout + between_work, y_margin + (3 * between_work) + (hin*3) + (6 * thick))
-work.draw(drawing, config.cut())
+    work.rotate(90)
+    work.translate(hin + thick, 0)
+    work.translate(x_margin + (2*lout)+ between_work - hin - (2*thick), y_margin + (2 * between_work) + (hin*2) + (3 * thick))
+    work.draw(drawing, config.cut())
 
 #
 #
