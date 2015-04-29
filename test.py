@@ -34,9 +34,9 @@ drawing = dxf.drawing("test.dxf")
 
 nut = TCut(w=3, d=12-thick, shank=3, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
-win = 44 + thick
+win = 43 + thick
 lin = 75
-hin = 21
+hin = 25
 
 nut_x = 24
 nut_xa = 24 + 8
@@ -92,7 +92,6 @@ if 1:
         c.translate(x, y)
         work.add(c)
 
-    #work.rotate(30)
     move_margin(work)
     work.draw(drawing, config.cut())
 
@@ -145,6 +144,7 @@ template = cutout(tab_len, thick)
 work = add_cutouts(work, cut_locs, template)
 
 # move so it sits on 0 y-axis
+prev = work.copy()
 ex = work.extent()
 work.translate(0, -ex.origin[1])
 
@@ -155,13 +155,42 @@ work.draw(drawing, config.cut())
 #
 # Other side plate
 
-work.translate(0, hin + (2 * thick) + between_work)
+c = prev.copy()
+work = Collection()
+work.add(c)
+
+# TODO add USB socket
+
+def mini_usb():
+    usb_w1 = 7.7
+    usb_w2 = 6.5
+    usb_h = 3.95
+    c = Polygon((0, 0))
+    indent = (usb_w1 - usb_w2) / 2.0
+    c.add(0, usb_h)
+    c.add(usb_w1, usb_h)
+    c.add(usb_w1, 2*usb_h/3.0)
+    c.add(usb_w2 + indent, usb_h/3.0)
+    c.add(usb_w2 + indent, 0)
+    c.add(indent, 0)
+    c.add(indent, usb_h/3.0)
+    c.add(0, 2*usb_h/3.0)
+    c.close()
+    return c
+
+usb_up = 10
+usb_in = cut_in + (thick/2.0) + 6
+
+c = mini_usb()
+c.translate(usb_in, usb_up)
+work.add(c)
+
+move_margin(work)
+work.translate(lout + between_work, hin + (3 * thick) + between_work)
 work.draw(drawing, config.cut())
 
 #
 #   End plate
-
-ex = work.extent()
 
 end_w = win + thick + thick
 work = Rectangle((0, 0), (end_w, hin))
@@ -186,9 +215,7 @@ template = cutout(tab_len, thick)
 work = add_cutouts(work, cut_locs, template)
 prev = work.copy()
 
-wdy = ex.corner[1]
-work.move(0, wdy + between_work)
-work.translate(x_margin + lout + between_work, 0)
+work.translate(x_margin + lout + between_work, y_margin + (hin * 2) + (thick*4) + (2 * between_work))
 work.draw(drawing, config.cut())
 
 #

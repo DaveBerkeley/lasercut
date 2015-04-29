@@ -84,7 +84,7 @@ class Polygon:
 
     def copy(self):
         poly = Polygon(self.origin)
-        poly.arcs = [ arc.copy() for ac in self.arcs ]
+        poly.arcs = [ arc.copy() for arc in self.arcs ]
         for point in self.points:
             poly.add(*point)
         return poly
