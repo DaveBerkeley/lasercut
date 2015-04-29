@@ -32,7 +32,7 @@ config = Config(material=material)
 
 drawing = dxf.drawing("test.dxf")
 
-nut = TCut(w=3, d=12-thick, shank=3, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
+nut = TCut(w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
 win = 43
 lin = 70
