@@ -25,7 +25,7 @@ def move_margin(work):
 #
 #
 
-thick = 4
+thick = 3
 material = Material(w=200, h=200, t=thick)
 
 config = Config(material=material)
