@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
-#!/usr/bin/python
-
-from laser import Rectangle, Polygon, Config, Material, Collection, hinge
+from laser import Rectangle, Polygon, Config, Material, Collection, Text, hinge
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
@@ -10,23 +8,30 @@ from dxfwrite import DXFEngine as dxf
 #
 #
 
+x_margin = 10
+y_margin = 20
+spacing = 1
+
 thick = 4
 w = 100
-h = 60
+h = 40
 
 config = Config()
 
 drawing = dxf.drawing("test.dxf")
 
-work = Rectangle((0, 0), (w, h))
+for i, pitch in enumerate(range(1, 5)):
+    work = Rectangle((0, 0), (w, h))
 
-d = h/4.0
-work = hinge(work, (w/4.0, 0), (3*w/4.0,h), d*0.8, d*0.2, 3)
+    d = h/4.0
+    work = hinge(work, (w/4.0, 0), (3*w/4.0,h), d*0.8, d*0.2, pitch)
 
-#work.move(5, 5)
-#work.rotate(90)
+    #r = Text((0, 0), "Hello World!")
+    #work.add(r)
 
-work.draw(drawing, config.cut())
+    work.translate(0, i * (h + spacing))
+    work.translate(x_margin, y_margin)
+    work.draw(drawing, config.cut())
 
 drawing.save()
 
