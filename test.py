@@ -3,7 +3,7 @@
 import sys
 
 from laser import Rectangle, Polygon, Circle, Collection, Config, Material
-from laser import TCut, splice, cutout
+from laser import TCut, Text, splice, cutout
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
@@ -238,6 +238,14 @@ template = cutout(tab_len, thick)
 
 work = add_cutouts(work, cut_locs, template)
 prev = work.copy()
+
+# Add text to this instance
+c = work
+work = Collection()
+work.add(c)
+# TODO : text positioning seems incorrect!
+c = Text((-10, 18), "Relay V1.0", height=2.0)
+work.add(c)
 
 work.rotate(90)
 work.translate(hin + thick, 0)
