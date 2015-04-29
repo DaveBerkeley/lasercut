@@ -171,6 +171,9 @@ class Rectangle(Polygon):
         self.close()
         self.str = "Rectangle((%d,%d),(%d,%d))" % (x0, y0, x1, y1)
 
+    def corners(self):
+        return self.points[:-1]
+
     def __repr__(self):
         return self.str
 
@@ -317,6 +320,27 @@ class TCut:
 #
 #
 
+def corner(poly, xy, radius):
+    # TODO
+    return poly
+    c = Collection()
+
+    # find the lines touching xy
+    lines = []
+    for i in range(len(poly.points)-1):
+        line = poly.points[i:i+2]
+        if (line[0] == xy) or (line[1] == xy):
+            lines.append(line)
+
+    print lines
+    c.add(poly)
+    c.add(Circle(xy, radius))
+
+    return c
+
+#
+#
+
 def replace(line, shape):
     points = shape.points[:]
     start, end = points[0], points[-1]
@@ -406,16 +430,29 @@ def hinge(work, xy0, xy1, on, off, pitch):
     y0, y1 = xy0[1], xy1[1]
     x0, x1 = xy0[0], xy1[0]
     for x in frange(x0, x1, pitch*2):
-        for y in frange(y0, y1, on+off):
+        y = y0
+        poly = Polygon()
+        poly.add(x, y)
+        y += (on+off) / 2.0 # for the first cut
+        poly.add(x, y)
+        y += off
+        c.add(poly)
+        while (y+on) < y1:
             poly = Polygon()
             poly.add(x, y)
-            poly.add(x, y+on)
+            y += on
+            poly.add(x, y)
+            y += off
             c.add(poly)
+        poly = Polygon()
+        poly.add(x, y)
+        poly.add(x, y1)
+        c.add(poly)
     for x in frange(x0+pitch, x1, pitch*2):
         for y in frange(y0+off, y1, on+off):
             poly = Polygon()
             poly.add(x, y)
-            poly.add(x, y+on)
+            poly.add(x, min(y+on, y1-off))
             c.add(poly)
 
     return c
