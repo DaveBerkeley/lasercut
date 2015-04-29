@@ -16,8 +16,11 @@ def add_cutouts(work, locs, template):
         work = splice(work, c)
     return work
 
+x_margin = 10
+y_margin = 20
+
 def move_margin(work):
-    work.translate(10, 20)
+    work.translate(x_margin, y_margin)
 
 #
 #
@@ -29,13 +32,14 @@ config = Config(material=material)
 
 drawing = dxf.drawing("test.dxf")
 
-m4 = TCut(w=3, d=7, shank=3, nut_w=6, nut_t=2, stress_hole=0.25)
+nut = TCut(w=3, d=12-thick, shank=3, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
-win = 39
+win = 44 + thick
 lin = 75
 hin = 21
 
 nut_x = 24
+nut_xa = 24 + 8
 cut_len = 6
 cut_in = 7
 between_work = 1
@@ -46,6 +50,8 @@ tab_len = 6
 wout = win + (thick * 2)
 lout = lin + (thick) + (2 * cut_in)
 
+cable_r = 7/2.0
+
 if 1:
     overhang = 3
     lid_w = wout + (2 * overhang)
@@ -55,14 +61,14 @@ if 1:
 
     to_side = (thick / 2.0) + overhang
     nut_locs = [
-        [ nut_x, to_side, 0 ],
+        [ nut_xa, to_side, 0 ],
         [ lout-nut_x, to_side, 0 ],
-        [ nut_x, lid_w-to_side, 0 ],
+        [ nut_xa, lid_w-to_side, 0 ],
         [ lout-nut_x, lid_w-to_side, 0 ],
     ]
 
     for x, y, rot in nut_locs:
-        c = m4.make_plan((x, y), rot);
+        c = nut.make_plan((x, y), rot);
         work.add(c)
 
     c_to_side = to_side # + (thick/2.0)
@@ -104,15 +110,15 @@ work.draw(drawing, config.cut())
 work = Rectangle((0, 0), (lout, hin))
 
 nut_locs = [
-    [ nut_x, 0, 180 ],
+    [ nut_xa, 0, 180 ],
     [ lout-nut_x, 0, 180 ],
-    [ nut_x, hin, 0 ],
+    [ nut_xa, hin, 0 ],
     [ lout-nut_x, hin, 0 ],
 ]
 
 for x, y, rot in nut_locs:
-    nut = m4.make_elev((x, y), rot)
-    work = splice(work, nut)
+    c = nut.make_elev((x, y), rot)
+    work = splice(work, c)
 
 cut_locs = [
     [ cut_in, 0, 0 ],
@@ -165,7 +171,8 @@ cut_locs = [
     [ end_w, hin/2.0, 90 ],
 ]
 
-template = cutout(10, thick)
+s_cut = hin - (2 * cut_len)
+template = cutout(s_cut, thick)
 
 work = add_cutouts(work, cut_locs, template)
 
@@ -177,16 +184,27 @@ cut_locs = [
 template = cutout(tab_len, thick)
 
 work = add_cutouts(work, cut_locs, template)
+prev = work.copy()
 
 wdy = ex.corner[1]
 work.move(0, wdy + between_work)
-work.translate(10 + lout + between_work, 0)
+work.translate(x_margin + lout + between_work, 0)
 work.draw(drawing, config.cut())
 
 #
-#   Second side plate
+#   Second end plate
 
-work.translate(end_w + between_work, 0)
+c = prev.copy()
+work = Collection()
+work.add(c)
+
+# add the cable holes
+c = Circle((2*end_w/3.0, hin/2.0), cable_r)
+work.add(c)
+c = Circle((end_w/3.0, hin/2.0), cable_r)
+work.add(c)
+
+work.translate(x_margin + lout + between_work, y_margin + (3 * between_work) + (hin*3) + (6 * thick))
 work.draw(drawing, config.cut())
 
 #
