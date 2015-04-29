@@ -87,10 +87,16 @@ if 1:
         work.add(c)
 
     #work.rotate(30)
+    move_margin(work)
     work.draw(drawing, config.cut())
 
-    drawing.save()
-    sys.exit()
+    #drawing.save()
+
+#
+#   Bottom plate
+
+work.translate(0, lid_w + between_work)
+work.draw(drawing, config.cut())
 
 #
 #   Side plate
@@ -132,19 +138,22 @@ template = cutout(tab_len, thick)
 
 work = add_cutouts(work, cut_locs, template)
 
+# move so it sits on 0 y-axis
 ex = work.extent()
+work.translate(0, -ex.origin[1])
 
 move_margin(work)
+work.translate(lout + between_work, 0)
 work.draw(drawing, config.cut())
 
 #
+# Other side plate
 
-wdy = ex.corner[1] - ex.origin[1]
-work.move(0, wdy + between_work)
-move_margin(work)
+work.translate(0, hin + (2 * thick) + between_work)
 work.draw(drawing, config.cut())
 
 #
+#   End plate
 
 ex = work.extent()
 
@@ -171,14 +180,13 @@ work = add_cutouts(work, cut_locs, template)
 
 wdy = ex.corner[1]
 work.move(0, wdy + between_work)
-work.translate(10, 0)
+work.translate(10 + lout + between_work, 0)
 work.draw(drawing, config.cut())
 
 #
+#   Second side plate
 
-ex = work.extent()
-wdx = ex.corner[0] - ex.origin[0]
-work.translate(wdx + between_work, 0)
+work.translate(end_w + between_work, 0)
 work.draw(drawing, config.cut())
 
 #
