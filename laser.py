@@ -246,7 +246,24 @@ class Collection:
         for data in self.data:
             c.add(data.copy())
         return c
-        
+
+#
+#   Text
+
+class Text:
+
+    def __init__(self, xy, text, **kwargs):
+        self.origin = xy
+        self.text = text
+        self.rot = 0
+        self.kwargs = kwargs
+    def translate(self, dx, dy):
+        self.origin = self.origin[0] + dx, self.origin[1] + dy
+    def rotate(self, degrees):
+        self.rot += degrees
+    def draw(self, drawing, colour):
+        text = dxf.mtext(self.text, insert=self.origin, rotation=self.rot, color=colour, **self.kwargs)
+        drawing.add(text)
 
 #
 #
