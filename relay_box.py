@@ -26,9 +26,8 @@ def move_margin(work):
 #
 
 thick = 3
-material = Material(w=200, h=200, t=thick)
 
-config = Config(material=material)
+config = Config()
 
 drawing = dxf.drawing("test.dxf")
 
