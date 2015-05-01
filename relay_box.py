@@ -35,7 +35,8 @@ drawing = dxf.drawing("test.dxf")
 nut = TCut(w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
 win = 43
-lin = 70
+end_space = 5
+lin = 70 + end_space
 hin = 25
 
 nut_x = 24
@@ -109,19 +110,15 @@ relay_dx = 44
 relay_edge = 3
 relay_hole = 3
 
+relay_x = lout - cut_in - thick - relay_edge - relay_dx - end_space
+
 c = Circle((0, 0), relay_hole/2.0)
 d = c.copy()
-d.translate(lout - cut_in - thick - relay_edge, (lid_w/2.0) - (relay_dy/2.0))
-work.add(d)
-d = d.copy()
-d.translate(-relay_dx, 0)
+d.translate(relay_x, (lid_w/2.0) - (relay_dy/2.0))
 work.add(d)
 
 d = c.copy()
-d.translate(lout - cut_in - thick - relay_edge, (lid_w/2.0) + (relay_dy/2.0))
-work.add(d)
-d = d.copy()
-d.translate(-relay_dx, 0)
+d.translate(relay_x, (lid_w/2.0) + (relay_dy/2.0))
 work.add(d)
 
 work.translate(x_margin, y_margin + lid_w + between_work)
