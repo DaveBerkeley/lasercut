@@ -241,7 +241,7 @@ c = work
 work = Collection()
 work.add(c)
 # TODO : text positioning seems incorrect!
-c = Text((-10, 18), "Relay V1.0", height=2.0)
+c = Text((-13, 14), "Relay V1.1", height=3.0)
 work.add(c)
 
 work.rotate(90)
