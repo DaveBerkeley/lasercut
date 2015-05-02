@@ -220,11 +220,17 @@ def make_t_holder(is_top):
     t_holder_w = 18
     t_holder_d = 12
     inset = t_holder_d / 2.0
+    inner = 6
 
     c = Polygon()
     m = (top_h - t_holder_d) / 2.0
     c.add(front_win, top_h - m)
     c.add(front_win, top_h)
+    if not is_top:
+        c.add(front_win - inner, top_h)
+        c.add(front_win - inner, inner)
+        c.add(inner, inner)
+        c.add(inner, top_h)
     c.add(0, top_h)
     c.add(0, 0)
     c.add(front_win, 0)
@@ -262,8 +268,11 @@ def make_t_holder(is_top):
     return work
 
 work = make_t_holder(False)
-
 work.translate(front_wout + spacing, 0)
+work.draw(drawing, config.cut())
+
+work = make_t_holder(True)
+work.translate(front_wout + spacing, esp_max_d + spacing)
 work.draw(drawing, config.cut())
 
 drawing.save()
