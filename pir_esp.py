@@ -47,10 +47,12 @@ esp_solder = 3.5
 
 # ESP8266 board
 
-def make_esp():
+def make_esp(draw):
     esp = Collection()
-    c = Rectangle((0, 0), (esp_w, esp_h))
-    esp.add(c)
+
+    if draw:
+        c = Rectangle((0, 0), (esp_w, esp_h))
+        esp.add(c)
 
     in_h, in_w = (esp_h - esp_dh) / 2.0, (esp_w - esp_dw) / 2.0
     c = Circle((0, 0), esp_hole_dia / 2.0)
@@ -81,11 +83,12 @@ pir_fix_dx = 28
 
 #   PIR board
 
-def make_pir():
+def make_pir(draw):
     pir = Collection()
 
-    c = Rectangle((0, 0), (pir_w, pir_h))
-    pir.add(c)
+    if draw:
+        c = Rectangle((0, 0), (pir_w, pir_h))
+        pir.add(c)
 
     in_w = (pir_w - pir_hole) / 2.0
     in_h = (pir_h - pir_hole) / 2.0
@@ -118,27 +121,7 @@ temp_cable_dia = 3.9
 temp_shank = 2.5
 
 #
-#
-
-feet = 6
-overhang = 3
-
-front_win = esp_w
-front_hin = esp_h + pir_h
-
-front_hout = front_hin + (2 * thick) + overhang
-front_wout = front_win + (2 * thick) + (2 * overhang)
-
-work = Collection()
-
-#c = Rectangle((0, 0), (front_wout, front_hout))
-c = Polygon()
-c.add(0, 0)
-c.add(0, front_hout)
-c.add(front_wout, front_hout)
-c.add(front_wout, 0)
-
-work.add(c)
+#   Foot
 
 def reflect_v(poly):
     points = []
@@ -180,22 +163,53 @@ def make_foot(work_w):
 
     return foot
 
-foot = make_foot(front_wout)
-work.add(foot)
-work.translate(0, feet)
+#
+#
+
+feet = 6
+overhang = 3
+
+front_win = esp_w
+front_hin = esp_h + pir_h
+
+front_hout = front_hin + (2 * thick) + overhang
+front_wout = front_win + (2 * thick) + (2 * overhang)
+
+def make_front(draw):
+    work = Collection()
+
+    c = Polygon()
+    c.add(0, 0)
+    c.add(0, front_hout)
+    c.add(front_wout, front_hout)
+    c.add(front_wout, 0)
+
+    work.add(c)
+
+    foot = make_foot(front_wout)
+    work.add(foot)
+    work.translate(0, feet)
+
+    if 1:
+        esp = make_esp(draw)
+        esp.translate(overhang + thick, feet + thick)
+        work.add(esp)
+
+    if 1:
+        pir = make_pir(draw)
+        x = (front_wout - pir_w) / 2.0
+        #pir.translate(overhang + thick, feet + thick + esp_h)
+        pir.translate(x, feet + thick + esp_h)
+        work.add(pir)
+
+    return work
 
 #
 #
 
-if 1:
-    esp = make_esp()
-    esp.translate(overhang + thick, feet + thick)
-    work.add(esp)
+draw = True
 
-if 1:
-    pir = make_pir()
-    pir.translate(overhang + thick, feet + thick + esp_h)
-    work.add(pir)
+work = make_front(draw)
 
 work.draw(drawing, config.cut())
 
