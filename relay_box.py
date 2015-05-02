@@ -46,6 +46,7 @@ between_work = 1
 
 tab_in = 14
 tab_len = 6
+foot_depth = 3
 
 wout = win + (thick * 2)
 lout = lin + (thick) + (2 * cut_in)
@@ -151,8 +152,6 @@ template = cutout(thick, cut_len)
 work = add_cutouts(work, cut_locs, template)
 
 cut_locs = [
-    [ tab_in, 0, 180 ],
-    [ lout-tab_in, 0, 180 ],
     [ lout/2.0, 0, 180 ],
     [ tab_in, hin, 0 ],
     [ lout-tab_in, hin, 0 ],
@@ -163,10 +162,25 @@ template = cutout(tab_len, thick)
 
 work = add_cutouts(work, cut_locs, template)
 
-# move so it sits on 0 y-axis
+# feet / tabs
+
+cut_locs = [
+    [ tab_in, 0, 180 ],
+    [ lout-tab_in, 0, 180 ],
+]
+
+template = cutout(tab_len, thick + foot_depth)
+
+work = add_cutouts(work, cut_locs, template)
+
 prev = work.copy()
+
+# flip it round so the feet stick upwards
+work.rotate(180)
 ex = work.extent()
+# move so it sits on 0,0 point
 work.translate(0, -ex.origin[1])
+work.translate(-ex.origin[0], 0)
 
 move_margin(work)
 work.translate(lout + between_work, 0)
@@ -179,7 +193,7 @@ c = prev.copy()
 work = Collection()
 work.add(c)
 
-# TODO add USB socket
+# add USB socket
 
 def mini_usb():
     usb_w1 = 7.7
@@ -206,7 +220,7 @@ c.translate(usb_in, usb_up)
 work.add(c)
 
 move_margin(work)
-work.translate(lout + between_work, hin + (3 * thick) + between_work)
+work.translate(lout + between_work + tab_len + between_work, hin + (3 * thick) + between_work)
 work.draw(drawing, config.cut())
 
 #
@@ -245,7 +259,7 @@ work.add(c)
 
 work.rotate(90)
 work.translate(hin + thick, 0)
-work.translate(x_margin + lout + between_work, y_margin + (hin * 2) + (thick*3) + (2 * between_work))
+work.translate(x_margin + lout + between_work + tab_len, y_margin + (hin * 2) + (thick*3) + (2 * between_work))
 work.draw(drawing, config.cut())
 
 #
@@ -264,7 +278,7 @@ if 1:
 
     work.rotate(90)
     work.translate(hin + thick, 0)
-    work.translate(x_margin + (2*lout)+ between_work - hin - (2*thick), y_margin + (2 * between_work) + (hin*2) + (3 * thick))
+    work.translate(x_margin + (2*lout)+ between_work + tab_len - hin - (2*thick), y_margin + (2 * between_work) + (hin*2) + (3 * thick))
     work.draw(drawing, config.cut())
 
 #
