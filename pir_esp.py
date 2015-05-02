@@ -2,7 +2,7 @@
 
 import sys
 
-from laser import Rectangle, Polygon, Circle, Collection, Config
+from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
 from laser import TCut, Text, splice, cutout
 
 # https://pypi.python.org/pypi/dxfwrite/
@@ -45,42 +45,6 @@ esp_power_w = 8.9
 esp_max = 16.5 - esp_pcb
 esp_solder = 3.5
 
-#   Temperature sensor
-#   http://www.amazon.co.uk/dp/B00CHEZ250
-
-temp_dia = 6
-temp_len = 50
-temp_outer_0 = 6.5
-temp_outer_1 = 4.45
-temp_cable_dia = 3.9
-temp_shank = 2.5
-
-#   PIR sensor
-#   http://www.amazon.co.uk/dp/B00LS85XNM
-
-pir_w = 32
-pir_h = 24
-pir_hole = 23
-pir_fix_dia = 2
-pir_fix_dx = 28
-
-#
-#
-
-feet = 3
-overhang = 3
-
-front_win = esp_w
-front_hin = esp_h + pir_h
-
-front_hout = front_hin + (2 * thick) + (2 * overhang) # + feet
-front_wout = front_win + (2 * thick) + (2 * overhang)
-
-work = Collection()
-
-c = Rectangle((0, 0), (front_wout, front_hout))
-work.add(c)
-
 # ESP8266 board
 
 def make_esp():
@@ -105,6 +69,15 @@ def make_esp():
     esp.add(d)
 
     return esp
+
+#   PIR sensor
+#   http://www.amazon.co.uk/dp/B00LS85XNM
+
+pir_w = 32
+pir_h = 24
+pir_hole = 23
+pir_fix_dia = 2
+pir_fix_dx = 28
 
 #   PIR board
 
@@ -134,17 +107,94 @@ def make_pir():
 
     return pir
 
+#   Temperature sensor
+#   http://www.amazon.co.uk/dp/B00CHEZ250
+
+temp_dia = 6
+temp_len = 50
+temp_outer_0 = 6.5
+temp_outer_1 = 4.45
+temp_cable_dia = 3.9
+temp_shank = 2.5
+
+#
+#
+
+feet = 6
+overhang = 3
+
+front_win = esp_w
+front_hin = esp_h + pir_h
+
+front_hout = front_hin + (2 * thick) + overhang
+front_wout = front_win + (2 * thick) + (2 * overhang)
+
+work = Collection()
+
+#c = Rectangle((0, 0), (front_wout, front_hout))
+c = Polygon()
+c.add(0, 0)
+c.add(0, front_hout)
+c.add(front_wout, front_hout)
+c.add(front_wout, 0)
+
+work.add(c)
+
+def reflect_v(poly):
+    points = []
+    for point in poly.points:
+        points.append((-point[0], point[1]))
+    poly.points = points
+    def angle(a):
+        if 0 <= a < 180:
+            return 180 - a
+        return a - 180
+    for arc in poly.arcs:
+        arc.x = -arc.x
+        arc.start_angle = angle(arc.start_angle)
+        arc.end_angle = angle(arc.end_angle)
+        arc.start_angle, arc.end_angle = arc.end_angle, arc.start_angle
+
+def make_foot(work_w):
+    feet_w = 20
+    foot = Collection()
+    c = Polygon()
+    c.add(0, 0)
+    c.add(0, - feet)
+    c.add(feet_w, - feet)
+
+    # inner curve
+    a = Arc((feet_w + feet, -feet), feet, 90, 180)
+    c.add_arc(a)
+    foot.add(c)
+
+    d = c.copy()
+    reflect_v(d)
+    d.translate(work_w, 0)
+    foot.add(d)
+
+    c = Polygon()
+    c.add(feet_w + feet, 0)
+    c.add(work_w - feet_w - feet, 0)
+    foot.add(c)
+
+    return foot
+
+foot = make_foot(front_wout)
+work.add(foot)
+work.translate(0, feet)
+
 #
 #
 
 if 1:
     esp = make_esp()
-    esp.translate(overhang + thick, overhang + thick)
+    esp.translate(overhang + thick, feet + thick)
     work.add(esp)
 
 if 1:
     pir = make_pir()
-    pir.translate(overhang + thick, overhang + thick + esp_h)
+    pir.translate(overhang + thick, feet + thick + esp_h)
     work.add(pir)
 
 work.draw(drawing, config.cut())
