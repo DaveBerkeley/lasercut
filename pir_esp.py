@@ -106,10 +106,44 @@ def make_esp():
 
     return esp
 
-esp = make_esp()
-esp.translate(overhang + thick, overhang + thick)
+#   PIR board
 
-work.add(esp)
+def make_pir():
+    pir = Collection()
+
+    c = Rectangle((0, 0), (pir_w, pir_h))
+    pir.add(c)
+
+    in_w = (pir_w - pir_hole) / 2.0
+    in_h = (pir_h - pir_hole) / 2.0
+    c = Rectangle((0, 0), (pir_hole, pir_hole))
+    c.translate(in_w, in_h)
+    pir.add(c)
+
+    dh = pir_h / 2.0
+    dw = (pir_w - pir_fix_dx) / 2.0
+    c = Circle((0, 0), pir_fix_dia / 2.0)
+    
+    d = c.copy()
+    d.translate(dw, dh)
+    pir.add(d)
+
+    d = c.copy()
+    d.translate(pir_w - dw, dh)
+    pir.add(d)
+
+    return pir
+
+#
+#
+
+if 0:
+    esp = make_esp()
+    esp.translate(overhang + thick, overhang + thick)
+    work.add(esp)
+
+pir = make_pir()
+work.add(pir)
 
 work.draw(drawing, config.cut())
 
