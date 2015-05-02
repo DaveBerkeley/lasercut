@@ -19,6 +19,8 @@ def move_margin(work):
 
 thick = 3
 
+spacing = 1
+
 config = Config()
 
 drawing = dxf.drawing("test.dxf")
@@ -42,8 +44,8 @@ esp_hole_dia = 3 # 3.3
 esp_power_h = 12.5 - esp_pcb
 esp_power_x0 = 17.2
 esp_power_w = 8.9
-esp_max = 16.5 - esp_pcb
 esp_solder = 3.5
+esp_max_d = 16.5 - esp_pcb + esp_solder
 
 # ESP8266 board
 
@@ -172,7 +174,7 @@ overhang = 3
 front_win = esp_w
 front_hin = esp_h + pir_h
 
-front_hout = front_hin + (2 * thick) + overhang
+front_hout = front_hin + (3 * thick) + overhang
 front_wout = front_win + (2 * thick) + (2 * overhang)
 
 def make_front(draw):
@@ -198,8 +200,7 @@ def make_front(draw):
     if 1:
         pir = make_pir(draw)
         x = (front_wout - pir_w) / 2.0
-        #pir.translate(overhang + thick, feet + thick + esp_h)
-        pir.translate(x, feet + thick + esp_h)
+        pir.translate(x, feet + thick + thick + esp_h)
         work.add(pir)
 
     return work
@@ -210,7 +211,59 @@ def make_front(draw):
 draw = True
 
 work = make_front(draw)
+work.draw(drawing, config.cut())
 
+def make_t_holder(is_top):
+    work = Collection()
+
+    top_h = esp_max_d
+    t_holder_w = 18
+    t_holder_d = 12
+    inset = t_holder_d / 2.0
+
+    c = Polygon()
+    m = (top_h - t_holder_d) / 2.0
+    c.add(front_win, top_h - m)
+    c.add(front_win, top_h)
+    c.add(0, top_h)
+    c.add(0, 0)
+    c.add(front_win, 0)
+    c.add(front_win, m)
+    work.add(c)
+
+    w = Collection()
+    c = Polygon()
+    c.add(0, 0)
+    c.add(t_holder_w + thick - inset, 0)
+    w.add(c)
+
+    c = Polygon()
+    c.add(t_holder_w + thick - inset, t_holder_d)
+    c.add(0, t_holder_d)
+    w.add(c)
+
+    p = Polygon()
+    y = (top_h - t_holder_d) / 2.0
+    if is_top:
+        r = temp_dia / 2.0
+    else:
+        r = temp_outer_1 / 2.0
+    d = Circle((0, 0), r)
+    d.translate(t_holder_w + thick - inset, t_holder_d - inset)
+    p.add_arc(d)
+
+    d = Arc((0, 0), inset, 270, 90)
+    d.translate(t_holder_w + thick - inset, t_holder_d - inset)
+    p.add_arc(d)
+
+    w.add(p)
+    w.translate(front_win, y)
+    work.add(w)
+    return work
+
+work = make_t_holder(False)
+
+work.translate(front_wout + spacing, 0)
 work.draw(drawing, config.cut())
 
 drawing.save()
