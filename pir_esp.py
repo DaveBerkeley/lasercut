@@ -23,6 +23,7 @@ config = Config()
 
 drawing = dxf.drawing("test.dxf")
 
+# T-slot M3 fixings
 nut = TCut(w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
 #
@@ -36,6 +37,7 @@ esp_h = 49.5
 esp_dw = 49
 esp_dh = 41.5
 esp_pcb = 1.5
+esp_hole_dia = 3 # 3.3
 
 esp_power_h = 12.5 - esp_pcb
 esp_power_x0 = 17.2
@@ -65,6 +67,51 @@ pir_fix_dx = 28
 #
 #
 
+feet = 3
+overhang = 3
+
+front_win = esp_w
+front_hin = esp_h + pir_h
+
+front_hout = front_hin + (2 * thick) + (2 * overhang) # + feet
+front_wout = front_win + (2 * thick) + (2 * overhang)
+
+work = Collection()
+
+c = Rectangle((0, 0), (front_wout, front_hout))
+work.add(c)
+
+# ESP8266 board
+
+def make_esp():
+    esp = Collection()
+    c = Rectangle((0, 0), (esp_w, esp_h))
+    esp.add(c)
+
+    in_h, in_w = (esp_h - esp_dh) / 2.0, (esp_w - esp_dw) / 2.0
+    c = Circle((0, 0), esp_hole_dia / 2.0)
+
+    d = c.copy()
+    d.translate(in_w, in_h)
+    esp.add(d)
+    d = c.copy()
+    d.translate(in_w, esp_h - in_h)
+    esp.add(d)
+    d = c.copy()
+    d.translate(esp_w - in_w, esp_h - in_h)
+    esp.add(d)
+    d = c.copy()
+    d.translate(esp_w - in_w, in_h)
+    esp.add(d)
+
+    return esp
+
+esp = make_esp()
+esp.translate(overhang + thick, overhang + thick)
+
+work.add(esp)
+
+work.draw(drawing, config.cut())
 
 drawing.save()
 
