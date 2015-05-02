@@ -137,13 +137,15 @@ def make_pir():
 #
 #
 
-if 0:
+if 1:
     esp = make_esp()
     esp.translate(overhang + thick, overhang + thick)
     work.add(esp)
 
-pir = make_pir()
-work.add(pir)
+if 1:
+    pir = make_pir()
+    pir.translate(overhang + thick, overhang + thick + esp_h)
+    work.add(pir)
 
 work.draw(drawing, config.cut())
 
