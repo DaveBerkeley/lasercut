@@ -223,8 +223,6 @@ def make_t_holder(is_top):
     inner = 6
 
     c = Polygon()
-    m = (top_h - t_holder_d) / 2.0
-    c.add(front_win, top_h - m)
     c.add(front_win, top_h)
     if not is_top:
         c.add(front_win - inner, top_h)
@@ -234,7 +232,7 @@ def make_t_holder(is_top):
     c.add(0, top_h)
     c.add(0, 0)
     c.add(front_win, 0)
-    c.add(front_win, m)
+    c.add(front_win, top_h - t_holder_d)
     work.add(c)
 
     w = Collection()
@@ -249,7 +247,6 @@ def make_t_holder(is_top):
     w.add(c)
 
     p = Polygon()
-    y = (top_h - t_holder_d) / 2.0
     if is_top:
         r = temp_dia / 2.0
     else:
@@ -263,7 +260,7 @@ def make_t_holder(is_top):
     p.add_arc(d)
 
     w.add(p)
-    w.translate(front_win, y)
+    w.translate(front_win, top_h - t_holder_d)
     work.add(w)
     return work
 
