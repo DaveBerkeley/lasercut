@@ -64,7 +64,7 @@ front_hin = ESP.h + PIR.h
 front_hout = front_hin + (3 * thick) + overhang
 front_wout = front_win + (2 * thick) + (2 * overhang)
 
-def make_front(draw, back=False):
+def make_front(draw, tab_locs, back=False):
     work = Collection()
 
     c = Polygon()
@@ -149,10 +149,9 @@ def add_cutouts(work, locs, template):
     return work
 
 
-def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
+def make_t_holder(draw, top_h, tab_locs, is_top=False, is_mid=False, is_bot=False):
     work = Collection()
 
-    top_h = ESP.max_d
     t_holder_w = 18
     t_holder_d = tab_len * 2
     inset = t_holder_d / 2.0
@@ -203,19 +202,16 @@ def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
         w.translate(front_win, top_h - t_holder_d)
         work.add(w)
 
-    dx = tab_len / 2.0
-    cut_locs = [
-        # bot
-        [ front_win / 3.0, 0, 180 ],
-        [ 2 * front_win / 3.0, 0, 180 ],
-        [ front_win / 3.0, top_h, 0 ],
-        [ 2 * front_win / 3.0, top_h, 0 ],
-        # sides
-        [ 0, dx, 90 ],
-        [ 0, top_h - dx, 90 ],
-        [ front_win, dx, 270 ],
-        [ front_win, top_h - dx, 270 ],
-    ]
+    cut_locs = []
+
+    tabs = tab_locs[0]
+    for x in tabs:
+        cut_locs.append((x, 0, 180))
+        cut_locs.append((x, top_h, 0))
+    tabs = tab_locs[1]
+    for y in tabs:
+        cut_locs.append((0, y, 90))
+        cut_locs.append((front_win, y, 270))
 
     template = cutout(tab_len, thick)
     work = add_cutouts(work, cut_locs, template)
@@ -241,26 +237,31 @@ drawing = dxf.drawing("test.dxf")
 draw = True
 
 tab_len = 6
+top_h = ESP.max_d
+tab_locs = [
+    [ front_win / 3.0, 2 * front_win / 3.0, ],
+    [ tab_len / 2.0,  top_h - (tab_len / 2.0),  ],
+]
 
-work = make_front(draw)
+work = make_front(draw, tab_locs)
 work.draw(drawing, config.cut())
 
-work = make_front(draw, back=True)
+work = make_front(draw, tab_locs, back=True)
 work.translate(front_wout + spacing, 0)
 work.draw(drawing, config.cut())
 
 dx = (2 * (front_wout + spacing)) + thick
-dy = ESP.max_d
+dy = top_h
 
-work = make_t_holder(draw, is_mid=True)
+work = make_t_holder(draw, top_h, tab_locs, is_mid=True)
 work.translate(dx, thick)
 work.draw(drawing, config.cut())
 
-work = make_t_holder(draw, is_top=True)
+work = make_t_holder(draw, top_h, tab_locs, is_top=True)
 work.translate(dx, dy + spacing + (1 * thick))
 work.draw(drawing, config.cut())
 
-work = make_t_holder(draw, is_bot=True)
+work = make_t_holder(draw, top_h, tab_locs, is_bot=True)
 work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
 work.draw(drawing, config.cut())
 
