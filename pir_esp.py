@@ -11,6 +11,7 @@ from laser import TCut, Text, splice, cutout
 from parts import ESP_Olimex_Dev as ESP
 from parts import PIR_DYPME003 as PIR
 from parts import Temperature_DS18b20 as Temperature
+from parts import Hanger
 
 #
 
@@ -125,6 +126,14 @@ def make_front(draw):
         x = (front_wout - PIR.w) / 2.0
         pir.translate(x, feet + thick + thick + ESP.h)
         work.add(pir)
+
+    if 1:
+        d1, d2, d = 3, 6, 6
+        h = Hanger(r1=d1/2.0, r2=d2/2.0, d=d)
+        c = h.make()
+        x = front_wout / 2.0
+        c.translate(x, ESP.h + feet + thick + d2)
+        work.add(c)
 
     return work
 

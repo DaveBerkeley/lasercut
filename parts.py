@@ -116,4 +116,32 @@ class Temperature_DS18b20:
     cable_dia = 3.9
     shank = 2.5
 
+#
+#
+
+class Hanger:
+
+    def __init__(self, r1=3, r2=5, d=8):
+        self.r1 = r1
+        self.r2 = r2
+        self.d = d
+
+    def make(self):
+        w = Collection()
+        c = Arc((0, 0), self.r1, 0, 180)
+        c.translate(0, self.d)
+        w.add(c)
+        c = Circle((0, 0), self.r2)
+        w.add(c)
+        d = self.r1
+        c = Polygon()
+        c.add(-d, 0)
+        c.add(-d, self.d)
+        w.add(c)
+        c = Polygon()
+        c.add(d, 0)
+        c.add(d, self.d)
+        w.add(c)
+        return w
+
 # FIN
