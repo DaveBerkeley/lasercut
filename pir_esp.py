@@ -149,7 +149,7 @@ def add_cutouts(work, locs, template):
     return work
 
 
-def make_t_holder(is_top=False, is_mid=False, is_bot=False):
+def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
     work = Collection()
 
     top_h = ESP.max_d
@@ -205,15 +205,25 @@ def make_t_holder(is_top=False, is_mid=False, is_bot=False):
 
     cut_in = 5
     cut_len = 5
+    dx = cut_len / 2.0
     cut_locs = [
+        # bot
         [ front_win / 3.0, 0, 180 ],
         [ 2 * front_win / 3.0, 0, 180 ],
+        [ front_win / 3.0, top_h, 0 ],
+        [ 2 * front_win / 3.0, top_h, 0 ],
+        # sides
+        [ 0, dx, 90 ],
+        [ 0, top_h - dx, 90 ],
+        [ front_win, dx, 270 ],
     ]
 
     template = cutout(cut_len, thick)
     work = add_cutouts(work, cut_locs, template)
-    # force it to be a collection ... TODO : remove me
-    work = Collection(work)
+
+    if 0: # draw:
+        c = Rectangle((0, 0), (front_win, top_h), colour=Config.draw_colour)
+        work.add(c)
 
     if is_bot:
         c = Text((0, 0), "PIR V1.0", height=3.0, colour=Config.engrave_colour)
@@ -234,16 +244,19 @@ draw = True
 work = make_front(draw)
 work.draw(drawing, config.cut())
 
-work = make_t_holder(is_bot=True)
-work.translate(front_wout + spacing, thick)
+dx = front_wout + spacing + thick
+dy = ESP.max_d
+
+work = make_t_holder(draw, is_mid=True)
+work.translate(dx, thick)
 work.draw(drawing, config.cut())
 
-work = make_t_holder(is_top=True)
-work.translate(front_wout + spacing, ESP.max_d + spacing + (2 * thick))
+work = make_t_holder(draw, is_top=True)
+work.translate(dx, dy + spacing + (1 * thick))
 work.draw(drawing, config.cut())
 
-work = make_t_holder(is_mid=True)
-work.translate(front_wout + spacing, 2 * (ESP.max_d + spacing) + (3 * thick))
+work = make_t_holder(draw, is_bot=True)
+work.translate(dx, 2 * (dy + spacing) + (3 * thick))
 work.draw(drawing, config.cut())
 
 drawing.save()
