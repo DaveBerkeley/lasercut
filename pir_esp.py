@@ -203,9 +203,7 @@ def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
         w.translate(front_win, top_h - t_holder_d)
         work.add(w)
 
-    cut_in = 5
-    cut_len = 5
-    dx = cut_len / 2.0
+    dx = tab_len / 2.0
     cut_locs = [
         # bot
         [ front_win / 3.0, 0, 180 ],
@@ -218,7 +216,11 @@ def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
         [ front_win, dx, 270 ],
     ]
 
-    template = cutout(cut_len, thick)
+    if is_bot:
+        a = [ front_win, top_h - dx, 270 ]
+        cut_locs.insert(0, a)
+
+    template = cutout(tab_len, thick)
     work = add_cutouts(work, cut_locs, template)
 
     if 0: # draw:
@@ -241,6 +243,8 @@ drawing = dxf.drawing("test.dxf")
 
 draw = True
 
+tab_len = 5
+
 work = make_front(draw)
 work.draw(drawing, config.cut())
 
@@ -256,7 +260,7 @@ work.translate(dx, dy + spacing + (1 * thick))
 work.draw(drawing, config.cut())
 
 work = make_t_holder(draw, is_bot=True)
-work.translate(dx, 2 * (dy + spacing) + (3 * thick))
+work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
 work.draw(drawing, config.cut())
 
 drawing.save()

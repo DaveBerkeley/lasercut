@@ -31,6 +31,9 @@ def distance_from_line(xy, line):
     b = x2 - x1
     a = (a * a) + (b * b)
     q = math.sqrt(a)
+    if q == 0.0:
+        # no line at all!
+        return 100
     a = x0 * (y2 - y1)
     b = y0 * (x2 - x1)
     a = a - b + (x2 * y1) - (y2 * x1)
