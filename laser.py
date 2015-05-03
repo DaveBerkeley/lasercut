@@ -58,11 +58,16 @@ class Material:
 
 class Config:
 
+    cut_colour = 3
+    draw_colour = 4
+    engrave_colour = 2
+
     def __init__(self, **kwargs):
         self.data = kwargs
-        self.data["cut"] = 3
-        self.data["engrave"] = 2
+        self.data["cut"] = self.cut_colour
+        self.data["engrave"] = self.engrave_colour
         self.data["kisscut"] = 1
+        self.data["draw"] = self.draw_colour
 
     def cut(self):
         return self.data["cut"]
@@ -71,10 +76,11 @@ class Config:
 #
 
 class Polygon:
-    def __init__(self, xy=(0, 0)):
+    def __init__(self, xy=(0, 0), **kwargs):
         self.points = []
         self.arcs = []
         self.origin = xy
+        self.kwargs = kwargs
 
     def add(self, x, y):
         self.points.append((x, y))
@@ -87,6 +93,7 @@ class Polygon:
         poly.arcs = [ arc.copy() for arc in self.arcs ]
         for point in self.points:
             poly.add(*point)
+        poly.kwargs = self.kwargs
         return poly
 
     def close(self):
@@ -163,6 +170,7 @@ class Polygon:
         return Rectangle((xx.mina, yy.mina), (xx.maxa, yy.maxa))
 
     def draw(self, drawing, colour):
+        colour = self.kwargs.get("colour", colour)
         for xy0, xy1 in self.lines():
             item = dxf.line(xy0, xy1, color=colour)
             drawing.add(item)
@@ -173,10 +181,10 @@ class Polygon:
 #
 
 class Rectangle(Polygon):
-    def __init__(self, xy0, xy1):
+    def __init__(self, xy0, xy1, **kwargs):
         x0, y0 = xy0
         x1, y1 = xy1
-        Polygon.__init__(self, (x0, y0))
+        Polygon.__init__(self, (x0, y0), **kwargs)
         self.corner = x1, y1
 
         self.add(x0, y0)
@@ -206,7 +214,10 @@ class Arc:
     def rotate(self, degrees):
         rad = radians(degrees)
         self.x, self.y = rotate_2d(rad, self.x, self.y)
-        # TODO needs to rotate start/end angles too
+        # rotate start/end angles
+        # TODO : check for < 0, or > 360 condition
+        self.start_angle += degrees
+        self.end_angle += degrees
 
     def translate(self, dx, dy):
         self.x += dx
@@ -280,6 +291,7 @@ class Text:
     def rotate(self, degrees):
         self.rot += degrees
     def draw(self, drawing, colour):
+        colour = self.kwargs.get("colour", colour)
         text = dxf.mtext(self.text, insert=self.origin, rotation=self.rot, color=colour, **self.kwargs)
         drawing.add(text)
 

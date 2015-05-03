@@ -53,7 +53,7 @@ def make_esp(draw):
     esp = Collection()
 
     if draw:
-        c = Rectangle((0, 0), (esp_w, esp_h))
+        c = Rectangle((0, 0), (esp_w, esp_h), colour=Config.draw_colour)
         esp.add(c)
 
     in_h, in_w = (esp_h - esp_dh) / 2.0, (esp_w - esp_dw) / 2.0
@@ -89,7 +89,7 @@ def make_pir(draw):
     pir = Collection()
 
     if draw:
-        c = Rectangle((0, 0), (pir_w, pir_h))
+        c = Rectangle((0, 0), (pir_w, pir_h), colour=Config.draw_colour)
         pir.add(c)
 
     in_w = (pir_w - pir_hole) / 2.0
