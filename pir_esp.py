@@ -91,7 +91,7 @@ def make_front(draw):
 
     if draw:
         # draw the side positions
-        dy = front_hin + (3 * thick) + overhang
+        dy = front_hin + (3 * thick)
         w = make_side_posn(thick, dy, horiz=False)
         w.translate(overhang, 0)
         work.add(w)
@@ -106,6 +106,9 @@ def make_front(draw):
         work.add(w)
         w = make_side_posn(dx, thick, horiz=True)
         w.translate(overhang, front_hin + thick + thick)
+        work.add(w)
+        w = make_side_posn(dx, thick, horiz=True)
+        w.translate(overhang, ESP.h + thick)
         work.add(w)
 
     foot = make_foot(front_wout)
@@ -128,7 +131,7 @@ def make_front(draw):
 #
 #
 
-def make_t_holder(is_top):
+def make_t_holder(is_top=False, is_mid=False, is_bot=False):
     work = Collection()
 
     top_h = ESP.max_d
@@ -137,9 +140,17 @@ def make_t_holder(is_top):
     inset = t_holder_d / 2.0
     inner = 6
 
+    if is_bot:
+        c = Rectangle((0, 0), (front_win, top_h)) 
+        work.add(c)
+        c = Text((0, 0), "PIR V1.0", height=3.0, colour=Config.engrave_colour)
+        c.translate(10, 10)
+        work.add(c)
+        return work
+
     c = Polygon()
     c.add(front_win, top_h)
-    if not is_top:
+    if is_mid:
         c.add(front_win - inner, top_h)
         c.add(front_win - inner, inner)
         c.add(inner, inner)
@@ -147,13 +158,13 @@ def make_t_holder(is_top):
     c.add(0, top_h)
     c.add(0, 0)
     c.add(front_win, 0)
-    c.add(front_win, top_h - t_holder_d)
+    c.add(front_win, top_h - inset)
     work.add(c)
 
     w = Collection()
     c = Polygon()
-    c.add(0, 0)
-    c.add(t_holder_w + thick - inset, 0)
+    c.add(0, t_holder_d / 2.0)
+    c.add(t_holder_w + thick - (2 * inset), t_holder_d / 2.0)
     w.add(c)
 
     c = Polygon()
@@ -164,13 +175,13 @@ def make_t_holder(is_top):
     p = Polygon()
     if is_top:
         r = Temperature.dia / 2.0
-    else:
+    elif is_mid:
         r = Temperature.outer_1 / 2.0
     d = Circle((0, 0), r)
     d.translate(t_holder_w + thick - inset, t_holder_d - inset)
     p.add_arc(d)
 
-    d = Arc((0, 0), inset, 270, 90)
+    d = Arc((0, 0), inset, 180, 90)
     d.translate(t_holder_w + thick - inset, t_holder_d - inset)
     p.add_arc(d)
 
@@ -194,12 +205,16 @@ draw = True
 work = make_front(draw)
 work.draw(drawing, config.cut())
 
-work = make_t_holder(False)
+work = make_t_holder(is_bot=True)
 work.translate(front_wout + spacing, 0)
 work.draw(drawing, config.cut())
 
-work = make_t_holder(True)
+work = make_t_holder(is_top=True)
 work.translate(front_wout + spacing, ESP.max_d + spacing)
+work.draw(drawing, config.cut())
+
+work = make_t_holder(is_mid=True)
+work.translate(front_wout + spacing, 2 * (ESP.max_d + spacing))
 work.draw(drawing, config.cut())
 
 drawing.save()
