@@ -94,6 +94,26 @@ def make_front(draw, tab_locs, back=False):
             c.translate(x + dx, ESP.h + (1.5 * thick)) # mid
             work.add(c)
 
+    r = Rectangle((0, -tab_len/2.0), (thick, tab_len/2.0))
+    for y in tab_locs[1]:
+        # tabs into sides
+        c = r.copy()
+        c.translate(overhang, y + thick)
+        work.add(c)
+        c = r.copy()
+        c.translate(front_wout - overhang - thick, y + thick)
+        work.add(c)
+
+    # nuts into sides
+    nut = M3(thick)
+    for y in tab_locs[2]:
+        c = nut.make_plan(0)
+        c.translate(overhang + (thick / 2.0), y + thick)
+        work.add(c)
+        c = nut.make_plan(0)
+        c.translate(front_wout - overhang - (thick / 2.0), y + thick)
+        work.add(c)
+
     def make_side_posn(dx, dy, horiz=True):
         w = Collection()
         c = Rectangle((0, 0), (dx, dy), colour=Config.draw_colour)
@@ -326,7 +346,7 @@ config = Config()
 
 drawing = dxf.drawing("test.dxf")
 
-draw = True
+draw = False
 
 tab_len = 6
 top_h = ESP.max_d + 8
@@ -342,7 +362,7 @@ side_tab_locs = [
     [ side_h - (PIR.h / 2.0), side_h - (PIR.h / 2.0), ESP.h / 2.0, ESP.h / 2.0, ],
 ]
 
-tab_locs = [ top_tab_locs[0], [] ]
+tab_locs = [ top_tab_locs[0], side_tab_locs[0], side_tab_locs[1] ]
 work = make_front(draw, tab_locs, back=True)
 work.draw(drawing, config.cut())
 
