@@ -136,6 +136,7 @@ nut_locs = [
     [ lout-nut_x, hin, 0 ],
 ]
 
+work = Collection(work)
 for x, y, rot in nut_locs:
     c = nut.make_elev((x, y), rot)
     work = splice(work, c)
@@ -237,7 +238,7 @@ cut_locs = [
 s_cut = hin - (2 * cut_len)
 template = cutout(s_cut, thick)
 
-work = add_cutouts(work, cut_locs, template)
+work = add_cutouts(Collection(work), cut_locs, template)
 
 cut_locs = [
     [ end_w/2.0, 0, 180 ],
@@ -254,7 +255,7 @@ c = work
 work = Collection()
 work.add(c)
 # TODO : text positioning seems incorrect!
-c = Text((-13, 14), "Relay V1.1", height=3.0)
+c = Text((-13, 14), "Relay V1.1", height=3.0, colour=Config.engrave_colour)
 work.add(c)
 
 work.rotate(90)

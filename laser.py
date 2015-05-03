@@ -75,6 +75,20 @@ class Config:
 #
 #
 
+class Extent:
+    def __init__(self):
+        self.mina = None
+        self.maxa = None
+    def add(self, a):
+        if self.mina is None:
+            self.mina = a
+            self.maxa = a
+            return
+        if a < self.mina:
+            self.mina = a
+        elif a > self.maxa:
+            self.maxa = a
+
 class Polygon:
     def __init__(self, xy=(0, 0), **kwargs):
         self.points = []
@@ -147,20 +161,6 @@ class Polygon:
             arc.start_angle, arc.end_angle = arc.end_angle, arc.start_angle
 
     def extent(self):
-        class Extent:
-            def __init__(self):
-                self.mina = None
-                self.maxa = None
-            def add(self, a):
-                if self.mina is None:
-                    self.mina = a
-                    self.maxa = a
-                    return
-                if a < self.mina:
-                    self.mina = a
-                elif a > self.maxa:
-                    self.maxa = a
-
         xx = Extent()
         yy = Extent()
         for x, y in self.points:
@@ -284,6 +284,17 @@ class Collection:
         for data in self.data:
             c.add(data.copy())
         return c
+    def extent(self):
+        xx = Extent()
+        yy = Extent()
+        for data in self.data:
+            r = data.extent()
+            xx.add(r.origin[0])
+            xx.add(r.corner[0])
+            yy.add(r.origin[1])
+            yy.add(r.corner[1])
+
+        return Rectangle((xx.mina, yy.mina), (xx.maxa, yy.maxa))
 
 #
 #   Text
