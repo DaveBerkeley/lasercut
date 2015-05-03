@@ -124,6 +124,21 @@ class Polygon:
     def move(self, x, y):
         self.translate(x - self.origin[0], y - self.origin[1])
 
+    def reflect_v(self):
+        points = []
+        for point in self.points:
+            points.append((-point[0], point[1]))
+        self.points = points
+        def angle(a):
+            if 0 <= a < 180:
+                return 180 - a
+            return a - 180
+        for arc in self.arcs:
+            arc.x = -arc.x
+            arc.start_angle = angle(arc.start_angle)
+            arc.end_angle = angle(arc.end_angle)
+            arc.start_angle, arc.end_angle = arc.end_angle, arc.start_angle
+
     def extent(self):
         class Extent:
             def __init__(self):

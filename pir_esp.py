@@ -125,21 +125,6 @@ temp_shank = 2.5
 #
 #   Foot
 
-def reflect_v(poly):
-    points = []
-    for point in poly.points:
-        points.append((-point[0], point[1]))
-    poly.points = points
-    def angle(a):
-        if 0 <= a < 180:
-            return 180 - a
-        return a - 180
-    for arc in poly.arcs:
-        arc.x = -arc.x
-        arc.start_angle = angle(arc.start_angle)
-        arc.end_angle = angle(arc.end_angle)
-        arc.start_angle, arc.end_angle = arc.end_angle, arc.start_angle
-
 def make_foot(work_w):
     feet_w = 20
     foot = Collection()
@@ -154,7 +139,7 @@ def make_foot(work_w):
     foot.add(c)
 
     d = c.copy()
-    reflect_v(d)
+    d.reflect_v()
     d.translate(work_w, 0)
     foot.add(d)
 
