@@ -14,8 +14,8 @@ class Nut:
 
 class M3:
 
-    def __init__(self, thick):
-        Nut.__init__(self, w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
+    def __init__(self, thick, d=12):
+        Nut.__init__(self, w=3, d=d-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
 
     def make_plan(self):
         return self.nut.make_plan()
@@ -26,7 +26,7 @@ class M3:
 #   ESP8266 Olimex dev board
 #   https://www.olimex.com/Products/IoT/ESP8266-EVB/open-source-hardware
 
-class ESP:
+class ESP_Olimex_Dev:
     w = 57
     h = 49.5
     dw = 49
@@ -68,7 +68,7 @@ class ESP:
 #   PIR sensor
 #   http://www.amazon.co.uk/dp/B00LS85XNM
 
-class PIR:
+class PIR_DYPME003:
     w = 32
     h = 24
     hole = 23
@@ -101,5 +101,16 @@ class PIR:
         pir.add(d)
 
         return pir
+
+#   Temperature sensor
+#   http://www.amazon.co.uk/dp/B00CHEZ250
+
+class Temperature_DS18b20:
+    dia = 6
+    length = 50
+    outer_0 = 6.5
+    outer_1 = 4.45
+    cable_dia = 3.9
+    shank = 2.5
 
 # FIN
