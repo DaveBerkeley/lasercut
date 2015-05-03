@@ -74,37 +74,39 @@ def make_front(draw):
 
     work.add(c)
 
+    def make_side_posn(dx, dy, horiz=True):
+        w = Collection()
+        c = Rectangle((0, 0), (dx, dy), colour=Config.draw_colour)
+        w.add(c)
+        c = Polygon((0, 0), colour=Config.dotted_colour)
+        c.add(0, 0)
+        if horiz:
+            c.add(dx, 0)
+            c.translate(0, dy / 2.0)
+        else:
+            c.add(0, dy)
+            c.translate(dx / 2.0, 0)
+        w.add(c)
+        return w
+
     if draw:
         # draw the side positions
         dy = front_hin + (3 * thick) + overhang
-        w = Collection()
-        c = Rectangle((0, 0), (thick, dy), colour=Config.draw_colour)
-        w.add(c)
-        c = Polygon((0, 0), colour=Config.dotted_colour)
-        c.add(0, 0)
-        c.add(0, dy)
-        c.translate(thick / 2.0, 0)
-        w.add(c)
-        d = w.copy()
+        w = make_side_posn(thick, dy, horiz=False)
         w.translate(overhang, 0)
         work.add(w)
-        d.translate(front_wout - overhang - thick, 0)
-        work.add(d)
-        # draw top/bottom and middle plates
-        w = Collection()
-        dx = front_win + thick + thick
-        c = Rectangle((0, 0), (dx, thick), colour=Config.draw_colour)
-        c.translate(thick, 0)
-        w.add(c)
-        c = Polygon((0, 0), colour=Config.dotted_colour)
-        c.add(0, 0)
-        c.add(dx, 0)
-        c.translate(overhang, thick / 2.0)
-        w.add(c)
-        d = w.copy()
+        w = make_side_posn(thick, dy, horiz=False)
+        w.translate(front_wout - overhang - thick, 0)
         work.add(w)
-        d.translate(0, front_hin + thick + thick)
-        work.add(d)
+
+        # draw top/bottom and middle plates
+        dx = front_win + thick + thick
+        w = make_side_posn(dx, thick, horiz=True)
+        w.translate(overhang, 0)
+        work.add(w)
+        w = make_side_posn(dx, thick, horiz=True)
+        w.translate(overhang, front_hin + thick + thick)
+        work.add(w)
 
     foot = make_foot(front_wout)
     work.add(foot)
