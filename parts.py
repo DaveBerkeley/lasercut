@@ -12,16 +12,15 @@ class Nut:
     def __init__(self, w, d, shank, nut_w, nut_t, stress_hole):
         self.nut = TCut(w=w, d=d, shank=shank, nut_w=nut_w, nut_t=nut_t, stress_hole=stress_hole)
 
-class M3:
+    def make_plan(self, orient):
+        return self.nut.make_plan((0, 0), orient)
 
+    def make_elev(self, orient):
+        return self.nut.make_elev((0, 0), orient)
+
+class M3(Nut):
     def __init__(self, thick, d=12):
         Nut.__init__(self, w=3, d=d-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
-
-    def make_plan(self):
-        return self.nut.make_plan()
-
-    def make_elev(self):
-        return self.nut.make_elev()
 
 #   ESP8266 Olimex dev board
 #   https://www.olimex.com/Products/IoT/ESP8266-EVB/open-source-hardware
@@ -67,6 +66,16 @@ class ESP_Olimex_Dev:
         esp.add(d)
 
         return esp
+
+    def make_elev(self, draw):
+        work = Collection()
+        if draw:
+            c = Rectangle((0, 0), (self.h, self.max_d), colour=Config.draw_colour)
+            work.add(c)
+            c = Rectangle((0, 0), (self.power_w, self.power_h))
+            c.translate(self.h - self.power_x0, self.pcb + self.solder)
+            work.add(c)
+        return work
 
 #   PIR sensor
 #   http://www.amazon.co.uk/dp/B00LS85XNM

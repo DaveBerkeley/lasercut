@@ -272,6 +272,9 @@ class Collection:
     def move(self, x, y):
         for data in self.data:
             data.move(x, y)
+    def reflect_v(self):
+        for data in self.data:
+            data.reflect_v()
     def lines(self):
         for data in self.data:
             for line in data.lines():

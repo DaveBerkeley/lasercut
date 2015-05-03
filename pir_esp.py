@@ -12,6 +12,7 @@ from parts import ESP_Olimex_Dev as ESP
 from parts import PIR_DYPME003 as PIR
 from parts import Temperature_DS18b20 as Temperature
 from parts import Hanger
+from parts import M3
 
 #
 
@@ -246,6 +247,83 @@ def make_t_holder(draw, top_h, tab_locs, is_top=False, is_mid=False, is_bot=Fals
     return work
 
 #
+#   Side pieces
+
+def make_side(draw, w, h, is_left=False, is_right=False):
+    work = Collection()
+
+    c = Rectangle((0, 0), (w, h))
+    work.add(c)
+
+    # end tabs to interlock with horizontal plates
+    cut_locs = [
+        [ w / 2, 0, 180 ],
+        [ w / 2, h, 0 ],
+    ]
+    template = cutout(w - (2 * tab_len), thick)
+    work = add_cutouts(work, cut_locs, template)
+
+    # end tabs to interlock with horizontal plates
+    cut_locs = [
+        [ 0, ESP.h + (thick / 2.0), 270 ],
+        [ w, ESP.h + (thick / 2.0), 90 ],
+    ]
+    template = cutout(thick, tab_len)
+    work = add_cutouts(work, cut_locs, template)
+
+    # tabs into front / back plates
+    cut_locs = [
+        [ 0, ESP.h / 3.0, 90 ],
+        [ w, ESP.h / 3.0, 270 ],
+        [ 0, 2 * ESP.h / 3.0, 90 ],
+        [ w, 2 * ESP.h / 3.0, 270 ],
+        [ 0, h - PIR.h + (tab_len / 2.0), 90 ],
+        [ w, h - PIR.h + (tab_len / 2.0), 270 ],
+    ]
+    template = cutout(tab_len, thick)
+    work = add_cutouts(work, cut_locs, template)
+
+    # Add the captive nut cutouts
+    nut = M3(thick)
+
+    locs = [
+        [   0, h - (PIR.h / 2.0), 90 ],
+        [   w, h - (PIR.h / 2.0), 270 ],
+        [   0, ESP.h / 2.0, 90 ],
+        [   w, ESP.h / 2.0, 270 ],
+    ]
+
+    for x, y, rot in locs:
+        c = nut.make_elev(rot)
+        c.translate(x, y)
+        work = splice(work, c)
+
+    # cable cutout on right
+    if is_right:
+        cable_dy = 10
+        r = Temperature.cable_dia / 2.0
+        c = Polygon()
+        c.add(0, -r)
+        c.add(-r, -r)
+        c.add(-r, r)
+        c.add(0, r)
+
+        a = Arc((-r, 0), r, 90, 270)
+        c.add_arc(a)
+        c.translate(w, cable_dy)
+        work.add(c)
+
+    # power socket on left
+    if is_left:
+        c = ESP().make_elev(draw)
+        c.rotate(270)
+        c.reflect_v()
+        c.translate(ESP.max_d, ESP.h)
+        work.add(c)
+
+    return work
+
+#
 #
 
 config = Config()
@@ -255,17 +333,17 @@ drawing = dxf.drawing("test.dxf")
 draw = True
 
 tab_len = 6
-top_h = ESP.max_d
+top_h = ESP.max_d + 8
 top_tab_locs = [
     [ front_win / 3.0, 2 * front_win / 3.0, ],
     [ tab_len / 2.0,  top_h - (tab_len / 2.0),  ],
 ]
 
 tab_locs = [ top_tab_locs[0], [] ]
-work = make_front(draw, tab_locs)
+work = make_front(draw, tab_locs, back=True)
 work.draw(drawing, config.cut())
 
-work = make_front(draw, tab_locs, back=True)
+work = make_front(draw, tab_locs)
 work.translate(front_wout + spacing, 0)
 work.draw(drawing, config.cut())
 
@@ -282,6 +360,10 @@ work.draw(drawing, config.cut())
 
 work = make_t_holder(draw, top_h, top_tab_locs, is_bot=True)
 work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
+work.draw(drawing, config.cut())
+
+work = make_side(draw, top_h, front_hin + thick, is_left=True)
+work.translate(-top_h + spacing - thick, feet + thick)
 work.draw(drawing, config.cut())
 
 drawing.save()
