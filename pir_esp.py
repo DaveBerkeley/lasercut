@@ -173,6 +173,16 @@ def make_front(draw):
 
     work.add(c)
 
+    if draw:
+        # draw the side positions
+        dy = front_hin + (3 * thick) + overhang
+        c = Rectangle((0, 0), (thick, dy), colour=Config.draw_colour)
+        d = c.copy()
+        c.translate(overhang, 0)
+        work.add(c)
+        d.translate(front_wout - overhang - thick, 0)
+        work.add(d)
+
     foot = make_foot(front_wout)
     work.add(foot)
     work.translate(0, feet)
