@@ -77,40 +77,45 @@ def make_esp(draw):
 #   PIR sensor
 #   http://www.amazon.co.uk/dp/B00LS85XNM
 
-pir_w = 32
-pir_h = 24
-pir_hole = 23
-pir_fix_dia = 2
-pir_fix_dx = 28
-
 #   PIR board
 
-def make_pir(draw):
-    pir = Collection()
+class PIR:
 
-    if draw:
-        c = Rectangle((0, 0), (pir_w, pir_h), colour=Config.draw_colour)
+    w = 32
+    h = 24
+    hole = 23
+    fix_dia = 2
+    fix_dx = 28
+
+    def __init__(self):
+        pass
+
+    def make(self, draw):
+        pir = Collection()
+
+        if draw:
+            c = Rectangle((0, 0), (self.w, self.h), colour=Config.draw_colour)
+            pir.add(c)
+
+        in_w = (self.w - self.hole) / 2.0
+        in_h = (self.h - self.hole) / 2.0
+        c = Rectangle((0, 0), (self.hole, self.hole))
+        c.translate(in_w, in_h)
         pir.add(c)
 
-    in_w = (pir_w - pir_hole) / 2.0
-    in_h = (pir_h - pir_hole) / 2.0
-    c = Rectangle((0, 0), (pir_hole, pir_hole))
-    c.translate(in_w, in_h)
-    pir.add(c)
+        dh = self.h / 2.0
+        dw = (self.w - self.fix_dx) / 2.0
+        c = Circle((0, 0), self.fix_dia / 2.0)
+        
+        d = c.copy()
+        d.translate(dw, dh)
+        pir.add(d)
 
-    dh = pir_h / 2.0
-    dw = (pir_w - pir_fix_dx) / 2.0
-    c = Circle((0, 0), pir_fix_dia / 2.0)
-    
-    d = c.copy()
-    d.translate(dw, dh)
-    pir.add(d)
+        d = c.copy()
+        d.translate(self.w - dw, dh)
+        pir.add(d)
 
-    d = c.copy()
-    d.translate(pir_w - dw, dh)
-    pir.add(d)
-
-    return pir
+        return pir
 
 #   Temperature sensor
 #   http://www.amazon.co.uk/dp/B00CHEZ250
@@ -157,7 +162,7 @@ feet = 6
 overhang = 3
 
 front_win = esp_w
-front_hin = esp_h + pir_h
+front_hin = esp_h + PIR.h
 
 front_hout = front_hin + (3 * thick) + overhang
 front_wout = front_win + (2 * thick) + (2 * overhang)
@@ -193,8 +198,8 @@ def make_front(draw):
         work.add(esp)
 
     if 1:
-        pir = make_pir(draw)
-        x = (front_wout - pir_w) / 2.0
+        pir = PIR().make(draw)
+        x = (front_wout - PIR.w) / 2.0
         pir.translate(x, feet + thick + thick + esp_h)
         work.add(pir)
 
