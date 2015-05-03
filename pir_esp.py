@@ -64,7 +64,7 @@ front_hin = ESP.h + PIR.h
 front_hout = front_hin + (3 * thick) + overhang
 front_wout = front_win + (2 * thick) + (2 * overhang)
 
-def make_front(draw):
+def make_front(draw, back=False):
     work = Collection()
 
     c = Polygon()
@@ -116,18 +116,18 @@ def make_front(draw):
     work.add(foot)
     work.translate(0, feet)
 
-    if 1:
+    if back:
         esp = ESP().make(draw)
         esp.translate(overhang + thick, feet + thick)
         work.add(esp)
 
-    if 1:
+    if not back:
         pir = PIR().make(draw)
         x = (front_wout - PIR.w) / 2.0
         pir.translate(x, feet + thick + thick + ESP.h)
         work.add(pir)
 
-    if 1:
+    if back:
         d1, d2, d = 3, 6, 6
         h = Hanger(r1=d1/2.0, r2=d2/2.0, d=d)
         c = h.make()
@@ -154,7 +154,7 @@ def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
 
     top_h = ESP.max_d
     t_holder_w = 18
-    t_holder_d = 12
+    t_holder_d = tab_len * 2
     inset = t_holder_d / 2.0
     inner = 6
 
@@ -214,11 +214,8 @@ def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
         [ 0, dx, 90 ],
         [ 0, top_h - dx, 90 ],
         [ front_win, dx, 270 ],
+        [ front_win, top_h - dx, 270 ],
     ]
-
-    if is_bot:
-        a = [ front_win, top_h - dx, 270 ]
-        cut_locs.insert(0, a)
 
     template = cutout(tab_len, thick)
     work = add_cutouts(work, cut_locs, template)
@@ -228,8 +225,8 @@ def make_t_holder(draw, is_top=False, is_mid=False, is_bot=False):
         work.add(c)
 
     if is_bot:
-        c = Text((0, 0), "PIR V1.0", height=3.0, colour=Config.engrave_colour)
-        c.translate(10, 10)
+        c = Text((0, 0), "PIR V1.0\n(C) 2015 Dave Berkeley", height=2.0, colour=Config.engrave_colour)
+        c.translate(10, 12)
         work.add(c)
 
     return work
@@ -243,12 +240,16 @@ drawing = dxf.drawing("test.dxf")
 
 draw = True
 
-tab_len = 5
+tab_len = 6
 
 work = make_front(draw)
 work.draw(drawing, config.cut())
 
-dx = front_wout + spacing + thick
+work = make_front(draw, back=True)
+work.translate(front_wout + spacing, 0)
+work.draw(drawing, config.cut())
+
+dx = (2 * (front_wout + spacing)) + thick
 dy = ESP.max_d
 
 work = make_t_holder(draw, is_mid=True)
