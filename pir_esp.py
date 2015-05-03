@@ -29,6 +29,8 @@ def move_margin(work):
 
 def make_foot(work_w):
     feet_w = 15
+    feet_less = 2
+    rad = feet - feet_less
     foot = Collection()
     c = Polygon()
     c.add(0, 0)
@@ -36,7 +38,7 @@ def make_foot(work_w):
     c.add(feet_w, - feet)
 
     # inner curve
-    a = Arc((feet_w + feet, -feet), feet, 90, 180)
+    a = Arc((feet_w + rad, -feet), rad, 90, 180)
     c.add_arc(a)
     foot.add(c)
 
@@ -46,8 +48,8 @@ def make_foot(work_w):
     foot.add(d)
 
     c = Polygon()
-    c.add(feet_w + feet, 0)
-    c.add(work_w - feet_w - feet, 0)
+    c.add(feet_w + rad, -feet_less)
+    c.add(work_w - feet_w - rad, -feet_less)
     foot.add(c)
 
     return foot
