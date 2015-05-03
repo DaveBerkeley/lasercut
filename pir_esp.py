@@ -249,7 +249,7 @@ def make_t_holder(draw, top_h, tab_locs, is_top=False, is_mid=False, is_bot=Fals
 #
 #   Side pieces
 
-def make_side(draw, w, h, is_left=False, is_right=False):
+def make_side(draw, w, h, tab_locs, is_left=False, is_right=False):
     work = Collection()
 
     c = Rectangle((0, 0), (w, h))
@@ -272,26 +272,20 @@ def make_side(draw, w, h, is_left=False, is_right=False):
     work = add_cutouts(work, cut_locs, template)
 
     # tabs into front / back plates
-    cut_locs = [
-        [ 0, ESP.h / 3.0, 90 ],
-        [ w, ESP.h / 3.0, 270 ],
-        [ 0, 2 * ESP.h / 3.0, 90 ],
-        [ w, 2 * ESP.h / 3.0, 270 ],
-        [ 0, h - PIR.h + (tab_len / 2.0), 90 ],
-        [ w, h - PIR.h + (tab_len / 2.0), 270 ],
-    ]
+    cut_locs = []
+    for y in tab_locs[0]:
+        cut_locs.append((0, y, 90))
+        cut_locs.append((w, y, 270))
     template = cutout(tab_len, thick)
     work = add_cutouts(work, cut_locs, template)
 
     # Add the captive nut cutouts
     nut = M3(thick)
 
-    locs = [
-        [   0, h - (PIR.h / 2.0), 90 ],
-        [   w, h - (PIR.h / 2.0), 270 ],
-        [   0, ESP.h / 2.0, 90 ],
-        [   w, ESP.h / 2.0, 270 ],
-    ]
+    locs = []
+    for y in tab_locs[1]:
+        locs.append((0, y, 90))
+        locs.append((w, y, 270))
 
     for x, y, rot in locs:
         c = nut.make_elev(rot)
@@ -321,6 +315,8 @@ def make_side(draw, w, h, is_left=False, is_right=False):
         c.translate(ESP.max_d, ESP.h)
         work.add(c)
 
+    work.translate(thick, thick)
+
     return work
 
 #
@@ -337,6 +333,13 @@ top_h = ESP.max_d + 8
 top_tab_locs = [
     [ front_win / 3.0, 2 * front_win / 3.0, ],
     [ tab_len / 2.0,  top_h - (tab_len / 2.0),  ],
+]
+
+side_h = front_hin + thick
+side_tab_locs = [
+    [ ESP.h / 3.0, 2 * ESP.h / 3.0, side_h - PIR.h + (tab_len / 2.0), ],
+    # nut locs
+    [ side_h - (PIR.h / 2.0), side_h - (PIR.h / 2.0), ESP.h / 2.0, ESP.h / 2.0, ],
 ]
 
 tab_locs = [ top_tab_locs[0], [] ]
@@ -362,8 +365,8 @@ work = make_t_holder(draw, top_h, top_tab_locs, is_bot=True)
 work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
 work.draw(drawing, config.cut())
 
-work = make_side(draw, top_h, front_hin + thick, is_left=True)
-work.translate(-top_h + spacing - thick, feet + thick)
+work = make_side(draw, top_h, side_h, side_tab_locs, is_left=True)
+work.translate(-top_h + spacing - thick, feet)
 work.draw(drawing, config.cut())
 
 drawing.save()
