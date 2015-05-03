@@ -342,6 +342,10 @@ def make_side(draw, w, h, tab_locs, is_left=False, is_right=False):
 #
 #
 
+def commit(work):
+    move_margin(work)
+    work.draw(drawing, config.cut())
+
 config = Config()
 
 drawing = dxf.drawing("test.dxf")
@@ -364,38 +368,38 @@ side_tab_locs = [
 
 tab_locs = [ top_tab_locs[0], side_tab_locs[0], side_tab_locs[1] ]
 work = make_front(draw, tab_locs, back=True)
-work.draw(drawing, config.cut())
+commit(work)
 
 work = make_front(draw, tab_locs)
 work.translate(front_wout + spacing, 0)
-work.draw(drawing, config.cut())
+commit(work)
 
 dx = (2 * (front_wout + spacing)) + thick
 dy = top_h
 
 work = make_t_holder(draw, top_h, top_tab_locs, is_mid=True)
 work.translate(dx, thick)
-work.draw(drawing, config.cut())
+commit(work)
 
 work = make_t_holder(draw, top_h, top_tab_locs, is_top=True)
 work.translate(dx, dy + spacing + (1 * thick))
-work.draw(drawing, config.cut())
+commit(work)
 
 work = make_t_holder(draw, top_h, top_tab_locs, is_bot=True)
 work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
-work.draw(drawing, config.cut())
+commit(work)
 
 dy = front_hout + feet + spacing + top_h + (2 * thick)
 
 work = make_side(draw, top_h, side_h, side_tab_locs, is_left=True)
 work.rotate(270)
 work.translate(0, dy)
-work.draw(drawing, config.cut())
+commit(work)
 
 work = make_side(draw, top_h, side_h, side_tab_locs, is_right=True)
 work.rotate(270)
 work.translate(front_hin + spacing + (3 * thick), dy)
-work.draw(drawing, config.cut())
+commit(work)
 
 drawing.save()
 
