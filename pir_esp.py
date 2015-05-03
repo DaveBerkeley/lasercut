@@ -28,7 +28,7 @@ def move_margin(work):
 #   Foot
 
 def make_foot(work_w):
-    feet_w = 20
+    feet_w = 15
     foot = Collection()
     c = Polygon()
     c.add(0, 0)
@@ -140,6 +140,15 @@ def make_front(draw):
 #
 #
 
+def add_cutouts(work, locs, template):
+    for x, y, rot in locs:
+        c = template.copy()
+        c.rotate(rot)
+        c.translate(x, y)
+        work = splice(work, c)
+    return work
+
+
 def make_t_holder(is_top=False, is_mid=False, is_bot=False):
     work = Collection()
 
@@ -152,55 +161,66 @@ def make_t_holder(is_top=False, is_mid=False, is_bot=False):
     if is_bot:
         c = Rectangle((0, 0), (front_win, top_h)) 
         work.add(c)
+    else:
+        c = Polygon()
+        c.add(front_win, top_h)
+        if is_mid:
+            c.add(front_win - inner, top_h)
+            c.add(front_win - inner, inner)
+            c.add(inner, inner)
+            c.add(inner, top_h)
+        c.add(0, top_h)
+        c.add(0, 0)
+        c.add(front_win, 0)
+        c.add(front_win, top_h - inset)
+        work.add(c)
+
+        w = Collection()
+        c = Polygon()
+        c.add(0, t_holder_d / 2.0)
+        c.add(t_holder_w + thick - (2 * inset), t_holder_d / 2.0)
+        w.add(c)
+
+        c = Polygon()
+        c.add(t_holder_w + thick - inset, t_holder_d)
+        c.add(0, t_holder_d)
+        w.add(c)
+
+        p = Polygon()
+        if is_top:
+            r = Temperature.dia / 2.0
+        elif is_mid:
+            r = Temperature.outer_1 / 2.0
+        d = Circle((0, 0), r)
+        d.translate(t_holder_w + thick - inset, t_holder_d - inset)
+        p.add_arc(d)
+
+        d = Arc((0, 0), inset, 180, 90)
+        d.translate(t_holder_w + thick - inset, t_holder_d - inset)
+        p.add_arc(d)
+
+        w.add(p)
+        w.translate(front_win, top_h - t_holder_d)
+        work.add(w)
+
+    cut_in = 5
+    cut_len = 5
+    cut_locs = [
+        [ front_win / 3.0, 0, 180 ],
+        [ 2 * front_win / 3.0, 0, 180 ],
+    ]
+
+    template = cutout(cut_len, thick)
+    work = add_cutouts(work, cut_locs, template)
+    # force it to be a collection ... TODO : remove me
+    work = Collection(work)
+
+    if is_bot:
         c = Text((0, 0), "PIR V1.0", height=3.0, colour=Config.engrave_colour)
         c.translate(10, 10)
         work.add(c)
-        return work
 
-    c = Polygon()
-    c.add(front_win, top_h)
-    if is_mid:
-        c.add(front_win - inner, top_h)
-        c.add(front_win - inner, inner)
-        c.add(inner, inner)
-        c.add(inner, top_h)
-    c.add(0, top_h)
-    c.add(0, 0)
-    c.add(front_win, 0)
-    c.add(front_win, top_h - inset)
-    work.add(c)
-
-    w = Collection()
-    c = Polygon()
-    c.add(0, t_holder_d / 2.0)
-    c.add(t_holder_w + thick - (2 * inset), t_holder_d / 2.0)
-    w.add(c)
-
-    c = Polygon()
-    c.add(t_holder_w + thick - inset, t_holder_d)
-    c.add(0, t_holder_d)
-    w.add(c)
-
-    p = Polygon()
-    if is_top:
-        r = Temperature.dia / 2.0
-    elif is_mid:
-        r = Temperature.outer_1 / 2.0
-    d = Circle((0, 0), r)
-    d.translate(t_holder_w + thick - inset, t_holder_d - inset)
-    p.add_arc(d)
-
-    d = Arc((0, 0), inset, 180, 90)
-    d.translate(t_holder_w + thick - inset, t_holder_d - inset)
-    p.add_arc(d)
-
-    w.add(p)
-    w.translate(front_win, top_h - t_holder_d)
-    work.add(w)
     return work
-
-#
-#
 
 #
 #
@@ -215,15 +235,15 @@ work = make_front(draw)
 work.draw(drawing, config.cut())
 
 work = make_t_holder(is_bot=True)
-work.translate(front_wout + spacing, 0)
+work.translate(front_wout + spacing, thick)
 work.draw(drawing, config.cut())
 
 work = make_t_holder(is_top=True)
-work.translate(front_wout + spacing, ESP.max_d + spacing)
+work.translate(front_wout + spacing, ESP.max_d + spacing + (2 * thick))
 work.draw(drawing, config.cut())
 
 work = make_t_holder(is_mid=True)
-work.translate(front_wout + spacing, 2 * (ESP.max_d + spacing))
+work.translate(front_wout + spacing, 2 * (ESP.max_d + spacing) + (3 * thick))
 work.draw(drawing, config.cut())
 
 drawing.save()

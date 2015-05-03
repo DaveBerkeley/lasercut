@@ -249,10 +249,12 @@ class Circle(Arc):
 #
 
 class Collection:
-    def __init__(self):
+    def __init__(self, work=None):
         self.data = []
         self.origin = None
         self.arcs = []
+        if work:
+            self.add(work)
     def add(self, obj):
         self.data.append(obj)
     def draw(self, drawing, colour):
@@ -407,16 +409,45 @@ def on_segment(xy, line, margin=0.01):
         return (x0-margin) <= x <= (x1+margin)
     return within(xy[0], x0, x1) and within(xy[1], y0, y1)
 
-def splice(src, item):
+def find_hit(parent, item):
+    for shape in parent.data:
+        name = shape.__class__.__name__ 
+        if name in [ "Polygon", "Rectangle" ]:
+            for line in shape.lines():
+                if on_segment(item.origin, line):
+                    return parent, shape
+        elif name == "Collection":
+            p, shape = find_hit(shape, item)
+            if shape:
+                return p, shape
+    return parent, None
+
+def change_shape(parent, old, new):
+    data = []
+    for d in parent.data:
+        if d == old:
+            data.append(new)
+        else:
+            data.append(d)
+    parent.data = data
+
+def splice(parent, item):
+    p, src = find_hit(parent, item)
+    if src:
+        w = splice_inner(src, item)
+        change_shape(parent, src, w)
+    else:
+        print "no match found for", item
+    return parent
+
+def splice_inner(src, item):
     lines = []
     arcs = []
-    found = False
     for line in src.lines():
         if on_segment(item.origin, line):
             for subst in replace(line, item):
                 lines.append(subst)
             arcs += item.arcs
-            found = True
         else:
             lines.append(line)
 
@@ -426,8 +457,6 @@ def splice(src, item):
         shape.add(*line[1])
     shape.arcs = src.arcs[:]
     shape.arcs += [ arc.copy() for arc in arcs ]
-    if not found:
-        print "no match found for", item
     return shape
 
 #
