@@ -132,7 +132,7 @@ def make_front(draw):
         h = Hanger(r1=d1/2.0, r2=d2/2.0, d=d)
         c = h.make()
         x = front_wout / 2.0
-        c.translate(x, ESP.h + feet + thick + d2)
+        c.translate(x, ESP.h + feet + thick + d2 + 1)
         work.add(c)
 
     return work

@@ -202,11 +202,12 @@ class Rectangle(Polygon):
 
 class Arc:
 
-    def __init__(self, xy, radius, start_angle, end_angle):
+    def __init__(self, xy, radius, start_angle, end_angle, **kwargs):
         self.x, self.y = xy
         self.radius = radius
         self.start_angle = start_angle
         self.end_angle = end_angle
+        self.kwargs = kwargs
 
     def rotate(self, degrees):
         rad = radians(degrees)
@@ -225,9 +226,12 @@ class Arc:
         self.y = y
 
     def copy(self):
-        return Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
+        a = Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
+        a.kwargs = self.kwargs
+        return a
 
     def draw(self, drawing, colour):
+        colour = self.kwargs.get("colour", colour)
         item = dxf.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
         drawing.add(item)
 
@@ -238,8 +242,8 @@ class Arc:
 #
 
 class Circle(Arc):
-    def __init__(self, xy, radius):
-        Arc.__init__(self, xy, radius, 0, 360)
+    def __init__(self, xy, radius, **kwargs):
+        Arc.__init__(self, xy, radius, 0, 360, **kwargs)
 
 #
 #

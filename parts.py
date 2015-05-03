@@ -84,6 +84,9 @@ class PIR_DYPME003:
         if draw:
             c = Rectangle((0, 0), (self.w, self.h), colour=Config.draw_colour)
             pir.add(c)
+            c = Circle((0, 0), self.hole / 2.0, colour=Config.draw_colour)
+            c.translate(self.w/2.0, self.h/2.0)
+            pir.add(c)
 
         in_w = (self.w - self.hole) / 2.0
         in_h = (self.h - self.hole) / 2.0
