@@ -75,6 +75,22 @@ def make_front(draw, tab_locs, back=False):
 
     work.add(c)
 
+    # tabs for top / bottom / middle plates
+    r = Rectangle((0, 0), (tab_len, thick))
+    r.translate(-tab_len / 2.0, -thick / 2.0)
+    dx = overhang + thick
+    for x in tab_locs[0]:
+        c = r.copy()
+        c.translate(x + dx, thick / 2.0) # bottom
+        work.add(c)
+        c = r.copy()
+        c.translate(x + dx, front_hin + (2.5 * thick)) # top
+        work.add(c)
+        if back:
+            c = r.copy()
+            c.translate(x + dx, ESP.h + (1.5 * thick)) # mid
+            work.add(c)
+
     def make_side_posn(dx, dy, horiz=True):
         w = Collection()
         c = Rectangle((0, 0), (dx, dy), colour=Config.draw_colour)
@@ -238,11 +254,12 @@ draw = True
 
 tab_len = 6
 top_h = ESP.max_d
-tab_locs = [
+top_tab_locs = [
     [ front_win / 3.0, 2 * front_win / 3.0, ],
     [ tab_len / 2.0,  top_h - (tab_len / 2.0),  ],
 ]
 
+tab_locs = [ top_tab_locs[0], [] ]
 work = make_front(draw, tab_locs)
 work.draw(drawing, config.cut())
 
@@ -253,15 +270,15 @@ work.draw(drawing, config.cut())
 dx = (2 * (front_wout + spacing)) + thick
 dy = top_h
 
-work = make_t_holder(draw, top_h, tab_locs, is_mid=True)
+work = make_t_holder(draw, top_h, top_tab_locs, is_mid=True)
 work.translate(dx, thick)
 work.draw(drawing, config.cut())
 
-work = make_t_holder(draw, top_h, tab_locs, is_top=True)
+work = make_t_holder(draw, top_h, top_tab_locs, is_top=True)
 work.translate(dx, dy + spacing + (1 * thick))
 work.draw(drawing, config.cut())
 
-work = make_t_holder(draw, top_h, tab_locs, is_bot=True)
+work = make_t_holder(draw, top_h, top_tab_locs, is_bot=True)
 work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
 work.draw(drawing, config.cut())
 
