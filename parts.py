@@ -46,6 +46,9 @@ class ESP_Olimex_Dev:
         if draw:
             c = Rectangle((0, 0), (self.w, self.h), colour=Config.draw_colour)
             esp.add(c)
+            c = Rectangle((0, 0), (self.power_w, self.power_w), colour=Config.draw_colour)
+            c.translate(0, self.power_x0 - self.power_w)
+            esp.add(c)
 
         in_h, in_w = (self.h - self.dh) / 2.0, (self.w - self.dw) / 2.0
         c = Circle((0, 0), self.hole_dia / 2.0)
