@@ -60,17 +60,14 @@ class Config:
 
     cut_colour = 3
     draw_colour = 4
+    dotted_colour = 5
     engrave_colour = 2
 
     def __init__(self, **kwargs):
         self.data = kwargs
-        self.data["cut"] = self.cut_colour
-        self.data["engrave"] = self.engrave_colour
-        self.data["kisscut"] = 1
-        self.data["draw"] = self.draw_colour
 
     def cut(self):
-        return self.data["cut"]
+        return self.cut_colour
 
 #
 #

@@ -2,6 +2,9 @@
 
 import sys
 
+# https://pypi.python.org/pypi/dxfwrite/
+from dxfwrite import DXFEngine as dxf
+
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
 from laser import TCut, Text, splice, cutout
 
@@ -9,25 +12,16 @@ from parts import ESP_Olimex_Dev as ESP
 from parts import PIR_DYPME003 as PIR
 from parts import Temperature_DS18b20 as Temperature
 
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
+#
+
+thick = 3
+spacing = 1
 
 x_margin = 10
 y_margin = 20
 
 def move_margin(work):
     work.translate(x_margin, y_margin)
-
-#
-#
-
-thick = 3
-
-spacing = 1
-
-config = Config()
-
-drawing = dxf.drawing("test.dxf")
 
 #
 #   Foot
@@ -83,11 +77,33 @@ def make_front(draw):
     if draw:
         # draw the side positions
         dy = front_hin + (3 * thick) + overhang
+        w = Collection()
         c = Rectangle((0, 0), (thick, dy), colour=Config.draw_colour)
-        d = c.copy()
-        c.translate(overhang, 0)
-        work.add(c)
+        w.add(c)
+        c = Polygon((0, 0), colour=Config.dotted_colour)
+        c.add(0, 0)
+        c.add(0, dy)
+        c.translate(thick / 2.0, 0)
+        w.add(c)
+        d = w.copy()
+        w.translate(overhang, 0)
+        work.add(w)
         d.translate(front_wout - overhang - thick, 0)
+        work.add(d)
+        # draw top/bottom and middle plates
+        w = Collection()
+        dx = front_win + thick + thick
+        c = Rectangle((0, 0), (dx, thick), colour=Config.draw_colour)
+        c.translate(thick, 0)
+        w.add(c)
+        c = Polygon((0, 0), colour=Config.dotted_colour)
+        c.add(0, 0)
+        c.add(dx, 0)
+        c.translate(overhang, thick / 2.0)
+        w.add(c)
+        d = w.copy()
+        work.add(w)
+        d.translate(0, front_hin + thick + thick)
         work.add(d)
 
     foot = make_foot(front_wout)
@@ -109,11 +125,6 @@ def make_front(draw):
 
 #
 #
-
-draw = True
-
-work = make_front(draw)
-work.draw(drawing, config.cut())
 
 def make_t_holder(is_top):
     work = Collection()
@@ -165,6 +176,21 @@ def make_t_holder(is_top):
     w.translate(front_win, top_h - t_holder_d)
     work.add(w)
     return work
+
+#
+#
+
+#
+#
+
+config = Config()
+
+drawing = dxf.drawing("test.dxf")
+
+draw = True
+
+work = make_front(draw)
+work.draw(drawing, config.cut())
 
 work = make_t_holder(False)
 work.translate(front_wout + spacing, 0)
