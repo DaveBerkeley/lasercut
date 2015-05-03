@@ -1,9 +1,27 @@
 
 
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
+from laser import TCut
 
 #
 #   Parts
+
+# T-slot fixings
+
+class Nut:
+    def __init__(self, w, d, shank, nut_w, nut_t, stress_hole):
+        self.nut = TCut(w=w, d=d, shank=shank, nut_w=nut_w, nut_t=nut_t, stress_hole=stress_hole)
+
+class M3:
+
+    def __init__(self, thick):
+        Nut.__init__(self, w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
+
+    def make_plan(self):
+        return self.nut.make_plan()
+
+    def make_elev(self):
+        return self.nut.make_elev()
 
 #   ESP8266 Olimex dev board
 #   https://www.olimex.com/Products/IoT/ESP8266-EVB/open-source-hardware

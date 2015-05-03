@@ -28,9 +28,6 @@ config = Config()
 
 drawing = dxf.drawing("test.dxf")
 
-# T-slot M3 fixings
-nut = TCut(w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
-
 #   Temperature sensor
 #   http://www.amazon.co.uk/dp/B00CHEZ250
 
