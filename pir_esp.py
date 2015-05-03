@@ -5,6 +5,9 @@ import sys
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
 from laser import TCut, Text, splice, cutout
 
+from parts import ESP as ESP
+from parts import PIR as PIR
+
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
 
@@ -27,95 +30,6 @@ drawing = dxf.drawing("test.dxf")
 
 # T-slot M3 fixings
 nut = TCut(w=3, d=12-thick, shank=5, nut_w=5.5, nut_t=2.3, stress_hole=0.25)
-
-#
-#   Parts
-
-#   ESP8266 Olimex dev board
-#   https://www.olimex.com/Products/IoT/ESP8266-EVB/open-source-hardware
-
-esp_w = 57
-esp_h = 49.5
-esp_dw = 49
-esp_dh = 41.5
-esp_pcb = 1.5
-esp_hole_dia = 3 # 3.3
-
-esp_power_h = 12.5 - esp_pcb
-esp_power_x0 = 17.2
-esp_power_w = 8.9
-esp_solder = 3.5
-esp_max_d = 16.5 - esp_pcb + esp_solder
-
-# ESP8266 board
-
-def make_esp(draw):
-    esp = Collection()
-
-    if draw:
-        c = Rectangle((0, 0), (esp_w, esp_h), colour=Config.draw_colour)
-        esp.add(c)
-
-    in_h, in_w = (esp_h - esp_dh) / 2.0, (esp_w - esp_dw) / 2.0
-    c = Circle((0, 0), esp_hole_dia / 2.0)
-
-    d = c.copy()
-    d.translate(in_w, in_h)
-    esp.add(d)
-    d = c.copy()
-    d.translate(in_w, esp_h - in_h)
-    esp.add(d)
-    d = c.copy()
-    d.translate(esp_w - in_w, esp_h - in_h)
-    esp.add(d)
-    d = c.copy()
-    d.translate(esp_w - in_w, in_h)
-    esp.add(d)
-
-    return esp
-
-#   PIR sensor
-#   http://www.amazon.co.uk/dp/B00LS85XNM
-
-#   PIR board
-
-class PIR:
-
-    w = 32
-    h = 24
-    hole = 23
-    fix_dia = 2
-    fix_dx = 28
-
-    def __init__(self):
-        pass
-
-    def make(self, draw):
-        pir = Collection()
-
-        if draw:
-            c = Rectangle((0, 0), (self.w, self.h), colour=Config.draw_colour)
-            pir.add(c)
-
-        in_w = (self.w - self.hole) / 2.0
-        in_h = (self.h - self.hole) / 2.0
-        c = Rectangle((0, 0), (self.hole, self.hole))
-        c.translate(in_w, in_h)
-        pir.add(c)
-
-        dh = self.h / 2.0
-        dw = (self.w - self.fix_dx) / 2.0
-        c = Circle((0, 0), self.fix_dia / 2.0)
-        
-        d = c.copy()
-        d.translate(dw, dh)
-        pir.add(d)
-
-        d = c.copy()
-        d.translate(self.w - dw, dh)
-        pir.add(d)
-
-        return pir
 
 #   Temperature sensor
 #   http://www.amazon.co.uk/dp/B00CHEZ250
@@ -161,8 +75,8 @@ def make_foot(work_w):
 feet = 6
 overhang = 3
 
-front_win = esp_w
-front_hin = esp_h + PIR.h
+front_win = ESP.w
+front_hin = ESP.h + PIR.h
 
 front_hout = front_hin + (3 * thick) + overhang
 front_wout = front_win + (2 * thick) + (2 * overhang)
@@ -193,14 +107,14 @@ def make_front(draw):
     work.translate(0, feet)
 
     if 1:
-        esp = make_esp(draw)
+        esp = ESP().make(draw)
         esp.translate(overhang + thick, feet + thick)
         work.add(esp)
 
     if 1:
         pir = PIR().make(draw)
         x = (front_wout - PIR.w) / 2.0
-        pir.translate(x, feet + thick + thick + esp_h)
+        pir.translate(x, feet + thick + thick + ESP.h)
         work.add(pir)
 
     return work
@@ -216,7 +130,7 @@ work.draw(drawing, config.cut())
 def make_t_holder(is_top):
     work = Collection()
 
-    top_h = esp_max_d
+    top_h = ESP.max_d
     t_holder_w = 18
     t_holder_d = 12
     inset = t_holder_d / 2.0
@@ -269,7 +183,7 @@ work.translate(front_wout + spacing, 0)
 work.draw(drawing, config.cut())
 
 work = make_t_holder(True)
-work.translate(front_wout + spacing, esp_max_d + spacing)
+work.translate(front_wout + spacing, ESP.max_d + spacing)
 work.draw(drawing, config.cut())
 
 drawing.save()
