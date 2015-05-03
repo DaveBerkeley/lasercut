@@ -385,8 +385,16 @@ work = make_t_holder(draw, top_h, top_tab_locs, is_bot=True)
 work.translate(dx, (2 * (dy + spacing)) + (3 * thick))
 work.draw(drawing, config.cut())
 
+dy = front_hout + feet + spacing + top_h + (2 * thick)
+
 work = make_side(draw, top_h, side_h, side_tab_locs, is_left=True)
-work.translate(-top_h + spacing - thick, feet)
+work.rotate(270)
+work.translate(0, dy)
+work.draw(drawing, config.cut())
+
+work = make_side(draw, top_h, side_h, side_tab_locs, is_right=True)
+work.rotate(270)
+work.translate(front_hin + spacing + (3 * thick), dy)
 work.draw(drawing, config.cut())
 
 drawing.save()

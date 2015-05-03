@@ -72,9 +72,10 @@ class ESP_Olimex_Dev:
         if draw:
             c = Rectangle((0, 0), (self.h, self.max_d), colour=Config.draw_colour)
             work.add(c)
-            c = Rectangle((0, 0), (self.power_w, self.power_h))
-            c.translate(self.h - self.power_x0, self.pcb + self.solder)
-            work.add(c)
+
+        c = Rectangle((0, 0), (self.power_w, self.power_h))
+        c.translate(self.h - self.power_x0, self.pcb + self.solder)
+        work.add(c)
         return work
 
 #   PIR sensor
