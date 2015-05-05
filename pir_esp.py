@@ -61,8 +61,15 @@ def make_foot(work_w):
 feet = 6
 overhang = 3
 
-front_win = ESP.w
-front_hin = ESP.h + PIR.h
+# low and hi sections (ESP / PIR)
+margin = 1
+lo_h = ESP.h + (2 * margin)
+lo_w = ESP.w + margin
+hi_h = PIR.h + (2 * margin)
+hi_w = PIR.w + (2 * margin)
+
+front_win = max(lo_w, hi_w)
+front_hin = lo_h + hi_h
 
 front_hout = front_hin + (3 * thick) + overhang
 front_wout = front_win + (2 * thick) + (2 * overhang)
@@ -91,7 +98,7 @@ def make_front(draw, tab_locs, back=False):
         work.add(c)
         if back:
             c = r.copy()
-            c.translate(x + dx, ESP.h + (1.5 * thick)) # mid
+            c.translate(x + dx, lo_h + (1.5 * thick)) # mid
             work.add(c)
 
     r = Rectangle((0, -tab_len/2.0), (thick, tab_len/2.0))
@@ -148,7 +155,7 @@ def make_front(draw, tab_locs, back=False):
         w.translate(overhang, front_hin + thick + thick)
         work.add(w)
         w = make_side_posn(dx, thick, horiz=True)
-        w.translate(overhang, ESP.h + thick)
+        w.translate(overhang, lo_h + thick)
         work.add(w)
 
     foot = make_foot(front_wout)
@@ -157,13 +164,13 @@ def make_front(draw, tab_locs, back=False):
 
     if back:
         esp = ESP().make(draw)
-        esp.translate(overhang + thick, feet + thick)
+        esp.translate(overhang + thick, feet + thick + margin)
         work.add(esp)
 
     if not back:
         pir = PIR().make(draw)
         x = (front_wout - PIR.w) / 2.0
-        pir.translate(x, feet + thick + thick + ESP.h)
+        pir.translate(x, feet + thick + thick + lo_h + margin)
         work.add(pir)
 
     if back:
@@ -171,7 +178,7 @@ def make_front(draw, tab_locs, back=False):
         h = Hanger(r1=d1/2.0, r2=d2/2.0, d=d)
         c = h.make()
         x = front_wout / 2.0
-        c.translate(x, ESP.h + feet + thick + d2 + 1)
+        c.translate(x, lo_h + feet + thick + d2 + 1)
         work.add(c)
 
     return work
@@ -255,10 +262,6 @@ def make_t_holder(draw, top_h, tab_locs, is_top=False, is_mid=False, is_bot=Fals
     template = cutout(tab_len, thick)
     work = add_cutouts(work, cut_locs, template)
 
-    if 0: # draw:
-        c = Rectangle((0, 0), (front_win, top_h), colour=Config.draw_colour)
-        work.add(c)
-
     if is_bot:
         c = Text((0, 0), "PIR V1.0\n(C) 2015 Dave Berkeley", height=2.0, colour=Config.engrave_colour)
         c.translate(10, 12)
@@ -285,8 +288,8 @@ def make_side(draw, w, h, tab_locs, is_left=False, is_right=False):
 
     # end tabs to interlock with horizontal plates
     cut_locs = [
-        [ 0, ESP.h + (thick / 2.0), 270 ],
-        [ w, ESP.h + (thick / 2.0), 90 ],
+        [ 0, lo_h + (thick / 2.0), 270 ],
+        [ w, lo_h + (thick / 2.0), 90 ],
     ]
     template = cutout(thick, tab_len)
     work = add_cutouts(work, cut_locs, template)
@@ -332,7 +335,7 @@ def make_side(draw, w, h, tab_locs, is_left=False, is_right=False):
         c = ESP().make_elev(draw)
         c.rotate(270)
         c.reflect_v()
-        c.translate(ESP.max_d, ESP.h)
+        c.translate(ESP.max_d, ESP.h + margin)
         work.add(c)
 
     work.translate(thick, thick)
@@ -352,6 +355,9 @@ drawing = dxf.drawing("test.dxf")
 
 draw = False
 
+if len(sys.argv) > 1:
+    draw = True
+
 tab_len = 6
 top_h = ESP.max_d + 8
 top_tab_locs = [
@@ -361,9 +367,9 @@ top_tab_locs = [
 
 side_h = front_hin + thick
 side_tab_locs = [
-    [ ESP.h / 3.0, 2 * ESP.h / 3.0, side_h - PIR.h + (tab_len / 2.0), ],
+    [ ESP.h / 3.0, 2 * ESP.h / 3.0, side_h - hi_h + (tab_len / 2.0), ],
     # nut locs
-    [ side_h - (PIR.h / 2.0), side_h - (PIR.h / 2.0), ESP.h / 2.0, ESP.h / 2.0, ],
+    [ side_h - (hi_h / 2.0), side_h - (hi_h / 2.0), ESP.h / 2.0, ESP.h / 2.0, ],
 ]
 
 tab_locs = [ top_tab_locs[0], side_tab_locs[0], side_tab_locs[1] ]
