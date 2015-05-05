@@ -19,7 +19,7 @@ thick = 3
 
 def make_lens(draw):
     h = 100
-    r = 150
+    r = 100
     t = 2
     work = Collection()
     c = Polygon()
@@ -58,6 +58,10 @@ def make_lens(draw):
     c.translate(-t, -r2)
     work.add(c)
 
+    work.d = d
+    work.r = r
+    work.t = t
+
     return work
 
 #
@@ -79,9 +83,13 @@ draw = False
 if len(sys.argv) > 1:
     draw = True
 
-work = make_lens(draw)
+spacing = 1
 
-commit(work)
+for i in range(10):
+    
+    work = make_lens(draw)
+    work.translate(i * (work.r - work.d + work.t + spacing), 0)
+    commit(work)
 
 drawing.save()
 
