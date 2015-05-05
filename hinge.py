@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from laser import Rectangle, Polygon, Config, Material
+from laser import Rectangle, Polygon, Circle, Config
 from laser import Collection, Text, hinge, corner
 
 # https://pypi.python.org/pypi/dxfwrite/
@@ -33,6 +33,9 @@ for i, pitch in enumerate( [ 1.0, 1.5, 2.0, 2.5, 3.0 ] ):
 
     r = Text((2, 10), "pitch %.1f" % pitch, height=3.0)
     work.add(r)
+
+    c = Circle((w - 4, 4), 3/2.0)
+    work.add(c)
 
     work.translate(0, i * (h + spacing))
     work.translate(x_margin, y_margin)
