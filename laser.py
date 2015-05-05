@@ -11,8 +11,8 @@ from dxfwrite import DXFEngine as dxf
 def radians(degrees):
     return math.pi * degrees / 180.0
 
-#def degrees(rad):
-#    return 180.0 * rad / math.pi
+def degrees(rad):
+    return 180.0 * rad / math.pi
 
 def rotate_2d(theta, x, y):
     """Rotate point by theta"""
@@ -150,15 +150,8 @@ class Polygon:
         for point in self.points:
             points.append((-point[0], point[1]))
         self.points = points
-        def angle(a):
-            if 0 <= a < 180:
-                return 180 - a
-            return a - 180
         for arc in self.arcs:
-            arc.x = -arc.x
-            arc.start_angle = angle(arc.start_angle)
-            arc.end_angle = angle(arc.end_angle)
-            arc.start_angle, arc.end_angle = arc.end_angle, arc.start_angle
+            arc.reflect_v()
 
     def extent(self):
         xx = Extent()
@@ -216,9 +209,16 @@ class Arc:
         rad = radians(degrees)
         self.x, self.y = rotate_2d(rad, self.x, self.y)
         # rotate start/end angles
-        # TODO : check for < 0, or > 360 condition
-        self.start_angle += degrees
-        self.end_angle += degrees
+        # check for < 0, or > 360 condition
+        def rot(a):
+            a += degrees
+            while a < 0:
+                a += 360
+            while a >= 360:
+                a -= 360
+            return a
+        self.start_angle = rot(self.start_angle)
+        self.end_angle = rot(self.end_angle)
 
     def translate(self, dx, dy):
         self.x += dx
@@ -227,6 +227,21 @@ class Arc:
     def move(self, x, y):
         self.x  = x
         self.y = y
+
+    def reflect_v(self):
+        def reflect_angle(a):
+            if 0 <= a < 180:
+                return 180 - a
+            b = a - 180
+            while b < 0:
+                b += 360
+            return b
+
+        self.x = -self.x
+        if self.start_angle != self.end_angle:
+            self.start_angle = reflect_angle(self.start_angle)
+            self.end_angle = reflect_angle(self.end_angle)
+            self.start_angle, self.end_angle = self.end_angle, self.start_angle
 
     def copy(self):
         a = Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
@@ -240,6 +255,17 @@ class Arc:
 
     def __repr__(self):
         return "Arc(%s,%s,%s,%s,%s)" % (self.x, self.y, self.radius, self.start_angle, self.end_angle)
+
+#
+#
+
+a = Arc((0, 0), 1, 90, 180)
+a.rotate(90)
+assert a.start_angle == 180.0
+assert a.end_angle == 270.0
+a.rotate(90)
+assert a.start_angle == 270.0
+assert a.end_angle == 0.0, a.end_angle
 
 #
 #
