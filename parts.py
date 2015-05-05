@@ -28,8 +28,8 @@ class M3(Nut):
 class ESP_Olimex_Dev:
     w = 57
     h = 49.5
-    dw = 49
-    dh = 41.5
+    dw = 49.35
+    dh = 41.6
     pcb = 1.5
     hole_dia = 3 # 3.3
 
