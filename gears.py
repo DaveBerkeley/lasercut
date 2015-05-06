@@ -38,24 +38,37 @@ work = Collection()
 # Involute gears, see :
 # http://www.cartertools.com/involute.html
 
+nteeth = 20
 r1 = 100
 angle = 2.86
 
-for i in range(15):
-    p = Polygon()
-    p.add(0, 0)
-    p.add(0, r1)
-    p.add(i * r1 / 20.0, r1)
-    p.rotate(i * angle)
-    work.add(p)
+v = Polygon()
+v.add(0, 0)
 
-    #x, y = i * r1 / 20.0, r1
-    #x, y = rotate_2d(radians(i * angle), x, y)
-    #c = Circle((x, y), 10)
+for i in range(15):
+    x, y = i * r1 / 20.0, r1
+    x, y = rotate_2d(radians(i * angle), x, y)
+    v.add(x, y)
+
+for i in range(nteeth):
+
+    c = v.copy()
+    a = 360 / nteeth
+    c.rotate(a * i)
+    work.add(c)
+
+    #c = v.copy()
+    #c.reflect_v()
+    #c.rotate(a * (i + 0.75))
     #work.add(c)
 
-c = Circle((0, 0), r1)
-work.add(c)
+#work.add(v)
+#c = v.copy()
+#c.rotate(18)
+#work.add(c)
+
+#c = Circle((0, 0), r1)
+#work.add(c)
 commit(work)
 
 drawing.save()
