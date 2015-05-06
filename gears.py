@@ -7,23 +7,12 @@ import sys
 from dxfwrite import DXFEngine as dxf
 
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import Text, degrees
+from laser import Text, degrees, radians, rotate_2d
 
 #
 #
 
 thick = 3
-
-#
-#
-
-def make_gear(draw):
-    work = Collection()
-    c = Circle((0, 0), 7)
-    work.add(c)
-    c = Arc((0, 10), 7, 0, 180)
-    work.add(c)
-    return work
 
 #
 #
@@ -44,30 +33,29 @@ draw = False
 if len(sys.argv) > 1:
     draw = True
 
-nteeth = 8
-dia = 40
-
 work = Collection()
 
-for t in range(40):
-    c = make_gear(draw)
-    c.rotate(-90)
-    c.translate(dia, 0)
-    angle = t * 360.0 / nteeth
-    c.rotate(angle)
-    work.add(c)
+# Involute gears, see :
+# http://www.cartertools.com/involute.html
 
-    c = Polygon()
-    c.add(0, dia * 0.8)
-    c.add(0, dia)
-    c.rotate(angle)
-    work.add(c)
+r1 = 100
+angle = 2.86
 
-c = Circle((0, 0), dia)
+for i in range(15):
+    p = Polygon()
+    p.add(0, 0)
+    p.add(0, r1)
+    p.add(i * r1 / 20.0, r1)
+    p.rotate(i * angle)
+    work.add(p)
+
+    #x, y = i * r1 / 20.0, r1
+    #x, y = rotate_2d(radians(i * angle), x, y)
+    #c = Circle((x, y), 10)
+    #work.add(c)
+
+c = Circle((0, 0), r1)
 work.add(c)
-c = Circle((0, 0), dia * 0.8)
-work.add(c)
-
 commit(work)
 
 drawing.save()
