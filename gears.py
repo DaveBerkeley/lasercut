@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import math
 
 # https://pypi.python.org/pypi/dxfwrite/
@@ -10,9 +11,6 @@ from laser import radians, rotate_2d
 
 # Involute gears, see :
 # http://www.cartertools.com/involute.html
-
-def scale(a):
-    return a * 254
 
 #
 #
@@ -36,7 +34,9 @@ def circle_intersect(v, r):
 #
 #
 
-def make_involute(P, N, PA=14.5):
+def make_involute(pitch_dia, N, PA=14.5):
+    m = float(pitch_dia) / N
+    P = 1.0 / m
     D = N / P                       # Pitch Diameter
     R = D / 2.0                     # Pitch Radius
     DB = D * math.cos(radians(PA))  # Base Circle Diameter
@@ -55,27 +55,26 @@ def make_involute(P, N, PA=14.5):
     gt = 360.0 / N                  # Gear Tooth Spacing
 
     info = {
-        "outside_dia" :  scale(DO),
-        "pitch_dia" : scale(D),
-        "root_dia" : scale(DR),
+        "outside_dia" :  DO,
+        "pitch_dia" : D,
+        "root_dia" : DR,
     }
 
     work = Collection()
     work.info = info
     v = Polygon()
-    v.add(0, scale(RR))
+    v.add(0, RR)
 
     # note : the range 5 .. 12 approximates to the intersection
     # with the D and DO circles
     for i in range(5, 12):
         x, y = i * RB / 20.0, RB
-        x, y = [ scale(z) for z in [ x, y ] ]
         x, y = rotate_2d(radians(i * acb), x, y)
         v.add(x, y)
 
     # need to trim last involute line segment
     # so it doesn't exceed the outside_radius
-    circle_intersect(v, scale(RO))
+    circle_intersect(v, RO)
 
     # rotate back 1/4 tooth
     v.rotate(-gt / 4.0)
@@ -89,6 +88,7 @@ def make_involute(P, N, PA=14.5):
     prev = None
     first = None
 
+    # add all the teeth to the work
     for i in range(N):
         c = v.copy()
         c.rotate(gt * i)
@@ -118,6 +118,11 @@ if __name__ == "__main__":
     x_margin = 10
     y_margin = 20
 
+    draw = False
+
+    if len(sys.argv) > 1:
+        draw = True
+
     def commit(work):
         #work.translate(x_margin, y_margin)
         work.draw(drawing, config.cut())
@@ -126,16 +131,17 @@ if __name__ == "__main__":
 
     drawing = dxf.drawing("test.dxf")
 
-    P = 16.0
     N = 20
     PA = 14.5
+    pitch_dia = 20
 
-    work = make_involute(P, N, PA)
+    work = make_involute(pitch_dia, N, PA)
 
-    for label in [ "outside_dia", "root_dia", "pitch_dia" ]:
-        d = work.info[label]
-        c = Circle((0, 0), d / 2.0, colour=Config.draw_colour)
-        work.add(c)
+    if draw:
+        for label in [ "outside_dia", "root_dia", "pitch_dia" ]:
+            d = work.info[label]
+            c = Circle((0, 0), d / 2.0, colour=Config.draw_colour)
+            work.add(c)
 
     commit(work)
 
