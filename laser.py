@@ -20,6 +20,10 @@ def rotate_2d(theta, x, y):
     cx = cangle * complex(x, y)
     return cx.real, cx.imag
 
+def angle(x, y):
+    """return phase angle in radians"""
+    return cmath.phase(complex(x, y))
+
 #
 #
 
