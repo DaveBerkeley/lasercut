@@ -17,6 +17,25 @@ def scale(a):
 #
 #
 
+def circle_intersect(v, r):
+    # see http://mathworld.wolfram.com/Circle-LineIntersection.html
+    x1, y1 = v.points[-2]
+    x2, y2 = v.points[-1]
+    dx = x1 - x2
+    dy = y1 - y2
+    dr = math.sqrt((dx * dx) + (dy * dy))
+    D = (x1 * y2) - (x2 * y1)
+    def sgn(a):
+        return -1
+    x = -((D * dy) - (sgn(dy)*dx*math.sqrt(((r*r)*(dr*dr))-(D*D)))) / (dr*dr)
+    y = -((-D*dx) - (abs(dy)* math.sqrt(((r*r)*(dr*dr))-(D*D)))) / (dr*dr)
+
+    # truncate the last line segment to fit the radius
+    v.points[-1] = x, y
+
+#
+#
+
 def make_involute(P, N, PA=14.5):
     D = N / P                       # Pitch Diameter
     R = D / 2.0                     # Pitch Radius
@@ -54,6 +73,10 @@ def make_involute(P, N, PA=14.5):
         x, y = rotate_2d(radians(i * acb), x, y)
         v.add(x, y)
 
+    # need to trim last involute line segment
+    # so it doesn't exceed the outside_radius
+    circle_intersect(v, scale(RO))
+
     # rotate back 1/4 tooth
     v.rotate(-gt / 4.0)
     # add reflection to itself
@@ -81,7 +104,7 @@ def make_involute(P, N, PA=14.5):
             first = se
         prev = c.points[0], c.points[-1]
 
-    # join the first and last gears together
+    # join the first and last teeth together
     p = Polygon()
     p.add(*prev[1])
     p.add(*first[0])
