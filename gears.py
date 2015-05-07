@@ -16,22 +16,22 @@ def scale(a):
     return a * 254
 
 def make_involute(P, N, PA):
-    D = N / P
-    R = D / 2.0
-    DB = D * math.cos(radians(PA))
-    RB = DB / 2.0
-    a = 1.0 / P
-    d = 1.157 / P
-    DO = D + (2 * a)
-    RO = DO / 2.0
-    DR = D - (2 * d)
-    RR = DR / 2.0
+    D = N / P                       # Pitch Diameter
+    R = D / 2.0                     # Pitch Radius
+    DB = D * math.cos(radians(PA))  # Base Circle Diameter
+    RB = DB / 2.0                   # Base Circle Radius
+    a = 1.0 / P                     # Addendum
+    d = 1.157 / P                   # Dedendum
+    DO = D + (2 * a)                # Outside Diameter
+    RO = DO / 2.0                   # Outside Radius
+    DR = D - (2 * d)                # Root Diameter
+    RR = DR / 2.0                   # Root Radius
 
-    CB = math.pi * DB
+    CB = math.pi * DB               # Circumference of Base Circle
     fcb = RB / 20.0
     ncb = CB / fcb
     acb = 360 / ncb
-    gt = 360.0 / N
+    gt = 360.0 / N                  # Gear Tooth Spacing
 
     work = Collection()
     v = Polygon()
@@ -47,7 +47,6 @@ def make_involute(P, N, PA):
 
     # rotate back 1/4 tooth
     v.rotate(-gt / 4.0)
-    xy0 = v.points[-1]
     # add reflection to itself
     w = v.copy()
     w.reflect_v()
@@ -61,6 +60,8 @@ def make_involute(P, N, PA):
     for i in range(N):
         c = v.copy()
         c.rotate(gt * i)
+        work.add(c)
+        # join the last 2 teeth together
         se = c.points[0], c.points[-1]
         if not prev is None:
             p = Polygon()
@@ -70,7 +71,6 @@ def make_involute(P, N, PA):
         if first is None:
             first = se
         prev = c.points[0], c.points[-1]
-        work.add(c)
 
     # join the first and last gears together
     p = Polygon()
