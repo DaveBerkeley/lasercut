@@ -33,6 +33,7 @@ if __name__ == "__main__":
     N = 20
     PA = 14.5
     pitch_dia = 20
+    pr = pitch_dia / 2.0
 
     r = 1.5
 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         work = make_involute(pitch_dia, N, PA)
         c = Circle((0, 0), r)
         work.add(c)
-        work.translate(x, y)
+        work.translate(x + pr, y + pr)
         x += work.info["outside_dia"]
         if x > 100:
             x = 0
