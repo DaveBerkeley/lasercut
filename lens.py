@@ -71,7 +71,7 @@ x_margin = 10
 y_margin = 20
 
 def commit(work):
-    #work.translate(x_margin, y_margin)
+    work.translate(x_margin, y_margin)
     work.draw(drawing, config.cut())
 
 config = Config()
