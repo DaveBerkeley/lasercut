@@ -32,21 +32,35 @@ if __name__ == "__main__":
 
     N = 20
     PA = 14.5
-    pitch_dia = 20
+    pitch_dia = 20.0
     pr = pitch_dia / 2.0
 
     r = 1.5
 
+    m = pitch_dia / N
+
     x, y = 0, 0
-    for i, N in enumerate(range(10, 20, 1)):
-        work = make_involute(pitch_dia, N, PA)
-        c = Circle((0, 0), r)
-        work.add(c)
-        work.translate(x + pr, y + pr)
+    for i, N in enumerate(range(10, 21, 1)):
+        pd = m * N
+        print pd, N
+        work = make_involute(pd, N, PA)
         x += work.info["outside_dia"]
         if x > 100:
             x = 0
             y +=  work.info["outside_dia"]
+
+        c = Circle((0, 0), r)
+        work.add(c)
+        d, mr = 3, 0.5
+        c = Circle((0, d), mr)
+        work.add(c)
+        c = Circle((0, -d), mr)
+        work.add(c)
+        c = Circle((d, 0), mr)
+        work.add(c)
+        c = Circle((-d, 0), mr)
+        work.add(c)
+        work.translate(x + pr, y + pr)
         commit(work)
 
     drawing.save()
