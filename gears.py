@@ -60,7 +60,7 @@ def make_involute(pitch_dia, N, PA=14.5):
         "root_dia" : DR,
     }
 
-    work = Collection()
+    work = Polygon()
     work.info = info
     v = Polygon()
     v.add(0, RR)
@@ -85,30 +85,14 @@ def make_involute(pitch_dia, N, PA=14.5):
     w.points.reverse()
     v.add_poly(w)
 
-    prev = None
-    first = None
-
     # add all the teeth to the work
     for i in range(N):
         c = v.copy()
         c.rotate(gt * i)
-        work.add(c)
-        # join the last 2 teeth together
-        se = c.points[0], c.points[-1]
-        if not prev is None:
-            p = Polygon()
-            p.add(*prev[1])
-            p.add(*se[0])
-            work.add(p)
-        if first is None:
-            first = se
-        prev = c.points[0], c.points[-1]
+        work.add_poly(c)
 
-    # join the first and last teeth together
-    p = Polygon()
-    p.add(*prev[1])
-    p.add(*first[0])
-    work.add(p)
+    # join the ends together
+    work.close()
     return work
 
 #
