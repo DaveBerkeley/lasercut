@@ -1,13 +1,12 @@
 #!/usr/bin/python
 
 import math
-import sys
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
 
-from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import Text, degrees, radians, rotate_2d
+from laser import Polygon, Circle, Collection, Config
+from laser import radians, rotate_2d
 
 # Involute gears, see :
 # http://www.cartertools.com/involute.html
@@ -15,7 +14,10 @@ from laser import Text, degrees, radians, rotate_2d
 def scale(a):
     return a * 254
 
-def make_involute(P, N, PA):
+#
+#
+
+def make_involute(P, N, PA=14.5):
     D = N / P                       # Pitch Diameter
     R = D / 2.0                     # Pitch Radius
     DB = D * math.cos(radians(PA))  # Base Circle Diameter
@@ -33,7 +35,14 @@ def make_involute(P, N, PA):
     acb = 360 / ncb
     gt = 360.0 / N                  # Gear Tooth Spacing
 
+    info = {
+        "outside_dia" :  scale(DO),
+        "pitch_dia" : scale(D),
+        "root_dia" : scale(DR),
+    }
+
     work = Collection()
+    work.info = info
     v = Polygon()
     v.add(0, scale(RR))
 
@@ -82,33 +91,31 @@ def make_involute(P, N, PA):
 #
 #
 
-x_margin = 10
-y_margin = 20
+if __name__ == "__main__":
+    x_margin = 10
+    y_margin = 20
 
-def commit(work):
-    #work.translate(x_margin, y_margin)
-    work.draw(drawing, config.cut())
+    def commit(work):
+        #work.translate(x_margin, y_margin)
+        work.draw(drawing, config.cut())
 
-config = Config()
+    config = Config()
 
-drawing = dxf.drawing("test.dxf")
+    drawing = dxf.drawing("test.dxf")
 
-draw = False
+    P = 16.0
+    N = 20
+    PA = 14.5
 
-if len(sys.argv) > 1:
-    draw = True
+    work = make_involute(P, N, PA)
 
-#
-#
+    for label in [ "outside_dia", "root_dia", "pitch_dia" ]:
+        d = work.info[label]
+        c = Circle((0, 0), d / 2.0, colour=Config.draw_colour)
+        work.add(c)
 
-P = 16.0
-N = 20
-PA = 14.5
+    commit(work)
 
-work = make_involute(P, N, PA)
-
-commit(work)
-
-drawing.save()
+    drawing.save()
 
 # FIN
