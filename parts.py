@@ -122,10 +122,10 @@ class PIR_DYPME003:
 #   http://www.amazon.co.uk/dp/B00CHEZ250
 
 class Temperature_DS18b20:
-    dia = 6
+    dia = 6.2
     length = 50
-    outer_0 = 6.5
-    outer_1 = 4.45
+    outer_0 = 6.7
+    outer_1 = 4.8
     cable_dia = 3.9
     shank = 2.5
 
