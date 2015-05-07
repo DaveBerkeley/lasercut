@@ -79,22 +79,38 @@ for i in range(5, 12):
     x, y = rotate_2d(radians(i * acb), x, y)
     v.add(x, y)
 
+# rotate back 1/4 tooth
 v.rotate(-gt / 4.0)
-c = Collection()
-c.add(v.copy())
-v.reflect_v()
-c.add(v.copy())
-v = c
+xy0 = v.points[-1]
+# add reflection to itself
+w = v.copy()
+w.reflect_v()
+# make sure the halves are joined correctly
+w.points.reverse()
+v.add_poly(w)
+
+prev = None
+first = None
 
 for i in range(N):
     c = v.copy()
     c.rotate(gt * i)
+    se = c.points[0], c.points[-1]
+    if not prev is None:
+        p = Polygon()
+        p.add(*prev[1])
+        p.add(*se[0])
+        work.add(p)
+    if first is None:
+        first = se
+    prev = c.points[0], c.points[-1]
     work.add(c)
 
-for r in [ R, RO, RR, RB ]:
-    print r
-    c = Circle((0, 0), scale(r))
-    work.add(c)
+# join the first and last gears together
+p = Polygon()
+p.add(*prev[1])
+p.add(*first[0])
+work.add(p)
 
 commit(work)
 

@@ -102,6 +102,10 @@ class Polygon:
     def add_arc(self, arc):
         self.arcs.append(arc)
 
+    def add_poly(self, poly):
+        self.points += poly.points
+        self.arcs += poly.arcs
+
     def copy(self):
         poly = Polygon(self.origin)
         poly.arcs = [ arc.copy() for arc in self.arcs ]
