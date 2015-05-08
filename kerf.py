@@ -23,7 +23,12 @@ def parallel(points, kerf, inner):
         x, y = rotate_2d(a, 0, -kerf)
     return (x0 + x, y0 + y), (x1 + x, y1 + y)
 
-def eol(xy0, xy1):
+def vertical(xy0, xy1):
+    x0, _ = xy0
+    x1, _ = xy1
+    return x1 == x0
+
+def equation_of_line(xy0, xy1):
     x0, y0 = xy0
     x1, y1 = xy1
     dx, dy = x1 - x0, y1 - y0
@@ -31,6 +36,8 @@ def eol(xy0, xy1):
     return m, y0 - (m * x0) 
 
 def intersect(e0, e1):
+    # given 2 equations of line
+    # calculate intersection point
     m0, c0 = e0
     m1, c1 = e1
     x = (c0 - c1) / (m1 - m0)
@@ -38,7 +45,7 @@ def intersect(e0, e1):
     return x, y
 
 def dekerf(poly, kerf, inner):
-    # assert Polygon
+    # assert closed Polygon
     work = Polygon(colour=8)
 
     def line_pairs(points):
@@ -52,11 +59,27 @@ def dekerf(poly, kerf, inner):
                 first = l0
         yield points, first
 
+    def solve_for_x(x, xy):
+        m, b = equation_of_line(xy)
+        y = (x * m) + b
+        return y
+
     for xy0, xy1 in line_pairs(poly.points[:]):
         xy0 = parallel(xy0, kerf, inner)
         xy1 = parallel(xy1, kerf, inner)
-        e0, e1 = eol(*xy0), eol(*xy1)
-        x, y = intersect(e0, e1)
+        if vertical(*xy0):
+            # solve for x = x0
+            x = xy0[1][0]
+            m, b = equation_of_line(*xy1)
+            y = (x * m) + b
+        elif vertical(*xy1):
+            # solve for x = x1
+            x = xy1[0][0]
+            m, b = equation_of_line(*xy0)
+            y = (x * m) + b
+        else:
+            e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
+            x, y = intersect(e0, e1)
         work.add(x, y)
     work.close()
     return work
@@ -77,9 +100,9 @@ if __name__ == "__main__":
     PA = 14.5
     pitch_dia = 20
 
-    #work = make_involute(pitch_dia, N, PA)
-    work = Rectangle((0, 0), (10, 10))
-    work.rotate(15)
+    work = make_involute(pitch_dia, N, PA)
+    #work = Rectangle((0, 0), (10, 10))
+    #work.rotate(15)
     commit(work)
 
     kerf = 0.5
