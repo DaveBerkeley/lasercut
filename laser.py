@@ -219,6 +219,7 @@ class Arc:
         self.start_angle = start_angle
         self.end_angle = end_angle
         self.kwargs = kwargs
+        self.hole = kwargs.get("hole", False)
 
     def is_circle(self):
         a1, a2 = normalise_angle(self.start_angle), normalise_angle(self.end_angle)
@@ -269,6 +270,7 @@ class Arc:
     def copy(self):
         a = Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
         a.kwargs = self.kwargs
+        a.hole = self.hole
         return a
 
     def draw(self, drawing, colour):
@@ -299,6 +301,7 @@ assert a.end_angle == 0.0, a.end_angle
 class Circle(Arc):
     def __init__(self, xy, radius, **kwargs):
         Arc.__init__(self, xy, radius, 0, 360, **kwargs)
+        self.hole = kwargs.get("hole", True)
 
 #
 #

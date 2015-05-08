@@ -60,9 +60,11 @@ def line_pairs(points):
             first = l0
     yield points, first
 
-def dekerf(poly, kerf, inner):
+def dekerf(poly, kerf, inner, **kwargs):
     # assert closed Polygon
-    work = Polygon(colour=8)
+    assert isinstance(poly, Polygon)
+    assert poly.points[0] == poly.points[-1]
+    work = Polygon(**kwargs)
 
     for xy0, xy1 in line_pairs(poly.points[:]):
         xy0 = parallel(xy0, kerf, inner)
@@ -78,6 +80,16 @@ def dekerf(poly, kerf, inner):
             x, y = intersect(e0, e1)
         work.add(x, y)
     work.close()
+
+    # compensate for arcs, taking account of the 'hole' status
+    for arc in poly.arcs:
+        a = arc.copy()
+        if a.hole:
+            a.radius -= kerf
+        else:
+            a.radius += kerf
+        work.add_arc(a)
+
     return work
 
 #
@@ -97,12 +109,14 @@ if __name__ == "__main__":
     pitch_dia = 20
 
     work = make_involute(pitch_dia, N, PA)
-    #work = Rectangle((0, 0), (10, 10))
-    #work.rotate(15)
+    c = Circle((0, 0), 4)
+    work.add_arc(c)
+    c = Circle((0, 0), 2, hole=False)
+    work.add_arc(c)
     commit(work)
 
     kerf = 0.5
-    work = dekerf(work.copy(), kerf, False)
+    work = dekerf(work.copy(), kerf, False, colour=12)
     commit(work)
 
     drawing.save()
