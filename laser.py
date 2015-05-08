@@ -271,6 +271,7 @@ class Arc:
         a = Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
         a.kwargs = self.kwargs
         a.hole = self.hole
+        a.info = self.info
         return a
 
     def draw(self, drawing, colour):

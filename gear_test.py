@@ -9,6 +9,7 @@ from laser import Polygon, Circle, Collection, Config
 from laser import radians, rotate_2d
 
 from gears import make_involute
+from kerf import dekerf
 
 #
 #
@@ -36,14 +37,16 @@ if __name__ == "__main__":
     pr = pitch_dia / 2.0
 
     r = 1.5
+    kerf = 0.2
 
     m = pitch_dia / N
 
     x, y = 0, 0
     for i, N in enumerate(range(10, 21, 1)):
         pd = m * N
-        print pd, N
+        print pd, N, "kerf=", kerf
         work = make_involute(pd, N, PA)
+        work = dekerf(work, kerf, False)
         x += work.info["outside_dia"]
         if x > 100:
             x = 0

@@ -90,6 +90,9 @@ def dekerf(poly, kerf, inner, **kwargs):
             a.radius += kerf
         work.add_arc(a)
 
+    if getattr(poly, "info"):
+        work.info = poly.info
+
     return work
 
 #
