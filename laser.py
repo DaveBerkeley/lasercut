@@ -204,6 +204,13 @@ class Rectangle(Polygon):
 #
 #
 
+def normalise_angle(x):
+    while x >= 360:
+        x -= 360
+    while x < 0:
+        x += 360
+    return x
+
 class Arc:
 
     def __init__(self, xy, radius, start_angle, end_angle, **kwargs):
@@ -213,11 +220,17 @@ class Arc:
         self.end_angle = end_angle
         self.kwargs = kwargs
 
+    def is_circle(self):
+        a1, a2 = normalise_angle(self.start_angle), normalise_angle(self.end_angle)
+        return a1 == a2
+
     def rotate(self, degrees):
         rad = radians(degrees)
         self.x, self.y = rotate_2d(rad, self.x, self.y)
         # rotate start/end angles
         # check for < 0, or > 360 condition
+        if self.is_circle():
+            return
         def rot(a):
             a += degrees
             while a < 0:
@@ -237,6 +250,10 @@ class Arc:
         self.y = y
 
     def reflect_v(self):
+        self.x = -self.x
+        if self.is_circle():
+            return
+
         def reflect_angle(a):
             if 0 <= a < 180:
                 return 180 - a
@@ -244,12 +261,10 @@ class Arc:
             while b < 0:
                 b += 360
             return b
-
-        self.x = -self.x
-        if self.start_angle != self.end_angle:
-            self.start_angle = reflect_angle(self.start_angle)
-            self.end_angle = reflect_angle(self.end_angle)
-            self.start_angle, self.end_angle = self.end_angle, self.start_angle
+        
+        self.start_angle = reflect_angle(self.start_angle)
+        self.end_angle = reflect_angle(self.end_angle)
+        self.start_angle, self.end_angle = self.end_angle, self.start_angle
 
     def copy(self):
         a = Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
@@ -258,7 +273,10 @@ class Arc:
 
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
-        item = dxf.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
+        if self.is_circle():
+            item = dxf.circle(radius=self.radius, center=(self.x, self.y), color=colour)
+        else:
+            item = dxf.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
         drawing.add(item)
 
     def __repr__(self):
