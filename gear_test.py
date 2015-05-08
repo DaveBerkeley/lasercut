@@ -50,16 +50,16 @@ if __name__ == "__main__":
             y +=  work.info["outside_dia"]
 
         c = Circle((0, 0), r)
-        work.add(c)
+        work.add_arc(c)
         d, mr = 3, 0.5
         c = Circle((0, d), mr)
-        work.add(c)
+        work.add_arc(c)
         c = Circle((0, -d), mr)
-        work.add(c)
+        work.add_arc(c)
         c = Circle((d, 0), mr)
-        work.add(c)
+        work.add_arc(c)
         c = Circle((-d, 0), mr)
-        work.add(c)
+        work.add_arc(c)
         work.translate(x + pr, y + pr)
         commit(work)
 
