@@ -66,6 +66,9 @@ def dekerf(poly, kerf, inner, **kwargs):
     assert poly.points[0] == poly.points[-1]
     work = Polygon(**kwargs)
 
+    # offset by half the kerf width
+    kerf /= 2.0
+
     for xy0, xy1 in line_pairs(poly.points[:]):
         xy0 = parallel(xy0, kerf, inner)
         xy1 = parallel(xy1, kerf, inner)
