@@ -44,39 +44,35 @@ def intersect(e0, e1):
     y = (m0 * x) + c0
     return x, y
 
+def solve_for_x(x, xy):
+    m, b = equation_of_line(*xy)
+    y = (x * m) + b
+    return x, y
+
+def line_pairs(points):
+    first = None
+    while len(points) >= 3:
+        l0 = points[:2]
+        l1 = points[1:3]
+        yield l0, l1
+        points = points[1:]
+        if first is None:
+            first = l0
+    yield points, first
+
 def dekerf(poly, kerf, inner):
     # assert closed Polygon
     work = Polygon(colour=8)
-
-    def line_pairs(points):
-        first = None
-        while len(points) >= 3:
-            l0 = points[:2]
-            l1 = points[1:3]
-            yield l0, l1
-            points = points[1:]
-            if first is None:
-                first = l0
-        yield points, first
-
-    def solve_for_x(x, xy):
-        m, b = equation_of_line(xy)
-        y = (x * m) + b
-        return y
 
     for xy0, xy1 in line_pairs(poly.points[:]):
         xy0 = parallel(xy0, kerf, inner)
         xy1 = parallel(xy1, kerf, inner)
         if vertical(*xy0):
             # solve for x = x0
-            x = xy0[1][0]
-            m, b = equation_of_line(*xy1)
-            y = (x * m) + b
+            x, y = solve_for_x(xy0[1][0], xy1)
         elif vertical(*xy1):
             # solve for x = x1
-            x = xy1[0][0]
-            m, b = equation_of_line(*xy0)
-            y = (x * m) + b
+            x, y = solve_for_x(xy1[0][0], xy0)
         else:
             e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
             x, y = intersect(e0, e1)
