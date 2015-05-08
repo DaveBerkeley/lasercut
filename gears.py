@@ -34,7 +34,7 @@ def circle_intersect(v, r):
 #
 #
 
-def make_involute(pitch_dia, N, PA=14.5):
+def make_involute(pitch_dia, N, PA=14.5, teeth=None):
     m = float(pitch_dia) / N
     P = 1.0 / m
     D = N / P                       # Pitch Diameter
@@ -86,13 +86,14 @@ def make_involute(pitch_dia, N, PA=14.5):
     work = Polygon()
     work.info = info
     # add all the teeth to the work
-    for i in range(N):
+    for i in range(teeth or N):
         c = v.copy()
         c.rotate(gt * i)
         work.add_poly(c)
 
     # join the ends together
-    work.close()
+    if teeth is None:
+        work.close()
     return work
 
 #
@@ -118,8 +119,13 @@ if __name__ == "__main__":
     N = 20
     PA = 14.5
     pitch_dia = 20
+    nteeth = None # 6 # set if only some teeth required
 
-    work = make_involute(pitch_dia, N, PA)
+    work = make_involute(pitch_dia, N, PA, teeth=nteeth)
+
+    if nteeth:
+        work.add(0, 0)
+        work.close()
 
     if draw:
         for label in [ "outside_dia", "root_dia", "pitch_dia" ]:
