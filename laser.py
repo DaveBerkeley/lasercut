@@ -2,9 +2,6 @@
 import math
 import cmath
 
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
-
 #
 #
 
@@ -93,6 +90,9 @@ class Extent:
         elif a > self.maxa:
             self.maxa = a
 
+#
+#
+
 class Polygon:
     def __init__(self, xy=(0, 0), **kwargs):
         self.points = []
@@ -175,8 +175,7 @@ class Polygon:
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
         for xy0, xy1 in self.lines():
-            item = dxf.line(xy0, xy1, color=colour)
-            drawing.add(item)
+            drawing.line(xy0, xy1, color=colour)
         for arc in self.arcs:
             arc.draw(drawing, colour)
 
@@ -278,10 +277,9 @@ class Arc:
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
         if self.is_circle():
-            item = dxf.circle(radius=self.radius, center=(self.x, self.y), color=colour)
+            drawing.circle(radius=self.radius, center=(self.x, self.y), color=colour)
         else:
-            item = dxf.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
-        drawing.add(item)
+            drawing.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
 
     def __repr__(self):
         return "Arc(%s,%s,%s,%s,%s)" % (self.x, self.y, self.radius, self.start_angle, self.end_angle)
@@ -369,8 +367,7 @@ class Text:
         self.rot += degrees
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
-        text = dxf.mtext(self.text, insert=self.origin, rotation=self.rot, color=colour, **self.kwargs)
-        drawing.add(text)
+        drawing.text(self.text, insert=self.origin, rotation=self.rot, color=colour, **self.kwargs)
 
 #
 #

@@ -3,11 +3,9 @@
 import math
 import sys
 
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
-
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
 from laser import Text, degrees
+from render import DXF as dxf
 
 #
 #

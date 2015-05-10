@@ -2,11 +2,9 @@
 
 import sys
 
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
-
 from laser import Polygon, Circle, Collection, Config
 from laser import radians, rotate_2d
+from render import DXF as dxf
 
 from gears import make_involute
 from kerf import dekerf

@@ -2,9 +2,7 @@
 
 from laser import Rectangle, Polygon, Circle, Config
 from laser import Collection, Text, hinge, corner
-
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
+from render import DXF as dxf
 
 #
 #

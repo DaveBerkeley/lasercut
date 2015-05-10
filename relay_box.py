@@ -4,9 +4,10 @@ import sys
 
 from laser import Rectangle, Polygon, Circle, Collection, Config, Material
 from laser import TCut, Text, splice, cutout
+from render import DXF as dxf
 
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
+#
+#
 
 def add_cutouts(work, locs, template):
     for x, y, rot in locs:

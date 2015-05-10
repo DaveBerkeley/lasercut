@@ -2,11 +2,9 @@
 
 from laser import Config, Polygon, Rectangle, Circle, Collection
 from laser import angle, radians, degrees, rotate_2d
+from render import DXF as dxf
 
 from gears import make_involute
-
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
 
 #
 #   Compensate for kerf

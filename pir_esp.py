@@ -2,11 +2,9 @@
 
 import sys
 
-# https://pypi.python.org/pypi/dxfwrite/
-from dxfwrite import DXFEngine as dxf
-
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
 from laser import TCut, Text, splice, cutout
+from render import DXF as dxf
 
 from parts import ESP_Olimex_Dev as ESP
 from parts import PIR_DYPME003 as PIR
