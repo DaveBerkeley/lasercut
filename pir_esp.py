@@ -251,11 +251,14 @@ def make_t_holder(draw, top_h, tab_locs, is_top=False, is_mid=False, is_bot=Fals
     tabs = tab_locs[0]
     for x in tabs:
         cut_locs.append((x, 0, 180))
-        cut_locs.append((x, top_h, 0))
+        if not is_mid:
+            cut_locs.append((x, top_h, 0))
     tabs = tab_locs[1]
-    for y in tabs:
-        cut_locs.append((0, y, 90))
-        cut_locs.append((front_win, y, 270))
+    for i, y in enumerate(tabs):
+        if (not is_mid) or (i == 1):
+            cut_locs.append((0, y, 90))
+        if not is_mid:
+            cut_locs.append((front_win, y, 270))
 
     template = cutout(tab_len, thick)
     work = add_cutouts(work, cut_locs, template)
@@ -286,7 +289,7 @@ def make_side(draw, w, h, tab_locs, is_left=False, is_right=False):
 
     # end tabs to interlock with horizontal plates
     cut_locs = [
-        [ 0, lo_h + (thick / 2.0), 270 ],
+        #[ 0, lo_h + (thick / 2.0), 270 ],
         [ w, lo_h + (thick / 2.0), 90 ],
     ]
     template = cutout(thick, tab_len)
