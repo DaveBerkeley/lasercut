@@ -32,7 +32,7 @@ def circle_intersect(v, r):
 #
 #
 
-def make_involute(pitch_dia, N, PA=14.5, teeth=None):
+def make_involute(pitch_dia, N, PA=20.0, teeth=None):
     m = float(pitch_dia) / N
     P = 1.0 / m
     D = N / P                       # Pitch Diameter
@@ -61,12 +61,22 @@ def make_involute(pitch_dia, N, PA=14.5, teeth=None):
     v = Polygon()
     v.add(0, RR)
 
-    # note : the range 5 .. 12 approximates to the intersection
-    # with the D and DO circles
-    for i in range(5, 12):
+    # generate involute curve points where
+    # radius is with the D and DO circles
+    first = None
+    for i in range(20):
         x, y = i * RB / 20.0, RB
         x, y = rotate_2d(radians(i * acb), x, y)
+        r = abs(complex(x, y))
+        if r < R:
+            first = x, y
+            continue
+        if first:
+            v.add(*first)
+            first = None
         v.add(x, y)
+        if r > RO:
+            break
 
     # need to trim last involute line segment
     # so it doesn't exceed the outside_radius
@@ -115,7 +125,7 @@ if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
 
     N = 20
-    PA = 14.5
+    PA = 20.0
     pitch_dia = 20
     nteeth = None # 6 # set if only some teeth required
 
