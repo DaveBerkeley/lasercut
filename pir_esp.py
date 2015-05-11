@@ -332,8 +332,7 @@ def make_side(draw, w, h, tab_locs, is_left=False, is_right=False):
     if is_left:
         c = ESP().make_elev(draw)
         c.rotate(270)
-        c.reflect_v()
-        c.translate(ESP.max_d, ESP.h + margin)
+        c.translate(0, ESP.h + margin)
         work.add(c)
 
     work.translate(thick, thick)

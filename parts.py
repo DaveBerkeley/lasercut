@@ -26,18 +26,18 @@ class M3(Nut):
 #   https://www.olimex.com/Products/IoT/ESP8266-EVB/open-source-hardware
 
 class ESP_Olimex_Dev:
-    w = 57
-    h = 49.5
+    w = 57.4
+    h = 49.6
     dw = 49.35
     dh = 41.6
     pcb = 1.5
     hole_dia = 3 # 3.3
 
     power_h = 12.5 - pcb
-    power_x0 = 17.2
-    power_w = 8.9
-    solder = 3.5
-    max_d = 16.5 - pcb + solder
+    power_x0 = 17.5
+    power_w = 9.0
+    solder = 3.7
+    max_d = 16.8 - pcb + solder
 
     def make(self, draw):
         esp = Collection()
@@ -71,6 +71,9 @@ class ESP_Olimex_Dev:
         work = Collection()
         if draw:
             c = Rectangle((0, 0), (self.h, self.max_d), colour=Config.draw_colour)
+            work.add(c)
+            c = Rectangle((0, 0), (self.h, self.pcb), colour=Config.draw_colour)
+            c.translate(0, self.solder)
             work.add(c)
 
         c = Rectangle((0, 0), (self.power_w, self.power_h))
@@ -122,11 +125,11 @@ class PIR_DYPME003:
 #   http://www.amazon.co.uk/dp/B00CHEZ250
 
 class Temperature_DS18b20:
-    dia = 6.2
+    dia = 6.1
     length = 50
-    outer_0 = 6.7
-    outer_1 = 4.8
-    cable_dia = 3.9
+    outer_0 = 6.5
+    outer_1 = 4.7
+    cable_dia = 3.8
     shank = 2.5
 
 #
