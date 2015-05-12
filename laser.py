@@ -89,6 +89,10 @@ class Extent:
             self.mina = a
         elif a > self.maxa:
             self.maxa = a
+    def mid(self):
+        return (self.maxa + self.mina) / 2.0
+    def __repr__(self):
+        return "Extent(min=%f,max=%f)" % (self.mina, self.maxa)
 
 #
 #
@@ -172,6 +176,13 @@ class Polygon:
         # TODO : needs extent of arcs too
         return Rectangle((xx.mina, yy.mina), (xx.maxa, yy.maxa))
 
+    def centre(self):
+        xx, yy = Extent(), Extent()
+        for x, y in self.points:
+            xx.add(x)
+            yy.add(y)
+        return xx.mid(), yy.mid()
+
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
         for xy0, xy1 in self.lines():
@@ -194,7 +205,7 @@ class Rectangle(Polygon):
         self.add(x1, y1)
         self.add(x0, y1)
         self.close()
-        self.str = "Rectangle((%d,%d),(%d,%d))" % (x0, y0, x1, y1)
+        self.str = "Rectangle((%f,%f),(%f,%f))" % (x0, y0, x1, y1)
 
     def corners(self):
         return self.points[:-1]

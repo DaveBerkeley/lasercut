@@ -41,7 +41,7 @@ class DXF(Render):
         self.add(item)
 
     @staticmethod
-    def drawing(filename=None):
-        return DXF(filename)
+    def drawing(*args):
+        return DXF(*args)
 
 # FIN
