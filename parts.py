@@ -160,4 +160,23 @@ class Hanger:
         w.add(c)
         return w
 
+# Mini USB socket
+
+def mini_usb():
+    usb_w1 = 7.7
+    usb_w2 = 6.5
+    usb_h = 3.95
+    c = Polygon((0, 0))
+    indent = (usb_w1 - usb_w2) / 2.0
+    c.add(0, usb_h)
+    c.add(usb_w1, usb_h)
+    c.add(usb_w1, 2*usb_h/3.0)
+    c.add(usb_w2 + indent, usb_h/3.0)
+    c.add(usb_w2 + indent, 0)
+    c.add(indent, 0)
+    c.add(indent, usb_h/3.0)
+    c.add(0, 2*usb_h/3.0)
+    c.close()
+    return c
+
 # FIN

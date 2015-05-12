@@ -6,6 +6,8 @@ from laser import Rectangle, Polygon, Circle, Collection, Config, Material
 from laser import TCut, Text, splice, cutout
 from render import DXF as dxf
 
+from parts import mini_usb
+
 #
 #
 
@@ -104,22 +106,28 @@ if 1:
 work = Collection()
 work.add(prev)
 
-# need fixing holes in botom plate for relay board
+usb_up = 10
+usb_in = cut_in + (thick/2.0) + 6
 
-relay_dy = 33
-relay_dx = 44
-relay_edge = 3
-relay_hole = 3
+class Relay:
+    dy = 33
+    dx = 44
+    edge = 3
+    hole = 3
 
-relay_x = lout - cut_in - thick - relay_edge - relay_dx - end_space
+relay = Relay()
 
-c = Circle((0, 0), relay_hole/2.0)
+# need fixing holes in bottom plate for relay board
+
+relay_x = lout - cut_in - thick - relay.edge - relay.dx - end_space
+
+c = Circle((0, 0), relay.hole/2.0)
 d = c.copy()
-d.translate(relay_x, (lid_w/2.0) - (relay_dy/2.0))
+d.translate(relay_x, (lid_w/2.0) - (relay.dy/2.0))
 work.add(d)
 
 d = c.copy()
-d.translate(relay_x, (lid_w/2.0) + (relay_dy/2.0))
+d.translate(relay_x, (lid_w/2.0) + (relay.dy/2.0))
 work.add(d)
 
 work.translate(x_margin, y_margin + lid_w + between_work)
@@ -194,28 +202,6 @@ work.draw(drawing, config.cut())
 c = prev.copy()
 work = Collection()
 work.add(c)
-
-# add USB socket
-
-def mini_usb():
-    usb_w1 = 7.7
-    usb_w2 = 6.5
-    usb_h = 3.95
-    c = Polygon((0, 0))
-    indent = (usb_w1 - usb_w2) / 2.0
-    c.add(0, usb_h)
-    c.add(usb_w1, usb_h)
-    c.add(usb_w1, 2*usb_h/3.0)
-    c.add(usb_w2 + indent, usb_h/3.0)
-    c.add(usb_w2 + indent, 0)
-    c.add(indent, 0)
-    c.add(indent, usb_h/3.0)
-    c.add(0, 2*usb_h/3.0)
-    c.close()
-    return c
-
-usb_up = 10
-usb_in = cut_in + (thick/2.0) + 6
 
 c = mini_usb()
 c.translate(usb_in, usb_up)
