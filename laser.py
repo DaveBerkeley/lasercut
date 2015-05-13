@@ -458,7 +458,6 @@ def equation_of_line(xy0, xy1):
     dx, dy = x1 - x0, y1 - y0
     m = (y1 - y0) / (x1 - x0)
     c = y0 - (m * x0) 
-    print "eol", m, c
     return m, c
 
 def intersect_lines(e0, e1):
@@ -494,57 +493,7 @@ def parallel_intersect(xy0, xy1, d, inner):
 #
 #
 
-def cut_poly(poly, xy, d, fn):
-    print poly.points, xy
-
-    changed = 0
-    # if first point
-    if poly.points[0] == xy:
-        line = poly.points[:2]
-        x, y = trunc(line, d)
-        poly.points[0] = x, y
-        changed += 1
-        fn.point(poly, line, (x, y))
-    # if last point
-    if poly.points[-1] == xy:
-        line = poly.points[-1], poly.points[-2]
-        x, y = trunc(line, d)
-        poly.points[-1] = x, y
-        changed += 2
-        fn.point(poly, line, (x, y))
-
-    if changed > 0:
-        print "simple poly", poly.points, changed
-        return poly.copy()
-
-    # TODO need to split into 2 polygons
-    c = Collection()
-    points = []
-    p = poly.copy()
-    p.points = []
-    for point in poly.points:
-        p.add(*point)
-        if point == xy:
-            p = fn.call(p)
-            c.add(p)
-            p = Polygon()
-            p.add(*point)
-
-    p = fn.call(p)
-    c.add(p)
-
-    for p in c.data:
-        print "split poly", p.points
-    return c
-
-#
-#
- 
 def remove_point(poly, xy, cuts):
-    print "remove", poly.points, xy, cuts
-    #for cut in cuts:
-    #    c = Circle(cut, 0.5, colour=15)
-    #    poly.add_arc(c)
 
     found = False
     # check first segment
@@ -553,20 +502,17 @@ def remove_point(poly, xy, cuts):
             if on_segment(cut, poly.points[:2]):
                 poly.points[0] = cut
                 found = True
-                print "first", cut
     # check last segment
     if poly.points[-1] == xy:
         for cut in cuts:
             if on_segment(cut, poly.points[-2:]):
                 poly.points[-1] = cut
                 found = True
-                print "last", cut
 
     if found:
         return poly
 
     # need to split the polygon into two parts
-    #c = Collection()
     polys = []
     p = poly.copy()
     p.points = []
@@ -574,11 +520,9 @@ def remove_point(poly, xy, cuts):
         p.add(*point)
         if point == xy:
             polys.append(p)
-            print "split", p.points,
             p = Polygon()
             p.add(*point)
 
-    print p.points
     polys.append(p)
     c = Collection()
     for p in polys:
@@ -608,7 +552,6 @@ def make_unit_vector(xy1, xy2):
     return v
 
 def corner(shape, xy, radius, inside=True, tracker=None):
-    print "corner", xy
 
     if not isinstance(shape, Collection):
         c = Collection()
@@ -629,7 +572,6 @@ def corner(shape, xy, radius, inside=True, tracker=None):
             self.on_match(p)
 
         def on_match(self, p):
-            print "on_match", p
             # find the 2 line segments that make up the corner to curve
             lines = [ None, None ]
             for xy0, xy1 in p.lines():
@@ -671,7 +613,8 @@ def corner(shape, xy, radius, inside=True, tracker=None):
             # angles to cut points from arc centre
             a0, a1 = [ degrees(cmath.phase(v)) for v in [ va, vb ] ]
             # add the arc
-            print "arc", v0, a0, a1
+            if not inside:
+                a0, a1 = a1, a0
             c = Arc((v0.real, v0.imag), radius, a0, a1)
             self.parent.add(c)
 

@@ -29,6 +29,8 @@ def edge(w, h, s, hole):
     # add corners
     work = corner(work, (0, 0), e)
     work = corner(work, (w, 0), e)
+    # inside
+    work = corner(work, (s, s), e, inside=False)
 
     return work
 
@@ -63,7 +65,7 @@ if __name__ == "__main__":
 
     w = 40.0
     h = 50.0
-    s = 6.0
+    s = 5.0
     hole = 3.0
     spacing = 1.0
 
