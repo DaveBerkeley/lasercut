@@ -25,6 +25,11 @@ def edge(w, h, s, hole):
     for x, y in locs:
         c = Circle((x, y), hole/2)
         work.add_arc(c)
+
+    # add corners
+    work = corner(work, (0, 0), e)
+    work = corner(work, (w, 0), e)
+
     return work
 
 def end_plate(w, h, s, hole):

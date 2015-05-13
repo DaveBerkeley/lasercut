@@ -494,16 +494,6 @@ def parallel_intersect(xy0, xy1, d, inner):
 #
 #
 
-def trunc(line, d):
-    (x1, y1), (x2, y2) = line
-    dx = x2 - x1
-    dy = y2 - y1
-    c = complex(dx, dy)
-    c /= abs(c) # unit vector
-    c *= d
-    x, y = x1 + c.real, y1 + c.imag
-    return x, y
-
 def cut_poly(poly, xy, d, fn):
     print poly.points, xy
 
@@ -549,6 +539,54 @@ def cut_poly(poly, xy, d, fn):
 
 #
 #
+ 
+def remove_point(poly, xy, cuts):
+    print "remove", poly.points, xy, cuts
+    #for cut in cuts:
+    #    c = Circle(cut, 0.5, colour=15)
+    #    poly.add_arc(c)
+
+    found = False
+    # check first segment
+    if poly.points[0] == xy:
+        for cut in cuts:
+            if on_segment(cut, poly.points[:2]):
+                poly.points[0] = cut
+                found = True
+                print "first", cut
+    # check last segment
+    if poly.points[-1] == xy:
+        for cut in cuts:
+            if on_segment(cut, poly.points[-2:]):
+                poly.points[-1] = cut
+                found = True
+                print "last", cut
+
+    if found:
+        return poly
+
+    # need to split the polygon into two parts
+    #c = Collection()
+    polys = []
+    p = poly.copy()
+    p.points = []
+    for point in poly.points:
+        p.add(*point)
+        if point == xy:
+            polys.append(p)
+            print "split", p.points,
+            p = Polygon()
+            p.add(*point)
+
+    print p.points
+    polys.append(p)
+    c = Collection()
+    for p in polys:
+        c.add(remove_point(p, xy, cuts))
+    return c
+
+#
+#
 
 def visit(c, fn):
     if isinstance(c, Collection):
@@ -569,13 +607,13 @@ def make_unit_vector(xy1, xy2):
     v /= abs(v)
     return v
 
-def corner(poly, xy, radius, inside=True, tracker=None):
+def corner(shape, xy, radius, inside=True, tracker=None):
     print "corner", xy
 
-    if not isinstance(poly, Collection):
+    if not isinstance(shape, Collection):
         c = Collection()
-        c.add(poly)
-        poly = c
+        c.add(shape)
+        shape = c
 
     class Visitor:
         def __init__(self, parent):
@@ -614,7 +652,7 @@ def corner(poly, xy, radius, inside=True, tracker=None):
             # generate the corner arc
             p1, p2 = self.corner(v1, v2, complex(*data[1]))
             # save the line segment cut points
-            self.cuts = p1, p2
+            self.cuts = [ (v.real, v.imag) for v in [ p1, p2 ] ]
 
         def corner(self, v1, v2, xy):
             s = v1 + v2 # vector at mid angle - centre of arc lies on this line
@@ -642,14 +680,25 @@ def corner(poly, xy, radius, inside=True, tracker=None):
 
     arcs = Collection()
     v = Visitor(arcs)
-    visit(poly, v.on_poly)
-    poly.add(arcs)
+    visit(shape, v.on_poly)
+    shape.add(arcs)
 
-    for cut in v.cuts:
-        c = Circle((cut.real, cut.imag), 0.5, colour=15)
-        poly.add(c)
+    # make the cuts
+    def cut(c):
+        for i, d in enumerate(c.data):
+            if isinstance(d, Collection):
+                cut(d)
+                continue
+            if not isinstance(d, Polygon):
+                continue
+            if not has_point(d, xy):
+                continue
+            c.data[i] = remove_point(d, xy, v.cuts)
+        return c
 
-    return poly
+    cut(shape)
+
+    return shape
 
 #
 #
