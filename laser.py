@@ -459,7 +459,7 @@ def equation_of_line(xy0, xy1):
     m = (y1 - y0) / (x1 - x0)
     return m, y0 - (m * x0) 
 
-def intersect(e0, e1):
+def intersect_lines(e0, e1):
     # given 2 equations of line
     # calculate intersection point
     m0, c0 = e0
@@ -473,9 +473,7 @@ def solve_for_x(x, xy):
     y = (x * m) + b
     return x, y
 
-def parallel_intersect(xy0, xy1, d, inner):
-    xy0 = parallel(xy0, d, inner)
-    xy1 = parallel(xy1, d, inner)
+def intersect(xy0, xy1):
     if vertical(*xy0):
         # solve for x = x0
         return solve_for_x(xy0[1][0], xy1)
@@ -484,7 +482,12 @@ def parallel_intersect(xy0, xy1, d, inner):
         return solve_for_x(xy1[0][0], xy0)
     else:
         e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
-        return intersect(e0, e1)
+        return intersect_lines(e0, e1)
+
+def parallel_intersect(xy0, xy1, d, inner):
+    xy0 = parallel(xy0, d, inner)
+    xy1 = parallel(xy1, d, inner)
+    return intersect(xy0, xy1)
 
 #
 #
