@@ -83,8 +83,8 @@ def make_front(draw, tab_locs, back=False):
 
     work.add(c)
 
-    work = corner(work, (front_wout, front_hout), overhang, inside=True)
-    work = corner(work, (0, front_hout), overhang, inside=True)
+    work = corner(work, (front_wout, front_hout), overhang)
+    work = corner(work, (0, front_hout), overhang)
 
     # tabs for top / bottom / middle plates
     r = Rectangle((0, 0), (tab_len, thick))

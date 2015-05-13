@@ -2,7 +2,7 @@
 
 from render import DXF as dxf
 from parts import mini_usb
-from laser import Config, Collection, corner
+from laser import Config, Collection, corner, Polygon
 
 #
 #
@@ -34,10 +34,27 @@ if __name__ == "__main__":
         corners = [ 0, 1, 4, 5, ]
         points = work.points[:]
         for i in corners:
-            work = corner(work, points[i], 0.4, inside=True)
+            work = corner(work, points[i], 0.4)
 
+    #work.draw(drawing, config.cut())
+
+    d = 20.0
+    e = 20.0
+    p = Polygon()
+    p.add(0, 0)
+    p.add(0, d)
+    p.add(d, d)
+    p.add(2*(d/3), 2*(d/3))
+    p.add(d, 0)
+    p.add(d/3, d/3)
+    p.close()
+
+    for point in p.points[:]:
+        p = corner(p, point, 1)
+
+    work = p
     work.draw(drawing, config.cut())
-    
+
     drawing.save()
 
 # FIN

@@ -613,6 +613,8 @@ def corner(shape, xy, radius, inside=False, tracker=None):
             # angles to cut points from arc centre
             a0, a1 = [ degrees(cmath.phase(v)) for v in [ va, vb ] ]
             # add the arc
+            if normalise_angle(a1 - a0) > 180:
+                a0, a1 = a1, a0
             if inside:
                 a0, a1 = a1, a0
             c = Arc((v0.real, v0.imag), radius, a0, a1)
