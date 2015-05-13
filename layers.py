@@ -3,7 +3,7 @@
 import sys
 
 from render import DXF as dxf
-from laser import Config, Collection, Polygon, Circle, Rectangle
+from laser import Config, Collection, Polygon, Circle, Rectangle, corner
 
 #
 #
@@ -36,6 +36,9 @@ def end_plate(w, h, s, hole):
     for x, y in locs:
         c = Circle((x, y), hole/2)
         work.add_arc(c)
+
+    work = corner(work, (0, 0), e)
+
     return work
 
 #

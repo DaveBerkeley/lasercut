@@ -492,38 +492,64 @@ def parallel_intersect(xy0, xy1, d, inner):
 #
 #
 
+def trunc(xy1, xy2, d):
+    print "trunc", xy1, xy2, d
+    x1, y1 = xy1
+    x2, y2 = xy2
+    dx = x2 - x1
+    dy = y2 - y1
+    c = complex(dx, dy)
+    c /= abs(c) # unit vector
+    c *= d
+    x, y = c.real, c.imag
+    # TODO : correct by quadrant
+    if not (x1 <= x <= x2):
+        x = -x
+    if not (y1 <= y <= y2):
+        y = -y
+    print "tr", x, y
+    return x, y
+
+def cut_poly(poly, xy, d):
+    print poly.points, xy
+
+    # if first point
+    if poly.points[0] == xy:
+        poly.points[0] = trunc(poly.points[0], poly.points[1], d)
+    # if last point
+    if poly.points[-1] == xy:
+        poly.points[-1] = trunc(poly.points[-1], poly.points[-2], d)
+        return poly
+
+    # TODO need to split into 2
+
+    return poly
+
 def corner(poly, xy, radius, inside=True):
     # TODO
     #return poly
     work = Collection()
 
     # find the lines touching xy
+    points_idx = []
     lines = []
     for i in range(len(poly.points)-1):
         line = poly.points[i:i+2]
         if (line[0] == xy) or (line[1] == xy):
             lines.append(line)
+            points_idx.append(i)
 
     print lines
+    print points_idx
 
-    x, y = parallel_intersect(lines[0], lines[1], radius, inside)
-    print "arc centre", x, y
-    c = Circle((x, y), radius)
+    cx, cy = parallel_intersect(lines[0], lines[1], radius, inside)
+    print "arc centre", cx, cy
+    c = Circle((cx, cy), radius, colour=10)
     work.add(c)
 
-    x1, y1 = lines[0][1]
-    x2, y2 = lines[1][0]
-    (x1, y1), (x2, y2) = lines[0]
-    print x1, y1, ",", x2, y2
-    dx = x2 - x1
-    dy = y2 - y1
-    cx, cy = rotate_2d(radians(90), dx, dy)
-    print dx, dy, cx, cy
-    p = Polygon()
-    p.add(x, y)
-    p.add(cy, cx)
-    work.add(p)
-
+    print poly.points
+    poly = cut_poly(poly, xy, radius)
+    print poly.points
     work.add(poly)
 
     return work
