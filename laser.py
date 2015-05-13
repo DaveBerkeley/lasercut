@@ -572,17 +572,24 @@ def make_unit_vector(xy1, xy2):
 def corner(poly, xy, radius, inside=True, tracker=None):
     print "corner", xy
 
-    # find the polygon with the specified corner
+    if not isinstance(poly, Collection):
+        c = Collection()
+        c.add(poly)
+        poly = c
 
     class Visitor:
         def __init__(self, parent):
             self.parent = parent
+            self.cuts = None
+
         def on_poly(self, p):
+            # find the polygon with the specified corner
             if not isinstance(p, Polygon):
                 return
             if not has_point(p, xy):
                 return
             self.on_match(p)
+
         def on_match(self, p):
             print "on_match", p
             # find the 2 line segments that make up the corner to curve
@@ -604,40 +611,43 @@ def corner(poly, xy, radius, inside=True, tracker=None):
             # make unit vectors for the vertex
             v1 = make_unit_vector(data[1], data[0])
             v2 = make_unit_vector(data[1], data[2])
-            # generate the corner arc and line segment cut points
+            # generate the corner arc
             p1, p2 = self.corner(v1, v2, complex(*data[1]))
-
-            if 1:
-                c = Circle((p1.real, p1.imag), 0.5, colour=13)
-                self.parent.add(c)
-                c = Circle((p2.real, p2.imag), 0.5, colour=13)
-                self.parent.add(c)
+            # save the line segment cut points
+            self.cuts = p1, p2
 
         def corner(self, v1, v2, xy):
-            s = v1 + v2
-            s /= abs(s)
+            s = v1 + v2 # vector at mid angle - centre of arc lies on this line
+            s /= abs(s) # unit vector
             angle = cmath.phase(s) - cmath.phase(v1)
-            d = abs(radius / math.tan(angle))
+            d = abs(radius / math.tan(angle)) # distance to start of arc from vertex
             v1 *= d
             v2 *= d
-            h = math.sqrt((radius*radius)+(d*d))
+            # distance along s vector to centre of arc
+            h = abs(complex(radius, d))
             s *= h
 
-            v0 = s + xy
-            va = v1 - s
+            v0 = s + xy # centre of arc
+            va = v1 - s # vectors to cut points
             vb = v2 - s
+            # angles to cut points from arc centre
             a0, a1 = [ degrees(cmath.phase(v)) for v in [ va, vb ] ]
-            print "arc", v0, degrees(a0), degrees(a1)
+            # add the arc
+            print "arc", v0, a0, a1
             c = Arc((v0.real, v0.imag), radius, a0, a1)
             self.parent.add(c)
 
             # return end points of polygon
             return v1 + xy, v2 + xy
 
-    c = Collection()
-    v = Visitor(c)
+    arcs = Collection()
+    v = Visitor(arcs)
     visit(poly, v.on_poly)
-    poly.add(c)
+    poly.add(arcs)
+
+    for cut in v.cuts:
+        c = Circle((cut.real, cut.imag), 0.5, colour=15)
+        poly.add(c)
 
     return poly
 

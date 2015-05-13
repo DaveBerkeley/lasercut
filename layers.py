@@ -37,9 +37,6 @@ def end_plate(w, h, s, hole):
         c = Circle((x, y), hole/2)
         work.add_arc(c)
 
-    c = Collection()
-    c.add(work)
-    work = c
     work = corner(work, (0, 0), e)
     work = corner(work, (0, h), e)
     work = corner(work, (w, h), e)
