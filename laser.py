@@ -597,37 +597,42 @@ def corner(poly, xy, radius, inside=True, tracker=None):
 
                 assert lines[0][1] == lines[1][0]
                 data = lines[0][0], lines[0][1], lines[1][1]
-                print data
 
-                def make_v(xy1, xy2):
+                def make_unit_vector(xy1, xy2):
                     (x1, y1), (x2, y2) = xy1, xy2
                     v = complex(x2-x1, y2-y1)
                     v /= abs(v)
                     return v
 
-                v1 = make_v(data[1], data[0])
-                v2 = make_v(data[1], data[2])
-                s = v1 + v2
-                s /= abs(s)
+                v1 = make_unit_vector(data[1], data[0])
+                v2 = make_unit_vector(data[1], data[2])
+                p1, p2 = self.corner(v1, v2, complex(*data[1]))
 
-                angle = cmath.phase(s) - cmath.phase(v1)
-                print "a", degrees(angle), degrees(cmath.phase(v2) - cmath.phase(v1))
-                d = abs(radius / math.tan(angle))
-                v1 *= d
-                v2 *= d
-                h = math.sqrt((radius*radius)+(d*d))
-                s *= h
-
-                x, y = data[1]
-
-                v0 = s + complex(x, y)
-                va = v1 - s
-                vb = v2 - s
-                a0, a1 = cmath.phase(va), cmath.phase(vb)
-                print degrees(a0), degrees(a1)
-                c = Arc((v0.real, v0.imag), radius, degrees(a0), degrees(a1))
+                c = Circle((p1.real, p1.imag), 0.5, colour=13)
                 self.parent.add(c)
-   
+                c = Circle((p2.real, p2.imag), 0.5, colour=13)
+                self.parent.add(c)
+
+        def corner(self, v1, v2, xy):
+            s = v1 + v2
+            s /= abs(s)
+            angle = cmath.phase(s) - cmath.phase(v1)
+            d = abs(radius / math.tan(angle))
+            v1 *= d
+            v2 *= d
+            h = math.sqrt((radius*radius)+(d*d))
+            s *= h
+
+            v0 = s + xy
+            va = v1 - s
+            vb = v2 - s
+            a0, a1 = cmath.phase(va), cmath.phase(vb)
+            print "arc", v0, degrees(a0), degrees(a1)
+            c = Arc((v0.real, v0.imag), radius, degrees(a0), degrees(a1))
+            self.parent.add(c)
+
+            return v1 + xy, v2 + xy
+
     v = Visitor(poly)
     visit(poly, v.on_poly)
     v.fixup()
