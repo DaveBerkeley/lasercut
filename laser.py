@@ -563,6 +563,12 @@ def has_point(poly, xy):
             return True
     return False
 
+def make_unit_vector(xy1, xy2):
+    (x1, y1), (x2, y2) = xy1, xy2
+    v = complex(x2-x1, y2-y1)
+    v /= abs(v)
+    return v
+
 def corner(poly, xy, radius, inside=True, tracker=None):
     print "corner", xy
 
@@ -570,7 +576,6 @@ def corner(poly, xy, radius, inside=True, tracker=None):
 
     class Visitor:
         def __init__(self, parent):
-            self.data = []
             self.parent = parent
         def on_poly(self, p):
             if not isinstance(p, Polygon):
@@ -580,34 +585,29 @@ def corner(poly, xy, radius, inside=True, tracker=None):
             self.on_match(p)
         def on_match(self, p):
             print "on_match", p
-            self.data.append(p)
-        def fixup(self):
-            print "fixup", self.data
-            for p in self.data:
-                lines = [ None, None ]
-                for xy0, xy1 in p.lines():
-                    if not ((xy0 == xy) or (xy1 == xy)):
-                        continue
-                    if xy0 == xy:
-                        lines[1] = xy0, xy1
-                    elif xy1 == xy:
-                        lines[0] = xy0, xy1
-                    else:
-                        raise Exception("not found")
+            # find the 2 line segments that make up the corner to curve
+            lines = [ None, None ]
+            for xy0, xy1 in p.lines():
+                if not ((xy0 == xy) or (xy1 == xy)):
+                    continue
+                if xy0 == xy:
+                    lines[1] = xy0, xy1
+                elif xy1 == xy:
+                    lines[0] = xy0, xy1
+                else:
+                    raise Exception("not found")
 
-                assert lines[0][1] == lines[1][0]
-                data = lines[0][0], lines[0][1], lines[1][1]
+            # arrange points as xy1, xy2, xy3, where xy2 is the corner to curve
+            assert lines[0][1] == lines[1][0]
+            data = lines[0][0], lines[0][1], lines[1][1]
 
-                def make_unit_vector(xy1, xy2):
-                    (x1, y1), (x2, y2) = xy1, xy2
-                    v = complex(x2-x1, y2-y1)
-                    v /= abs(v)
-                    return v
+            # make unit vectors for the vertex
+            v1 = make_unit_vector(data[1], data[0])
+            v2 = make_unit_vector(data[1], data[2])
+            # generate the corner arc and line segment cut points
+            p1, p2 = self.corner(v1, v2, complex(*data[1]))
 
-                v1 = make_unit_vector(data[1], data[0])
-                v2 = make_unit_vector(data[1], data[2])
-                p1, p2 = self.corner(v1, v2, complex(*data[1]))
-
+            if 1:
                 c = Circle((p1.real, p1.imag), 0.5, colour=13)
                 self.parent.add(c)
                 c = Circle((p2.real, p2.imag), 0.5, colour=13)
@@ -626,16 +626,18 @@ def corner(poly, xy, radius, inside=True, tracker=None):
             v0 = s + xy
             va = v1 - s
             vb = v2 - s
-            a0, a1 = cmath.phase(va), cmath.phase(vb)
+            a0, a1 = [ degrees(cmath.phase(v)) for v in [ va, vb ] ]
             print "arc", v0, degrees(a0), degrees(a1)
-            c = Arc((v0.real, v0.imag), radius, degrees(a0), degrees(a1))
+            c = Arc((v0.real, v0.imag), radius, a0, a1)
             self.parent.add(c)
 
+            # return end points of polygon
             return v1 + xy, v2 + xy
 
-    v = Visitor(poly)
+    c = Collection()
+    v = Visitor(c)
     visit(poly, v.on_poly)
-    v.fixup()
+    poly.add(c)
 
     return poly
 
