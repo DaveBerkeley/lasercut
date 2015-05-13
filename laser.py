@@ -457,7 +457,9 @@ def equation_of_line(xy0, xy1):
     x1, y1 = xy1
     dx, dy = x1 - x0, y1 - y0
     m = (y1 - y0) / (x1 - x0)
-    return m, y0 - (m * x0) 
+    c = y0 - (m * x0) 
+    print "eol", m, c
+    return m, c
 
 def intersect_lines(e0, e1):
     # given 2 equations of line
@@ -557,18 +559,52 @@ def corner(poly, xy, radius, inside=True, tracker=None):
     class Tracker:
         def __init__(self):
             self.line = None
-            self.xy = None
         def call(self, poly):
             return corner(poly, xy, radius, inside, self)
-        def point(self, poly, line, xy):
-            if self.line is None:
+        def point(self, poly, line, __xy):
+            if self.line is None:           
                 self.line = line
-                self.xy = xy
                 return
-            cx, cy = parallel_intersect(line, self.line, radius, inside)
-            c = Circle((cx, cy), radius, colour=10)
-            poly.add_arc(c)
-            print "ARC", cx, cy, xy, self.xy
+            
+            if self.line[0] == line[0]:
+                data = self.line[1], line[0], line[1]
+            elif self.line[0] == line[1]:
+                data = self.line[1], line[1], line[0]
+            elif self.line[1] == line[0]:
+                data = self.line[0], line[0], line[1]
+            elif self.line[1] == line[1]:
+                data = self.line[0], line[1], line[0]
+            else:
+                raise Exception("no common point found!")
+
+            print data
+
+            (x1, y1), (x2, y2), (x3, y3) = data
+            v1 = complex(x1-x2, y1-y2)
+            v2 = complex(x3-x2, y3-y2)
+            v1 /= abs(v1)
+            v2 /= abs(v2)
+            if abs(degrees(cmath.phase(v2) - cmath.phase(v1))) > 180:
+                v1, v2 = v2, v1
+            s = v1 + v2
+            s /= abs(s)
+            print "v", s, v1, v2
+            angle = cmath.phase(s) - cmath.phase(v1)
+            print "a", degrees(angle), degrees(cmath.phase(v2) - cmath.phase(v1))
+            d = abs(radius / math.tan(angle))
+            v1 *= d
+            print "d", d, s, v1, v2
+            def circle(v, r=radius, colour=10):
+                cx = v.imag + x2
+                cy = v.real + y2
+                c = Circle((cx, cy), r, colour=colour)
+                poly.add_arc(c)
+            circle(v1, 0.5)
+            v2 *= d
+            circle(v2, 0.5)
+            h = math.sqrt((radius*radius)+(d*d))
+            s *= h
+            circle(s, colour=11)
 
     t = tracker or Tracker()
 

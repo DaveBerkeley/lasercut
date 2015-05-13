@@ -43,6 +43,8 @@ def end_plate(w, h, s, hole):
     work = corner(work, (0, h), e)
     print "c1"
     work = corner(work, (w, h), e)
+    print "c1"
+    work = corner(work, (w, 0), e)
 
     return work
 
