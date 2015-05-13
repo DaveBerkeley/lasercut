@@ -547,95 +547,6 @@ def cut_poly(poly, xy, d, fn):
         print "split poly", p.points
     return c
 
-def corner(poly, xy, radius, inside=True, tracker=None):
-    print "corner", poly, xy
-
-    class Tracker:
-        def __init__(self):
-            self.line = None
-        def call(self, poly):
-            return corner(poly, xy, radius, inside, self)
-        def point(self, poly, line, __xy):
-            if self.line is None:           
-                self.line = line
-                return
-            
-            if self.line[0] == line[0]:
-                data = self.line[1], line[0], line[1]
-            elif self.line[0] == line[1]:
-                data = self.line[1], line[1], line[0]
-            elif self.line[1] == line[0]:
-                data = self.line[0], line[0], line[1]
-            elif self.line[1] == line[1]:
-                data = self.line[0], line[1], line[0]
-            else:
-                raise Exception("no common point found!")
-
-            print data
-
-            (x1, y1), (x2, y2), (x3, y3) = data
-            v1 = complex(x1-x2, y1-y2)
-            v2 = complex(x3-x2, y3-y2)
-            v1 /= abs(v1)
-            v2 /= abs(v2)
-            if abs(degrees(cmath.phase(v2) - cmath.phase(v1))) > 180:
-                v1, v2 = v2, v1
-            s = v1 + v2
-            s /= abs(s)
-            print "v", s, v1, v2
-            angle = cmath.phase(s) - cmath.phase(v1)
-            print "a", degrees(angle), degrees(cmath.phase(v2) - cmath.phase(v1))
-            d = abs(radius / math.tan(angle))
-            v1 *= d
-            print "d", d, s, v1, v2
-            def circle(v, r=radius, colour=10):
-                cx = v.imag + x2
-                cy = v.real + y2
-                c = Circle((cx, cy), r, colour=colour)
-                poly.add_arc(c)
-            circle(v1, 0.5)
-            v2 *= d
-            circle(v2, 0.5)
-            h = math.sqrt((radius*radius)+(d*d))
-            s *= h
-            circle(s, colour=11)
-
-    t = tracker or Tracker()
-
-    if isinstance(poly, Polygon):
-        if has_point(poly, xy):
-            return cut_poly(poly, xy, radius, t)
-        return poly
-
-    if isinstance(poly, Collection):
-        c = poly.copy()
-        c.data = []
-        for d in poly.data:
-            d = corner(d, xy, radius, inside, t)
-            c.add(d)
-        return c
-
-    raise Exception()
-
-    work = Collection()
-
-    # find the lines touching xy
-    lines = []
-    for i in range(len(poly.points)-1):
-        line = poly.points[i:i+2]
-        if (line[0] == xy) or (line[1] == xy):
-            lines.append(line)
-            points_idx.append(i)
-
-    print lines
-
-    cx, cy = parallel_intersect(lines[0], lines[1], radius, inside)
-    print "arc centre", cx, cy
-    c = Circle((cx, cy), radius, colour=10)
-    work.add(c)
-
-    return work
-
 #
 #
 
@@ -669,8 +580,6 @@ def corner(poly, xy, radius, inside=True, tracker=None):
             self.on_match(p)
         def on_match(self, p):
             print "on_match", p
-            c = Circle(xy, 0.5, colour=11)
-            p.add_arc(c)
             self.data.append(p)
         def fixup(self):
             print "fixup", self.data
@@ -685,7 +594,6 @@ def corner(poly, xy, radius, inside=True, tracker=None):
                         lines[0] = xy0, xy1
                     else:
                         raise Exception("not found")
-                #print lines
 
                 assert lines[0][1] == lines[1][0]
                 data = lines[0][0], lines[0][1], lines[1][1]
@@ -695,35 +603,31 @@ def corner(poly, xy, radius, inside=True, tracker=None):
                     (x1, y1), (x2, y2) = xy1, xy2
                     v = complex(x2-x1, y2-y1)
                     v /= abs(v)
-                    show(v)
                     return v
-                def show(v):
-                    c = Polygon(colour=12)
-                    x, y = data[1]
-                    print v, x, y
-                    c.add(x, y)
-                    c.add(x + v.real, y + v.imag)
-                    self.parent.add(c)
 
                 v1 = make_v(data[1], data[0])
                 v2 = make_v(data[1], data[2])
                 s = v1 + v2
                 s /= abs(s)
-                show(s)
 
                 angle = cmath.phase(s) - cmath.phase(v1)
                 print "a", degrees(angle), degrees(cmath.phase(v2) - cmath.phase(v1))
                 d = abs(radius / math.tan(angle))
                 v1 *= d
-                show(v1)
                 v2 *= d
-                show(v2)
                 h = math.sqrt((radius*radius)+(d*d))
                 s *= h
-                show(s)
+
+                x, y = data[1]
+
+                v0 = s + complex(x, y)
+                va = v1 - s
+                vb = v2 - s
+                a0, a1 = cmath.phase(va), cmath.phase(vb)
+                print degrees(a0), degrees(a1)
+                c = Arc((v0.real, v0.imag), radius, degrees(a0), degrees(a1))
+                self.parent.add(c)
    
-
-
     v = Visitor(poly)
     visit(poly, v.on_poly)
     v.fixup()
