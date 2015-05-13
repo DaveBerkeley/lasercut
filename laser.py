@@ -501,33 +501,70 @@ def trunc(xy1, xy2, d):
     c = complex(dx, dy)
     c /= abs(c) # unit vector
     c *= d
-    x, y = c.real, c.imag
-    # TODO : correct by quadrant
-    if not (x1 <= x <= x2):
-        x = -x
-    if not (y1 <= y <= y2):
-        y = -y
-    print "tr", x, y
+    x, y = x1 + c.real, y1 + c.imag
     return x, y
 
-def cut_poly(poly, xy, d):
+def cut_poly(poly, xy, d, inside):
     print poly.points, xy
 
+    changed = False
     # if first point
     if poly.points[0] == xy:
         poly.points[0] = trunc(poly.points[0], poly.points[1], d)
+        changed = True
     # if last point
     if poly.points[-1] == xy:
         poly.points[-1] = trunc(poly.points[-1], poly.points[-2], d)
-        return poly
+        changed = True
 
-    # TODO need to split into 2
+    if changed:
+        print "simple poly", poly.points
+        return poly.copy()
 
-    return poly
+    # TODO need to split into 2 polygons
+    c = Collection()
+    points = []
+    p = poly.copy()
+    p.points = []
+    for point in poly.points:
+        p.add(*point)
+        if point == xy:
+            p = corner(p, xy, d, inside)
+            c.add(p)
+            p = Polygon()
+            p.add(*point)
+
+    p = corner(p, xy, d, inside)
+    c.add(p)
+
+    for p in c.data:
+        print "split poly", p.points
+    return c
+
+def has_point(poly, xy):
+    for point in poly.points:
+        if point == xy:
+            return True
+    return False
 
 def corner(poly, xy, radius, inside=True):
-    # TODO
-    #return poly
+    print "corner", poly, xy
+
+    if isinstance(poly, Polygon):
+        if has_point(poly, xy):
+            return cut_poly(poly, xy, radius, inside)
+        return poly
+
+    if isinstance(poly, Collection):
+        c = poly.copy()
+        c.data = []
+        for d in poly.data:
+            d = corner(d, xy, radius, inside)
+            c.add(d)
+        return c
+
+    raise Exception()
+
     work = Collection()
 
     # find the lines touching xy
@@ -597,12 +634,11 @@ def on_segment(xy, line, margin=0.01):
 
 def find_hit(parent, item):
     for shape in parent.data:
-        name = shape.__class__.__name__ 
-        if name in [ "Polygon", "Rectangle" ]:
+        if isinstance(shape, Polygon) or isinstance(shape, Rectangle):
             for line in shape.lines():
                 if on_segment(item.origin, line):
                     return parent, shape
-        elif name == "Collection":
+        elif isinstance(shape, Collection):
             p, shape = find_hit(shape, item)
             if shape:
                 return p, shape
