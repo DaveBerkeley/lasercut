@@ -1,64 +1,13 @@
 #!/usr/bin/python
 
 from laser import Config, Polygon, Rectangle, Circle, Collection
-from laser import angle, radians, degrees, rotate_2d
+from laser import angle, radians, degrees, rotate_2d, parallel_intersect
 from render import DXF as dxf
 
 from gears import make_involute
 
 #
 #   Compensate for kerf
-
-def parallel(points, d, inner):
-    x0, y0 = points[0]
-    x1, y1 = points[1]
-    dx, dy = x1 - x0, y1 - y0
-    a = angle(dx, dy)
-    # vector at 90 degrees to line
-    if inner:
-        x, y = rotate_2d(a, 0, d)
-    else:
-        x, y = rotate_2d(a, 0, -d)
-    return (x0 + x, y0 + y), (x1 + x, y1 + y)
-
-def vertical(xy0, xy1):
-    x0, _ = xy0
-    x1, _ = xy1
-    return x1 == x0
-
-def equation_of_line(xy0, xy1):
-    x0, y0 = xy0
-    x1, y1 = xy1
-    dx, dy = x1 - x0, y1 - y0
-    m = (y1 - y0) / (x1 - x0)
-    return m, y0 - (m * x0) 
-
-def intersect(e0, e1):
-    # given 2 equations of line
-    # calculate intersection point
-    m0, c0 = e0
-    m1, c1 = e1
-    x = (c0 - c1) / (m1 - m0)
-    y = (m0 * x) + c0
-    return x, y
-
-def solve_for_x(x, xy):
-    m, b = equation_of_line(*xy)
-    y = (x * m) + b
-    return x, y
-
-def parallel_intersect(xy0, xy1, d, inner):
-    xy0 = parallel(xy0, d, inner)
-    xy1 = parallel(xy1, d, inner)
-    if vertical(*xy0):
-        # solve for x = x0
-        return solve_for_x(xy0[1][0], xy1)
-    elif vertical(*xy1):
-        # solve for x = x1
-        return solve_for_x(xy1[0][0], xy0)
-    else:
-        e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
-        return intersect(e0, e1)
 
 #
 #

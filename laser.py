@@ -432,10 +432,67 @@ class TCut:
 #
 #
 
-def corner(poly, xy, radius):
+#
+#   Maths used for kerf calculations
+
+def parallel(points, d, inner):
+    x0, y0 = points[0]
+    x1, y1 = points[1]
+    dx, dy = x1 - x0, y1 - y0
+    a = angle(dx, dy)
+    # vector at 90 degrees to line
+    if inner:
+        x, y = rotate_2d(a, 0, d)
+    else:
+        x, y = rotate_2d(a, 0, -d)
+    return (x0 + x, y0 + y), (x1 + x, y1 + y)
+
+def vertical(xy0, xy1):
+    x0, _ = xy0
+    x1, _ = xy1
+    return x1 == x0
+
+def equation_of_line(xy0, xy1):
+    x0, y0 = xy0
+    x1, y1 = xy1
+    dx, dy = x1 - x0, y1 - y0
+    m = (y1 - y0) / (x1 - x0)
+    return m, y0 - (m * x0) 
+
+def intersect(e0, e1):
+    # given 2 equations of line
+    # calculate intersection point
+    m0, c0 = e0
+    m1, c1 = e1
+    x = (c0 - c1) / (m1 - m0)
+    y = (m0 * x) + c0
+    return x, y
+
+def solve_for_x(x, xy):
+    m, b = equation_of_line(*xy)
+    y = (x * m) + b
+    return x, y
+
+def parallel_intersect(xy0, xy1, d, inner):
+    xy0 = parallel(xy0, d, inner)
+    xy1 = parallel(xy1, d, inner)
+    if vertical(*xy0):
+        # solve for x = x0
+        return solve_for_x(xy0[1][0], xy1)
+    elif vertical(*xy1):
+        # solve for x = x1
+        return solve_for_x(xy1[0][0], xy0)
+    else:
+        e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
+        return intersect(e0, e1)
+
+#
+#
+
+def corner(poly, xy, radius, inside=True):
     # TODO
-    return poly
-    c = Collection()
+    #return poly
+    work = Collection()
 
     # find the lines touching xy
     lines = []
@@ -445,10 +502,28 @@ def corner(poly, xy, radius):
             lines.append(line)
 
     print lines
-    c.add(poly)
-    c.add(Circle(xy, radius))
 
-    return c
+    x, y = parallel_intersect(lines[0], lines[1], radius, inside)
+    print "arc centre", x, y
+    c = Circle((x, y), radius)
+    work.add(c)
+
+    x1, y1 = lines[0][1]
+    x2, y2 = lines[1][0]
+    (x1, y1), (x2, y2) = lines[0]
+    print x1, y1, ",", x2, y2
+    dx = x2 - x1
+    dy = y2 - y1
+    cx, cy = rotate_2d(radians(90), dx, dy)
+    print dx, dy, cx, cy
+    p = Polygon()
+    p.add(x, y)
+    p.add(cy, cx)
+    work.add(p)
+
+    work.add(poly)
+
+    return work
 
 #
 #
