@@ -492,10 +492,8 @@ def parallel_intersect(xy0, xy1, d, inner):
 #
 #
 
-def trunc(xy1, xy2, d):
-    print "trunc", xy1, xy2, d
-    x1, y1 = xy1
-    x2, y2 = xy2
+def trunc(line, d):
+    (x1, y1), (x2, y2) = line
     dx = x2 - x1
     dy = y2 - y1
     c = complex(dx, dy)
@@ -504,21 +502,27 @@ def trunc(xy1, xy2, d):
     x, y = x1 + c.real, y1 + c.imag
     return x, y
 
-def cut_poly(poly, xy, d, inside):
+def cut_poly(poly, xy, d, fn):
     print poly.points, xy
 
-    changed = False
+    changed = 0
     # if first point
     if poly.points[0] == xy:
-        poly.points[0] = trunc(poly.points[0], poly.points[1], d)
-        changed = True
+        line = poly.points[:2]
+        x, y = trunc(line, d)
+        poly.points[0] = x, y
+        changed += 1
+        fn.point(poly, line, (x, y))
     # if last point
     if poly.points[-1] == xy:
-        poly.points[-1] = trunc(poly.points[-1], poly.points[-2], d)
-        changed = True
+        line = poly.points[-1], poly.points[-2]
+        x, y = trunc(line, d)
+        poly.points[-1] = x, y
+        changed += 2
+        fn.point(poly, line, (x, y))
 
-    if changed:
-        print "simple poly", poly.points
+    if changed > 0:
+        print "simple poly", poly.points, changed
         return poly.copy()
 
     # TODO need to split into 2 polygons
@@ -529,12 +533,12 @@ def cut_poly(poly, xy, d, inside):
     for point in poly.points:
         p.add(*point)
         if point == xy:
-            p = corner(p, xy, d, inside)
+            p = fn.call(p)
             c.add(p)
             p = Polygon()
             p.add(*point)
 
-    p = corner(p, xy, d, inside)
+    p = fn.call(p)
     c.add(p)
 
     for p in c.data:
@@ -547,19 +551,37 @@ def has_point(poly, xy):
             return True
     return False
 
-def corner(poly, xy, radius, inside=True):
+def corner(poly, xy, radius, inside=True, tracker=None):
     print "corner", poly, xy
+
+    class Tracker:
+        def __init__(self):
+            self.line = None
+            self.xy = None
+        def call(self, poly):
+            return corner(poly, xy, radius, inside, self)
+        def point(self, poly, line, xy):
+            if self.line is None:
+                self.line = line
+                self.xy = xy
+                return
+            cx, cy = parallel_intersect(line, self.line, radius, inside)
+            c = Circle((cx, cy), radius, colour=10)
+            poly.add_arc(c)
+            print "ARC", cx, cy, xy, self.xy
+
+    t = tracker or Tracker()
 
     if isinstance(poly, Polygon):
         if has_point(poly, xy):
-            return cut_poly(poly, xy, radius, inside)
+            return cut_poly(poly, xy, radius, t)
         return poly
 
     if isinstance(poly, Collection):
         c = poly.copy()
         c.data = []
         for d in poly.data:
-            d = corner(d, xy, radius, inside)
+            d = corner(d, xy, radius, inside, t)
             c.add(d)
         return c
 
@@ -568,7 +590,6 @@ def corner(poly, xy, radius, inside=True):
     work = Collection()
 
     # find the lines touching xy
-    points_idx = []
     lines = []
     for i in range(len(poly.points)-1):
         line = poly.points[i:i+2]
@@ -577,17 +598,11 @@ def corner(poly, xy, radius, inside=True):
             points_idx.append(i)
 
     print lines
-    print points_idx
 
     cx, cy = parallel_intersect(lines[0], lines[1], radius, inside)
     print "arc centre", cx, cy
     c = Circle((cx, cy), radius, colour=10)
     work.add(c)
-
-    print poly.points
-    poly = cut_poly(poly, xy, radius)
-    print poly.points
-    work.add(poly)
 
     return work
 
