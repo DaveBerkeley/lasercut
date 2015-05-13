@@ -547,12 +547,6 @@ def cut_poly(poly, xy, d, fn):
         print "split poly", p.points
     return c
 
-def has_point(poly, xy):
-    for point in poly.points:
-        if point == xy:
-            return True
-    return False
-
 def corner(poly, xy, radius, inside=True, tracker=None):
     print "corner", poly, xy
 
@@ -641,6 +635,100 @@ def corner(poly, xy, radius, inside=True, tracker=None):
     work.add(c)
 
     return work
+
+#
+#
+
+def visit(c, fn):
+    if isinstance(c, Collection):
+        for d in c.data:
+            visit(d, fn)
+    else:
+        fn(c)
+
+def has_point(poly, xy):
+    for point in poly.points:
+        if point == xy:
+            return True
+    return False
+
+def corner(poly, xy, radius, inside=True, tracker=None):
+    print "corner", xy
+
+    # find the polygon with the specified corner
+
+    class Visitor:
+        def __init__(self, parent):
+            self.data = []
+            self.parent = parent
+        def on_poly(self, p):
+            if not isinstance(p, Polygon):
+                return
+            if not has_point(p, xy):
+                return
+            self.on_match(p)
+        def on_match(self, p):
+            print "on_match", p
+            c = Circle(xy, 0.5, colour=11)
+            p.add_arc(c)
+            self.data.append(p)
+        def fixup(self):
+            print "fixup", self.data
+            for p in self.data:
+                lines = [ None, None ]
+                for xy0, xy1 in p.lines():
+                    if not ((xy0 == xy) or (xy1 == xy)):
+                        continue
+                    if xy0 == xy:
+                        lines[1] = xy0, xy1
+                    elif xy1 == xy:
+                        lines[0] = xy0, xy1
+                    else:
+                        raise Exception("not found")
+                #print lines
+
+                assert lines[0][1] == lines[1][0]
+                data = lines[0][0], lines[0][1], lines[1][1]
+                print data
+
+                def make_v(xy1, xy2):
+                    (x1, y1), (x2, y2) = xy1, xy2
+                    v = complex(x2-x1, y2-y1)
+                    v /= abs(v)
+                    show(v)
+                    return v
+                def show(v):
+                    c = Polygon(colour=12)
+                    x, y = data[1]
+                    print v, x, y
+                    c.add(x, y)
+                    c.add(x + v.real, y + v.imag)
+                    self.parent.add(c)
+
+                v1 = make_v(data[1], data[0])
+                v2 = make_v(data[1], data[2])
+                s = v1 + v2
+                s /= abs(s)
+                show(s)
+
+                angle = cmath.phase(s) - cmath.phase(v1)
+                print "a", degrees(angle), degrees(cmath.phase(v2) - cmath.phase(v1))
+                d = abs(radius / math.tan(angle))
+                v1 *= d
+                show(v1)
+                v2 *= d
+                show(v2)
+                h = math.sqrt((radius*radius)+(d*d))
+                s *= h
+                show(s)
+   
+
+
+    v = Visitor(poly)
+    visit(poly, v.on_poly)
+    v.fixup()
+
+    return poly
 
 #
 #
