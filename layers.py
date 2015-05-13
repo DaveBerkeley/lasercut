@@ -30,7 +30,7 @@ def edge(w, h, s, hole):
     work = corner(work, (0, 0), e)
     work = corner(work, (w, 0), e)
     # inside
-    work = corner(work, (s, s), e, inside=False)
+    work = corner(work, (s, s), e, inside=True)
 
     return work
 

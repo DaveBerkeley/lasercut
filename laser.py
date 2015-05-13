@@ -551,7 +551,7 @@ def make_unit_vector(xy1, xy2):
     v /= abs(v)
     return v
 
-def corner(shape, xy, radius, inside=True, tracker=None):
+def corner(shape, xy, radius, inside=False, tracker=None):
 
     if not isinstance(shape, Collection):
         c = Collection()
@@ -613,7 +613,7 @@ def corner(shape, xy, radius, inside=True, tracker=None):
             # angles to cut points from arc centre
             a0, a1 = [ degrees(cmath.phase(v)) for v in [ va, vb ] ]
             # add the arc
-            if not inside:
+            if inside:
                 a0, a1 = a1, a0
             c = Arc((v0.real, v0.imag), radius, a0, a1)
             self.parent.add(c)

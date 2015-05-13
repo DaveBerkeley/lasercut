@@ -3,7 +3,7 @@
 import sys
 
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import TCut, Text, splice, cutout
+from laser import TCut, Text, splice, cutout, corner
 from render import DXF as dxf
 
 from parts import ESP_Olimex_Dev as ESP
@@ -82,6 +82,9 @@ def make_front(draw, tab_locs, back=False):
     c.add(front_wout, 0)
 
     work.add(c)
+
+    work = corner(work, (front_wout, front_hout), overhang, inside=True)
+    work = corner(work, (0, front_hout), overhang, inside=True)
 
     # tabs for top / bottom / middle plates
     r = Rectangle((0, 0), (tab_len, thick))
