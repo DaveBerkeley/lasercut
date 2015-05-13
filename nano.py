@@ -2,7 +2,7 @@
 
 from render import DXF as dxf
 from parts import mini_usb
-from laser import Config, Collection
+from laser import Config, Collection, corner
 
 #
 #
@@ -15,13 +15,10 @@ class ArduinoNano():
         return p
 
     def make_elev(self, draw=False):
-        work = Collection()
         usb = mini_usb()
         x, y = usb.centre()
-        print x, y
         usb.translate(-x, 0)
-        work.add(usb)
-        return work
+        return usb
 
 #
 #
@@ -32,6 +29,12 @@ if __name__ == "__main__":
 
     nano = ArduinoNano()
     work = nano.make_elev(True)
+
+    if 0:
+        corners = [ 0, 1, 4, 5, ]
+        points = work.points[:]
+        for i in corners:
+            work = corner(work, points[i], 0.4, inside=True)
 
     work.draw(drawing, config.cut())
     
