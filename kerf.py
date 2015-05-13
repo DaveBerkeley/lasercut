@@ -9,16 +9,16 @@ from gears import make_involute
 #
 #   Compensate for kerf
 
-def parallel(points, kerf, inner):
+def parallel(points, d, inner):
     x0, y0 = points[0]
     x1, y1 = points[1]
     dx, dy = x1 - x0, y1 - y0
     a = angle(dx, dy)
     # vector at 90 degrees to line
     if inner:
-        x, y = rotate_2d(a, 0, kerf)
+        x, y = rotate_2d(a, 0, d)
     else:
-        x, y = rotate_2d(a, 0, -kerf)
+        x, y = rotate_2d(a, 0, -d)
     return (x0 + x, y0 + y), (x1 + x, y1 + y)
 
 def vertical(xy0, xy1):
@@ -47,6 +47,22 @@ def solve_for_x(x, xy):
     y = (x * m) + b
     return x, y
 
+def parallel_intersect(xy0, xy1, d, inner):
+    xy0 = parallel(xy0, d, inner)
+    xy1 = parallel(xy1, d, inner)
+    if vertical(*xy0):
+        # solve for x = x0
+        return solve_for_x(xy0[1][0], xy1)
+    elif vertical(*xy1):
+        # solve for x = x1
+        return solve_for_x(xy1[0][0], xy0)
+    else:
+        e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
+        return intersect(e0, e1)
+
+#
+#
+
 def line_pairs(points):
     first = None
     while len(points) >= 3:
@@ -56,6 +72,7 @@ def line_pairs(points):
         points = points[1:]
         if first is None:
             first = l0
+    # and the first shall be last
     yield points, first
 
 def dekerf(poly, kerf, inner, **kwargs):
@@ -68,17 +85,7 @@ def dekerf(poly, kerf, inner, **kwargs):
     kerf /= 2.0
 
     for xy0, xy1 in line_pairs(poly.points[:]):
-        xy0 = parallel(xy0, kerf, inner)
-        xy1 = parallel(xy1, kerf, inner)
-        if vertical(*xy0):
-            # solve for x = x0
-            x, y = solve_for_x(xy0[1][0], xy1)
-        elif vertical(*xy1):
-            # solve for x = x1
-            x, y = solve_for_x(xy1[0][0], xy0)
-        else:
-            e0, e1 = equation_of_line(*xy0), equation_of_line(*xy1)
-            x, y = intersect(e0, e1)
+        x, y = parallel_intersect(xy0, xy1, kerf, inner)
         work.add(x, y)
     work.close()
 
