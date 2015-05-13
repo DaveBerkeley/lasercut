@@ -3,7 +3,7 @@
 import sys
 
 from laser import Rectangle, Polygon, Circle, Collection, Config, Material
-from laser import TCut, Text, splice, cutout
+from laser import TCut, Text, splice, cutout, corner
 from render import DXF as dxf
 
 from parts import mini_usb
@@ -95,6 +95,11 @@ if 1:
         c.rotate(rot)
         c.translate(x, y)
         work.add(c)
+
+    work = corner(work, (0, 0), overhang)
+    work = corner(work, (0, lid_w), overhang)
+    work = corner(work, (lout, lid_w), overhang)
+    work = corner(work, (lout, 0), overhang)
 
     prev = work.copy()
     move_margin(work)
