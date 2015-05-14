@@ -97,8 +97,16 @@ if __name__ == "__main__":
         work = end_plate(h, w, s, hole)
         d = ((h - s) * math.sin(radians(45))) + spacing
         work.translate(0, d)
+        lid = work.copy()
+        # make a lid with a hole
+        r = Rectangle((s, s), (h-s, w-s))
+        r = corner(r, (s, s), s/2)
+        r = corner(r, (h-s, w-s), s/2)
+        r.translate(0, d)
+        work.add(r)
         work.draw(drawing, config.cut())
 
+        work = lid.copy()
         work.translate(h + spacing, 0)
         work.draw(drawing, config.cut())
 
