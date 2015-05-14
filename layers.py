@@ -88,7 +88,7 @@ if __name__ == "__main__":
         work.draw(drawing, config.cut())
     else:
         dx = abs(complex(s + spacing, s + spacing))
-        for i in range(10):
+        for i in range(20):
             work = edge(w, h, s, hole)
             work.rotate(-45)
             work.translate(i * dx, 0)
@@ -101,6 +101,26 @@ if __name__ == "__main__":
 
         work.translate(h + spacing, 0)
         work.draw(drawing, config.cut())
+
+        work.translate(h + spacing, 0)
+        work.draw(drawing, config.cut())
+
+        # add spacers
+        work = Collection()
+        p = Polygon()
+        c = Circle((0, 0), s / 2)
+        p.add_arc(c.copy())
+        c = Circle((0, 0), hole / 2)
+        p.add_arc(c.copy())
+
+        work.add(p)
+        work.translate((s/2) + (3 * (h + spacing)), (s/2) + d)
+
+        for i in range(8):
+            for j in range(6):
+                w = work.copy()
+                w.translate(i * (s + spacing), j * (s + spacing))
+                w.draw(drawing, config.cut())
 
     drawing.save()
 
