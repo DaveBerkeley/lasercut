@@ -3,7 +3,7 @@
 import math
 
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import radians, rotate_2d
+from laser import radians, rotate_2d, splice
 from render import DXF as dxf
 
 import ops
@@ -43,6 +43,8 @@ edge = 8
 strip = 2
 a_step = 5
 step = 8
+tab_len = 5
+tab_d = 4
 
 r = Rectangle((0, 0), (w*2, strip))
 
@@ -63,12 +65,37 @@ for r in rects[1:]:
     shape = shape.union(ops.Shape(r))
 
 r = Rectangle((0, 0), (w, h))
+
+# cut the tabs
+
+for i in range(20, h, tab_len):
+    print "not working yet ..."
+    break
+    p = Polygon()
+    if (i % 2):
+        x0, y0, x1, y1 = w, i, w + tab_d, i + tab_len
+        continue
+    else:
+        x0, y0, x1, y1 = 0, i, -tab_d, i+tab_len
+
+    p.add(x0, y1)
+    p.add(x1, y1)
+    p.add(x1, y0)
+    p.add(x0, y0)
+
+    if isinstance(r, Rectangle):
+        r = Collection(r)
+
+    r = splice(r, p)
+
 shape = shape.intersection(ops.Shape(r))
 
 #
 r = Rectangle((edge, edge), (w-edge, h-edge))
 s = ops.Shape(r)
 r = Rectangle((0, 0), (w, h))
+
+
 s = s.symmetric_difference(ops.Shape(r))
 shape = shape.union(s)
 
