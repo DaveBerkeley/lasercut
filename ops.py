@@ -25,28 +25,38 @@ def to_shape(obj):
 #
 
 def from_shape(sh):
-    # assume multilinestring
     c = Collection()
+
     p = Polygon()
     for point in sh.exterior.coords:
         p.add(*point)
     c.add(p)
+
+    for seq in sh.interiors:
+        p = Polygon()
+        for point in seq.coords:
+            p.add(*point)
+        c.add(p)
+
     return c
 
 #
 #
 
-def binary(p1, p2, op):
-    sh1 = to_shape(p1)
-    sh2 = to_shape(p2)
-    fn = getattr(sh1, op)
-    u = fn(sh2)
-    return from_shape(u)    
+class Shape:
 
-def union(p1, p2):
-    return binary(p1, p2, "union")
-
-def intersection(p1, p2):
-    return binary(p1, p2, "intersection")
+    def __init__(self, obj=None, shape=None):
+        self.shape = shape or to_shape(obj)
+    def get(self):
+        return from_shape(self.shape)
+    def union(self, shape):
+        u = self.shape.union(shape.shape)
+        return Shape(shape=u)
+    def intersection(self, shape):
+        u = self.shape.intersection(shape.shape)
+        return Shape(shape=u)
+    def symmetric_difference(self, shape):
+        u = self.shape.symmetric_difference(shape.shape)
+        return Shape(shape=u)
 
 #   FIN

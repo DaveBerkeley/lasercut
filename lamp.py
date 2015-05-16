@@ -15,14 +15,44 @@ drawing = dxf.drawing("test.dxf")
 w = 100 
 h = 150
 edge = 8
+strip = 3
+step = 10
 
-work = Collection()
-r1 = Rectangle((0, 0), (w, h))
-r2 = r1.copy()
-r2.translate(20, 20)
+r = Rectangle((0, 0), (w*2, strip))
 
-p = ops.union(r1, r2)
-work.add(p)
+rects = []
+
+angle = 30
+for y in range(0, 200, step):
+    rr = r.copy()
+    rr.rotate(angle)
+    #rr.translate(0, y)
+    rects.append(rr)
+    angle += 5
+
+for y in range(0, 200, step):
+    rr = r.copy()
+    rr.rotate(-30)
+    rr.translate(0, y)
+    rects.append(rr)
+
+shape = ops.Shape(rects[0])
+
+for r in rects[1:]:
+    print r
+    shape = shape.union(ops.Shape(r))
+
+r = Rectangle((0, 0), (w, h))
+shape = shape.intersection(ops.Shape(r))
+
+#
+r = Rectangle((edge, edge), (w-edge, h-edge))
+s = ops.Shape(r)
+r = Rectangle((0, 0), (w, h))
+s = s.symmetric_difference(ops.Shape(r))
+shape = shape.union(s)
+
+work = shape.get()
 
 work.draw(drawing, config.cut())
 
