@@ -1,9 +1,34 @@
 #!/usr/bin/python
 
+import math
+
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
+from laser import radians, rotate_2d
 from render import DXF as dxf
 
 import ops
+
+#
+#
+
+def curve(x0, y0, r, a0, a1, min_d=0.2):
+    p = Polygon()
+    circ = math.pi * r
+    divs = circ / min_d
+    div = 360.0 / divs
+    angle = a0
+    while angle < a1:
+        x, y = rotate_2d(radians(angle), r, 0)
+        p.add(x + x0, y + y0)
+        angle += div
+    return p
+
+def curves(x0, y0, r0, r1, a0, a1):
+    p = curve(x0, y0, r0, a0, a1)
+    c = curve(x0, y0, r1, a0, a1)
+    c.points.reverse()
+    p.add_poly(c)
+    return p
 
 #
 #
@@ -15,31 +40,26 @@ drawing = dxf.drawing("test.dxf")
 w = 100 
 h = 150
 edge = 8
-strip = 3
-step = 10
+strip = 2
+a_step = 5
+step = 8
 
 r = Rectangle((0, 0), (w*2, strip))
 
 rects = []
 
-angle = 30
-for y in range(0, 200, step):
+for angle in range(0, 90, a_step):
     rr = r.copy()
     rr.rotate(angle)
-    #rr.translate(0, y)
     rects.append(rr)
-    angle += 5
 
-for y in range(0, 200, step):
-    rr = r.copy()
-    rr.rotate(-30)
-    rr.translate(0, y)
-    rects.append(rr)
+for d in range(10, h, step):
+    c = curves(edge, edge, d, d + strip, 0, 91)
+    rects.append(c)
 
 shape = ops.Shape(rects[0])
 
 for r in rects[1:]:
-    print r
     shape = shape.union(ops.Shape(r))
 
 r = Rectangle((0, 0), (w, h))
