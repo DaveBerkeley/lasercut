@@ -73,20 +73,20 @@ def x_design():
 
     return shape
 
+def band(x, y, r, strip):
+    c = Circle((x, y), r)
+    shape = ops.Shape(c)
+    c = Circle((x, y), r+strip)
+    shape = shape.symmetric_difference(ops.Shape(c))
+    return shape
+
 def design():
     strip = 2
-
-    def band(x, y, r):
-        c = Circle((x, y), r)
-        shape = ops.Shape(c)
-        c = Circle((x, y), r+strip)
-        shape = shape.symmetric_difference(ops.Shape(c))
-        return shape
 
     def pool(x, y):
         shape = None
         for r in range(80, 80, 10):
-            c = band(x, y, r)
+            c = band(x, y, r, strip)
             if shape:
                 shape = shape.union(c)
                 break
@@ -100,14 +100,14 @@ def design():
     shape = None
     for x, y in xy:
         for r in range(50, 10, -10):
-            r = band(x, y, r)
+            r = band(x, y, r, strip)
             if shape:
                 shape = shape.union(r)
             else:
                 shape = r
     return shape
 
-def design():
+def xdesign():
 
     def star(x0, y0, d):
         n = 5
@@ -117,7 +117,7 @@ def design():
             x, y = rotate_2d(radians(angle), 0, d)
             p.add(x, y)
             angle += 180/n
-            x, y = rotate_2d(radians(angle), 0, d/2)
+            x, y = rotate_2d(radians(angle), 0, 2.0 * d / 5.0)
             p.add(x, y)
         p.close()
         p.translate(x0, y0)
@@ -137,6 +137,18 @@ def design():
     shape = shape.union(s)
     return shape
 
+def design():
+
+    shape = None
+    for x in range(10, w, 18):
+        for y in range(10, h, 18):
+            s = band(x, y, 14, 2)
+            if shape:
+                shape = shape.union(s)
+            else:
+                shape = s
+    return shape
+
 #
 #
 
@@ -153,7 +165,13 @@ tab_d = thick
 top = 10
 bot = 50
 
+
 shape = design()
+
+# clip the design
+e = edge/2
+r = Rectangle((e, e), (w-e, h-e))
+shape = shape.intersection(ops.Shape(r))
 
 # frame the design
 
