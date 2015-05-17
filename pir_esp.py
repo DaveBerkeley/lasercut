@@ -237,6 +237,7 @@ def make_t_holder(draw, top_h, tab_locs, is_top=False, is_mid=False, is_bot=Fals
             r = Temperature.dia / 2.0
         elif is_mid:
             r = Temperature.outer_1 / 2.0
+        r += 0.4 # make the hole a bit bigger. was too tight
         d = Circle((0, 0), r)
         d.translate(t_holder_w + thick - inset, t_holder_d - inset)
         p.add_arc(d)
