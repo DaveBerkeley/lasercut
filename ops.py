@@ -12,7 +12,7 @@ from shapely.geometry import Polygon as sPolygon
 min_line = 0.2
 
 def arc_to_poly(arc):
-    # Have to convert arc into line segments
+    # Convert arc into line segments
     point = arc.radius, 0
     circ = math.pi * arc.radius
     divs = circ / min_line

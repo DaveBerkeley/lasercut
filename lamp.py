@@ -20,6 +20,7 @@ def curves(x0, y0, r0, r1, a0, a1):
     c = curve(x0, y0, r1, a0, a1)
     c.points.reverse()
     p.add_poly(c)
+    p.close()
     return p
 
 #
@@ -48,7 +49,8 @@ for angle in range(0, 90, a_step):
     rr.rotate(angle)
     rects.append(rr)
 
-for d in range(step * 3, int(abs(complex(w, h))), step):
+diag = int(abs(complex(w, h)))
+for d in range(step * 3, int(diag), step):
     c = curves(edge, edge, d, d + strip, 0, 91)
     rects.append(c)
 
