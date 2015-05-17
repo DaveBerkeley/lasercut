@@ -66,54 +66,45 @@ w = 180
 h = 250
 thick = 3
 edge = 8
-tab_len = 5
+tabs = 10
 tab_d = thick
+#extra = 20
+top = 10
+bot = 10
 
 shape = design()
-
-# cut the tabs
-
-if 1:
-    for i in range(0, h, tab_len):
-        if (i % 2):
-            x0, y0, x1, y1 = w, i, w + tab_d, i + tab_len
-        else:
-            x0, y0, x1, y1 = 0, i, -tab_d, i+tab_len
-
-        r = Rectangle((x0, y0), (x1, y1))
-        shape = shape.union(ops.Shape(r))
 
 #
 r = Rectangle((edge, edge), (w-edge, h-edge))
 s = ops.Shape(r)
-r = Rectangle((0, 0), (w, h))
+r = Rectangle((0, -bot), (w, h+top))
 
 s = s.symmetric_difference(ops.Shape(r))
 shape = shape.union(s)
 
 work = shape.get()
+work.translate(0, bot)
 
-if 0:
-    r = Rectangle((edge, edge), (w-edge, h-edge))
-    work.add(r)
+# cut the tabs
 
-# bottom
-r = Polygon((w/2, 0))
-dy = 20
-dx = 10
-r.add(dx, 0)
-r.add(dx, -dy)
-r.add(w-dx, -dy)
-r.add(w-dx, 0)
-work = splice(work, r)
-
-# this won't work, as the top line is a load of segments!
-r = Polygon((w/2, h))
-r.add(dx, h)
-r.add(dx, h+dy)
-r.add(w-dx, h+dy)
-r.add(w-dx, h)
-work = splice(work, r)
+if 1:
+    tab_len = (h+top+bot)/tabs
+    i, y = 0, 0
+    while y < (h+top+bot):
+        if (i % 2) == 0:
+            x = 0
+            dx = -thick
+        else:
+            x = w
+            dx = thick
+        p = Polygon((x, y + (tab_len/2)))
+        p.add(x, y)
+        p.add(x+dx, y)
+        p.add(x+dx, y+tab_len)
+        p.add(x, y+tab_len)
+        work = splice(work, p)
+        i += 1
+        y += tab_len
 
 work.draw(drawing, config.cut())
 
