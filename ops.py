@@ -9,24 +9,22 @@ from shapely.geometry import Polygon as sPolygon
 #
 #
 
-min_line = 2.0
+min_line = 0.2
 
 def arc_to_poly(arc):
     # Have to convert arc into line segments
-    point = 0, arc.radius
+    point = arc.radius, 0
     circ = math.pi * arc.radius
     divs = circ / min_line
     div = 360.0 / divs
 
     poly = Polygon()
-    poly.add(0, 0)
     angle = arc.start_angle
     while angle <= arc.end_angle:
         x, y = rotate_2d(radians(angle), *point)
         x, y = x + arc.x, y + arc.y
         poly.add(x, y)
         angle += div
-    poly.close()
 
     return poly
 
