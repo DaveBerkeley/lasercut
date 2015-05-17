@@ -55,6 +55,88 @@ def design():
     shape = shape.intersection(ops.Shape(r))
     return shape
 
+def x_design():
+
+    step = 20
+    strip = 2
+    shape = None
+    e = edge / 2
+    for x in range(e, w-e, 20):
+        r = Rectangle((x, e), (x+strip, h-e))
+        if shape is None:
+            shape = ops.Shape(r)
+        else:
+            shape = shape.union(ops.Shape(r))
+    for y in range(e, h-e, 20):
+        r = Rectangle((e, y), (w-e, y+strip))
+        shape = shape.union(ops.Shape(r))
+
+    return shape
+
+def design():
+    strip = 2
+
+    def band(x, y, r):
+        c = Circle((x, y), r)
+        shape = ops.Shape(c)
+        c = Circle((x, y), r+strip)
+        shape = shape.symmetric_difference(ops.Shape(c))
+        return shape
+
+    def pool(x, y):
+        shape = None
+        for r in range(80, 80, 10):
+            c = band(x, y, r)
+            if shape:
+                shape = shape.union(c)
+                break
+            else:
+                shape = c
+        return shape
+
+    xy = [
+        (50, 50), (100, 100), (45, 120),
+    ]
+    shape = None
+    for x, y in xy:
+        for r in range(50, 10, -10):
+            r = band(x, y, r)
+            if shape:
+                shape = shape.union(r)
+            else:
+                shape = r
+    return shape
+
+def design():
+
+    def star(x0, y0, d):
+        n = 5
+        p = Polygon()
+        for angle in range(0, 360, 360/n):
+            print angle
+            x, y = rotate_2d(radians(angle), 0, d)
+            p.add(x, y)
+            angle += 180/n
+            x, y = rotate_2d(radians(angle), 0, d/2)
+            p.add(x, y)
+        p.close()
+        p.translate(x0, y0)
+        return p
+
+    def make(x0, y0, d):
+        s = star(x0, y0, d)
+        shape = ops.Shape(s)
+        s = star(x0, y0, d-5)
+        shape = shape.symmetric_difference(ops.Shape(s))
+        return shape
+
+    shape = make(50, 50, 80)
+    s = make(150, 150, 80)
+    shape = shape.union(s)
+    s = make(100, 80, 50)
+    shape = shape.union(s)
+    return shape
+
 #
 #
 
@@ -68,13 +150,13 @@ thick = 3
 edge = 8
 tabs = 10
 tab_d = thick
-#extra = 20
 top = 10
-bot = 10
+bot = 50
 
 shape = design()
 
-#
+# frame the design
+
 r = Rectangle((edge, edge), (w-edge, h-edge))
 s = ops.Shape(r)
 r = Rectangle((0, -bot), (w, h+top))
