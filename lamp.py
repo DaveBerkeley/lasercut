@@ -39,12 +39,13 @@ drawing = dxf.drawing("test.dxf")
 
 w = 100 
 h = 150
+thick = 3
 edge = 8
 strip = 2
 a_step = 5
 step = 8
 tab_len = 5
-tab_d = 4
+tab_d = thick
 
 r = Rectangle((0, 0), (w*2, strip))
 
@@ -64,31 +65,22 @@ shape = ops.Shape(rects[0])
 for r in rects[1:]:
     shape = shape.union(ops.Shape(r))
 
+
 r = Rectangle((0, 0), (w, h))
+shape = shape.intersection(ops.Shape(r))
 
 # cut the tabs
 
-for i in range(20, h, tab_len):
-    print "not working yet ..."
-    break
+for i in range(0, h, tab_len):
     p = Polygon()
     if (i % 2):
         x0, y0, x1, y1 = w, i, w + tab_d, i + tab_len
-        continue
     else:
         x0, y0, x1, y1 = 0, i, -tab_d, i+tab_len
 
-    p.add(x0, y1)
-    p.add(x1, y1)
-    p.add(x1, y0)
-    p.add(x0, y0)
+    p.add_poly(Rectangle((x0, y0), (x1, y1)))
 
-    if isinstance(r, Rectangle):
-        r = Collection(r)
-
-    r = splice(r, p)
-
-shape = shape.intersection(ops.Shape(r))
+    shape = shape.union(ops.Shape(p))
 
 #
 r = Rectangle((edge, edge), (w-edge, h-edge))
