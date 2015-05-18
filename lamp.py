@@ -210,6 +210,81 @@ def make_side():
         work = corner(work, (foot_w, foot_h), foot_h)
         work = corner(work, (w-foot_w, foot_h), foot_h)
 
+    # cut slots for the middle sections
+
+    info = get_slots()
+    slot_w = info["w"]
+    p = Rectangle((0, 0), (slot_w, thick))
+    p.translate(-slot_w / 2, -thick / 2)
+    for y in [ bot, bot + h ]:
+        for x in info["d"]:
+            r = p.copy()
+            r.translate(x, y)
+            work.add(r)
+
+    # move over so lhs is at 0
+    work.translate(thick, 0)
+    return work
+
+def get_slots():
+    slot_w = w / 8.0
+    return {
+        "w" : slot_w,
+        "d" : [  w/4.0, 2*w/4.0, 3*w/4.0 ]
+    }
+
+def make_middle(is_top=True):
+    work = Collection()
+    p = Rectangle((0, 0), (w, w))
+    work.add(p)
+
+    # add the tabs
+    info = get_slots()
+    slot = info["w"]
+    s = slot/2.0
+    p = Polygon()
+    p.add(-s, 0)
+    p.add(-s, -thick)
+    p.add(s, -thick)
+    p.add(s, 0)
+
+    for x in info["d"]:
+        r = p.copy()
+        r.translate(x, 0)
+        work = splice(work, r)
+
+        r = p.copy()
+        r.rotate(180)
+        r.translate(x, w)
+        work = splice(work, r)
+
+        r = p.copy()
+        r.rotate(270)
+        r.translate(0, x)
+        work = splice(work, r)
+
+        r = p.copy()
+        r.rotate(90)
+        r.translate(w, x)
+        work = splice(work, r)
+
+    if not is_top:
+        # hole for lamp fitting
+        c = Circle((w/2, w/2), lamp_r)
+        work.add(c)
+
+        # holes for ventilation
+        for i, x in enumerate([ w/6, w/2, 5*w/6 ]):
+            for j, y in enumerate([ w/6, w/2, 5*w/6 ]):
+                if (i == 1) and (j == 1):
+                    continue
+                c = Circle((x, y), small_vent_r)
+                work.add(c)
+
+    if is_top:
+        c = Circle((w/2, w/2), big_vent_r)
+        work.add(c)
+
     return work
 
 #
@@ -225,13 +300,25 @@ if __name__ == "__main__":
     h = 180.0
     thick = 3
     edge = 8
-    tabs = 10
+    tabs = 20
     tab_d = thick
     top = 6
     bot = 50
+    spacing = 1
+    lamp_r = 20
+    small_vent_r = 10
+    big_vent_r = 0.8 * w/2
 
-    work = make_side()
+    if len(sys.argv) == 1:
+        work = make_side()
+    else:
+        work = make_middle(True)
+        work.translate(0, w + (2 * thick) + spacing)
+        w = make_middle(False)
+        work.add(w)
 
+    # for the printer
+    work.translate(10, 20)
     work.draw(drawing, config.cut())
 
     drawing.save()
