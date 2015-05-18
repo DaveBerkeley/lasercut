@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
+import sys
 import math
 
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import radians, rotate_2d, splice
+from laser import radians, rotate_2d, splice, corner
 from render import DXF as dxf
 
 import ops
@@ -80,7 +81,7 @@ def band(x, y, r, strip):
     shape = shape.symmetric_difference(ops.Shape(c))
     return shape
 
-def design():
+def xdesign():
     strip = 2
 
     def pool(x, y):
@@ -137,12 +138,12 @@ def xdesign():
     shape = shape.union(s)
     return shape
 
-def design():
+def xdesign():
 
     shape = None
     for x in range(10, w, 18):
         for y in range(10, h, 18):
-            s = band(x, y, 14, 2)
+            s = band(x, y, 14, 3)
             if shape:
                 shape = shape.union(s)
             else:
@@ -150,64 +151,89 @@ def design():
     return shape
 
 #
+#   Make the side pieces
+
+def make_side():
+    shape = design()
+
+    # clip the design
+    e = edge/2
+    r = Rectangle((e, e), (w-e, h-e))
+    shape = shape.intersection(ops.Shape(r))
+
+    # frame the design
+
+    r = Rectangle((edge, edge), (w-edge, h-edge))
+    s = ops.Shape(r)
+    r = Rectangle((0, -bot), (w, h+top))
+
+    s = s.symmetric_difference(ops.Shape(r))
+    shape = shape.union(s)
+
+    work = shape.get()
+    work.translate(0, bot)
+
+    # cut the tabs
+
+    if 1:
+        tab_len = (h+top+bot)/tabs
+        i, y = 0, 0
+        while y < (h+top+bot):
+            if (i % 2) == 0:
+                x = 0
+                dx = -thick
+            else:
+                x = w
+                dx = thick
+            p = Polygon((x, y + (tab_len/2)))
+            p.add(x, y)
+            p.add(x+dx, y)
+            p.add(x+dx, y+tab_len)
+            p.add(x, y+tab_len)
+            work = splice(work, p)
+            i += 1
+            y += tab_len
+
+    # make the feet
+
+    if 1:
+        foot_w = w / 5
+        foot_h = bot * 0.2
+        p = Polygon((w/2, 0))
+        p.add(foot_w, 0)
+        p.add(foot_w, foot_h)
+        p.add(w - foot_w, foot_h)
+        p.add(w - foot_w, 0)
+
+        work = splice(work, p)
+
+        work = corner(work, (foot_w, foot_h), foot_h)
+        work = corner(work, (w-foot_w, foot_h), foot_h)
+
+    return work
+
+#
 #
 
-config = Config()
+if __name__ == "__main__":
 
-drawing = dxf.drawing("test.dxf")
+    config = Config()
 
-w = 180 
-h = 250
-thick = 3
-edge = 8
-tabs = 10
-tab_d = thick
-top = 10
-bot = 50
+    drawing = dxf.drawing("test.dxf")
 
+    w = 130.0
+    h = 180.0
+    thick = 3
+    edge = 8
+    tabs = 10
+    tab_d = thick
+    top = 6
+    bot = 50
 
-shape = design()
+    work = make_side()
 
-# clip the design
-e = edge/2
-r = Rectangle((e, e), (w-e, h-e))
-shape = shape.intersection(ops.Shape(r))
+    work.draw(drawing, config.cut())
 
-# frame the design
-
-r = Rectangle((edge, edge), (w-edge, h-edge))
-s = ops.Shape(r)
-r = Rectangle((0, -bot), (w, h+top))
-
-s = s.symmetric_difference(ops.Shape(r))
-shape = shape.union(s)
-
-work = shape.get()
-work.translate(0, bot)
-
-# cut the tabs
-
-if 1:
-    tab_len = (h+top+bot)/tabs
-    i, y = 0, 0
-    while y < (h+top+bot):
-        if (i % 2) == 0:
-            x = 0
-            dx = -thick
-        else:
-            x = w
-            dx = thick
-        p = Polygon((x, y + (tab_len/2)))
-        p.add(x, y)
-        p.add(x+dx, y)
-        p.add(x+dx, y+tab_len)
-        p.add(x, y+tab_len)
-        work = splice(work, p)
-        i += 1
-        y += tab_len
-
-work.draw(drawing, config.cut())
-
-drawing.save()
+    drawing.save()
 
 # FIN
