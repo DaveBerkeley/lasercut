@@ -4,7 +4,7 @@ import sys
 import math
 
 from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import radians, rotate_2d, splice, corner
+from laser import radians, degrees, angle, rotate_2d, splice, corner
 from render import DXF as dxf
 
 import ops
@@ -270,22 +270,47 @@ def make_middle(is_top=True):
 
     if not is_top:
         # hole for lamp fitting
-        c = Circle((w/2, w/2), lamp_r)
+        c = LampHolder().make()
+        c.translate(w/2, w/2)
         work.add(c)
 
         # holes for ventilation
-        for i, x in enumerate([ w/6, w/2, 5*w/6 ]):
-            for j, y in enumerate([ w/6, w/2, 5*w/6 ]):
-                if (i == 1) and (j == 1):
-                    continue
-                c = Circle((x, y), small_vent_r)
-                work.add(c)
+        for angle in range(0, 360, 360/8):
+            d = w * 0.35
+            c = Circle((d, 0), small_vent_r)
+            c.rotate(angle)
+            c.translate(w/2, w/2)
+            work.add(c)
 
     if is_top:
         c = Circle((w/2, w/2), big_vent_r)
         work.add(c)
 
     return work
+
+class LampHolder:
+
+    outer_r = 28.0 / 2
+    inner_r = 26.0 / 2
+
+    def make(self):
+        work = Collection()
+        d = math.sqrt((self.outer_r * self.outer_r) - (self.inner_r * self.inner_r))
+        p = Polygon()
+        p.add(-d, self.inner_r)
+        p.add(d, self.inner_r)
+        work.add(p)
+        p = Polygon()
+        p.add(-d, -self.inner_r)
+        p.add(d, -self.inner_r)
+        work.add(p)
+
+        a = degrees(angle(self.inner_r, d))
+        c = Arc((0, 0), self.outer_r, 270+a, 90-a)
+        work.add(c)
+        c = Arc((0, 0), self.outer_r, 90+a, 270-a)
+        work.add(c)
+        return work
 
 #
 #
@@ -299,15 +324,16 @@ if __name__ == "__main__":
     w = 130.0
     h = 180.0
     thick = 3
+    spacing = 1
     edge = 8
     tabs = 20
     tab_d = thick
     top = 6
-    bot = 50
-    spacing = 1
-    lamp_r = 20
-    small_vent_r = 10
+    bot = 60
     big_vent_r = 0.8 * w/2
+    # lamp fitting
+    lamp_r = 14.0, 13.0
+    small_vent_r = 10
 
     if len(sys.argv) == 1:
         work = make_side()
