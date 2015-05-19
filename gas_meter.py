@@ -10,27 +10,28 @@ from render import DXF as dxf
 #
 
 # Surround dimensions
-w_inner = 200
-h_inner = 150
-edge = 10
+w_inner = 94.0
+h_inner = 50.1
+edge = 8.0
 hole_r = 3 / 2.0
 w_outer, h_outer = w_inner+(2*edge), h_inner+(2*edge)
 
 # Plate dimensions
-plate_h = h_inner + (2 * edge)
-plate_w = 50
-plate_dx = 140
+plate_h = h_inner + (2.0 * edge)
+plate_w = 35.0
+sensor_from_edge = 16.0
+plate_dx = edge + (w_inner - sensor_from_edge) - (plate_w/2.0)
 
 # corner supports
-support_w = 30
+support_w = 15.0
 
 # PCB dimensions
-board_h = 40
-board_w = 45
+board_h = 35.0
+board_w = 30.0
 board_dx = (plate_w - board_w) / 2.0
-board_dy = 100
-mouse_w = 5
-mouse_h = 5
+board_dy = edge + ((h_inner - board_h) / 2.0) # mid
+mouse_w = 5.0
+mouse_h = 5.0
 mouse_dx = (board_w - mouse_w) / 2.0
 mouse_dy = (board_h - mouse_h) / 2.0
 led_r = 2.0
@@ -83,11 +84,10 @@ def make_face(draw):
     work.add(r)
 
     # round the corners
-    rad = 10
-    work = corner(work, (0, 0), rad)
-    work = corner(work, (w_outer, 0), rad)
-    work = corner(work, (0, h_outer), rad)
-    work = corner(work, (w_outer, h_outer), rad)
+    work = corner(work, (0, 0), edge)
+    work = corner(work, (w_outer, 0), edge)
+    work = corner(work, (0, h_outer), edge)
+    work = corner(work, (w_outer, h_outer), edge)
 
     # fixing holes for the plate
     dy = edge / 2.0
@@ -195,13 +195,14 @@ if __name__ == "__main__":
         work.add(p)
 
         p = info["corner"].copy()
-        dy += spacing
-        p.translate(edge+spacing, dy)
+        dy = edge + spacing
+        dx = edge+(2*spacing)+plate_h
+        p.translate(dx, dy)
         work.add(p)
 
         p = info["corner"].copy()
         dy += edge + support_w + spacing
-        p.translate(edge+spacing, dy)
+        p.translate(dx, dy)
         work.add(p)
 
     work.draw(drawing, config.cut())
