@@ -16,8 +16,7 @@ edge = 8.0
 hole_r = 3 / 2.0
 w_outer, h_outer = w_inner+(2*edge), h_inner+(2*edge)
 dial_r = 10.0
-dial_dy = 25.0
-#sensor_from_edge = 16.0
+dial_dy = 25.0 # from bot of face
 dial_dx = 16.0 # from rh edge
 
 # Nano dimensions
@@ -32,6 +31,9 @@ chip_w = 12.85
 chip_h = 9.9
 chip_r = 5.6 / 2
 chip_dy = chip_h - 4.45
+
+# meter digits (approx position)
+digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
 
 # PCB dimensions
 board_h = nano_h + (2 * board_edge_h)
@@ -138,7 +140,6 @@ def make_face(draw):
     work = corner(work, (w_outer, h_outer), edge)
 
     board = make_board(draw)
-    bdx, bdy = board.info["board"]
     sdx, sdy = board.info["sensor"]
     work.info.update(board.info)
 
@@ -168,8 +169,7 @@ def make_face(draw):
     work.add(c)
 
     if draw:
-        # meter digits (approx position)
-        digit_w, digit_h, digit_dx = 7.0, 10.0, 10.0
+        # show meter digits
         r = Rectangle((0, 0), (digit_w, digit_h), colour=Config.draw_colour)
         dx, dy = 10 + edge, 30.0
         for i in range(4):
@@ -246,7 +246,6 @@ if __name__ == "__main__":
         work = Collection()
 
         p = info["surround"]
-        print p.info
         plate_dx = p.info["board_dx"]
         work.add(p)
 
@@ -262,6 +261,8 @@ if __name__ == "__main__":
         p.rotate(90)
         p.translate(edge+support_w, 0)
         work.add(p)
+
+        work.translate(10, 20) # for printing
     else:
         spacing = 1.0
         work = Collection()
