@@ -112,6 +112,17 @@ def make_face(draw):
     c = Circle((edge/2, support_w+edge-(edge/2)), hole_r)
     work.add(c)
 
+    if draw:
+        # meter digits (approx position)
+        digit_w, digit_h, digit_dx = 7.0, 10.0, 10.0
+        r = Rectangle((0, 0), (digit_w, digit_h), colour=Config.draw_colour)
+        dx, dy = 10 + edge, 30.0
+        for i in range(4):
+            d = r.copy()
+            d.translate(dx, dy)
+            dx += digit_dx
+            work.add(d)
+
     info = {}
     info["surround"] = work
 
