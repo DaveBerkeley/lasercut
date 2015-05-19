@@ -12,7 +12,7 @@ from render import DXF as dxf
 # Surround dimensions
 w_inner = 94.0
 h_inner = 50.1
-edge = 8.0
+edge = 9.0
 hole_r = 3 / 2.0
 w_outer, h_outer = w_inner+(2*edge), h_inner+(2*edge)
 dial_r = 10.0
@@ -22,29 +22,34 @@ dial_dx = 16.0 # from rh edge
 # Nano dimensions
 nano_w = 17.9
 nano_h = 43.3
+
+# 0.1 inch pin spacing
+pin_spacing = 2.54
+
 # other d
-board_edge_w = 3
-board_edge_h = 5
+board_edge_w = pin_spacing
+board_edge_h = 2 * pin_spacing
 # ADNS2610 chip
 chip_body = 9.1
 chip_w = 12.85
 chip_h = 9.9
 chip_r = 5.6 / 2
 chip_dy = chip_h - 4.45
+chip_mag = 1.8 # make the hole this much bigger than the sensor opening
 
 # meter digits (approx position)
 digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
 
 # PCB dimensions
 board_h = nano_h + (2 * board_edge_h)
-board_w = nano_w + chip_w + (3 * board_edge_w)
+board_w = nano_w + chip_w + (4 * board_edge_w)
 
 # Plate dimensions
 plate_h = h_inner + (2.0 * edge)
 plate_w = board_w
 
 # corner supports
-support_w = 15.0
+support_w = 14.0
 
 board_dx = (plate_w - board_w) / 2.0
 board_dy = edge + ((h_inner - board_h) / 2.0) # mid
@@ -60,7 +65,7 @@ led_dy = 7.0 # above centre of sensor
 
 def make_chip(draw):
     work = Collection()
-    c = Circle((chip_w/2.0, chip_dy), chip_r)
+    c = Circle((chip_w/2.0, chip_dy), chip_r, colour=Config.draw_colour)
     work.add(c)
     work.info = { "sensor" : c }
     if draw:
@@ -95,17 +100,17 @@ def make_board(draw):
 
     if draw:
         r = Rectangle((0, 0), (nano_w, nano_h), colour=Config.draw_colour)
-        r.translate(board_edge_w, board_edge_h)
+        r.translate(board_edge_w * 2, board_edge_h)
         work.add(r)
 
     # add the chip so it's chip_dy optical centre aligns with the dial centre
     chip = make_chip(draw)
     dy = edge + dial_dy - board_dy - chip_dy
-    chip.translate((board_edge_w * 2) + nano_w, dy)
+    chip.translate((board_edge_w * 3) + nano_w, dy)
     work.add(chip)
 
     sensor = chip.info["sensor"]
-    c = Circle((sensor.x, sensor.y), chip_r * 1.5)
+    c = Circle((sensor.x, sensor.y), chip_r * chip_mag)
     work.add(c)
 
     # hole for the LED
@@ -236,13 +241,19 @@ def make_face(draw):
 if __name__ == "__main__":
     config = Config()
 
-    draw = len(sys.argv) > 1
+    layout = len(sys.argv) > 1
+    if layout:
+        eng = sys.argv[1] == "eng"
+        if eng:
+            layout = False
+    else:
+        eng = False
 
     drawing = dxf.drawing("test.dxf")
 
-    info = make_face(draw)
+    info = make_face(layout or eng)
 
-    if draw:
+    if layout:
         work = Collection()
 
         p = info["surround"]
