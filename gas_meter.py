@@ -26,9 +26,6 @@ dial_dx = 16.0 # from rh edge
 nano_w = 17.9
 nano_h = 43.3
 
-# other d
-board_edge_w = pin_spacing
-board_edge_h = 2 * pin_spacing
 # ADNS2610 chip
 chip_body = 9.1
 chip_w = 12.85
@@ -45,7 +42,7 @@ plate_h = h_inner + (2.0 * edge)
 
 # PCB dimensions
 board_h = plate_h
-board_w = nano_w + chip_w + (3 * board_edge_w) + (3 * pin_spacing)
+board_w = nano_w + chip_w + (6 * pin_spacing)
 
 plate_w = board_w
 
@@ -59,7 +56,7 @@ mouse_h = 5.0
 mouse_dx = (board_w - mouse_w) / 2.0
 mouse_dy = (board_h - mouse_h) / 2.0
 led_r = 5 / 2.0
-led_dy = 3 * pin_spacing # above centre of sensor
+led_dy = 4 * pin_spacing # above centre of sensor
 led_dy2 = 3 * pin_spacing # below centre of sensor
 led_dx = 2 * pin_spacing
 
@@ -72,6 +69,7 @@ def nearest_01_inch(x):
     x = int(x)
     x *= pin_spacing
     return x
+
 #
 #
 
@@ -110,13 +108,21 @@ def make_board(draw):
             i += pin_spacing
 
     if draw:
+        # Draw the Nano outline
         r = Rectangle((0, 0), (nano_w, nano_h), colour=Config.draw_colour)
-        r.translate(board_edge_w * 1, pin_spacing * 5)
+        r.translate(pin_spacing * 1.5, pin_spacing * 5.5)
         work.add(r)
+        # and the pins
+        for x in [ 2, 8 ]:
+            x *= pin_spacing
+            for y in range(15):
+                y += 7
+                y *= pin_spacing
+                c = Circle((x, y), 0.5, colour=Config.draw_colour)
+                work.add(c)
 
     if 1:
         # add corner holes
-
         x0 = 2 * pin_spacing
         x1 = nearest_01_inch(board_w - (2 * pin_spacing))
         y0 = x0
@@ -132,7 +138,7 @@ def make_board(draw):
     # add the chip so it's chip_dy optical centre aligns with the dial centre
     chip = make_chip(draw)
     dy = edge + dial_dy - board_dy - chip_dy
-    chip.translate((board_edge_w * 2) + nano_w, dy)
+    chip.translate((pin_spacing * 3) + nano_w, dy)
     work.add(chip)
 
     sensor = chip.info["sensor"]
@@ -140,13 +146,15 @@ def make_board(draw):
     work.add(c)
 
     # holes for the LEDs
-    c = Circle((sensor.x + led_dx, sensor.y + led_dy), led_r)
+    def nearest(x, y):
+        return nearest_01_inch(x), nearest_01_inch(y)
+    c = Circle(nearest(sensor.x + led_dx, sensor.y + led_dy), led_r)
     work.add(c)
-    c = Circle((sensor.x - led_dx, sensor.y + led_dy), led_r)
+    c = Circle(nearest(sensor.x - led_dx, sensor.y + led_dy), led_r)
     work.add(c)
-    c = Circle((sensor.x + led_dx, sensor.y - led_dy2), led_r)
+    c = Circle(nearest(sensor.x + led_dx, sensor.y - led_dy2), led_r)
     work.add(c)
-    c = Circle((sensor.x - led_dx, sensor.y - led_dy2), led_r)
+    c = Circle(nearest(sensor.x - led_dx, sensor.y - led_dy2), led_r)
     work.add(c)
 
     work.info = { 
