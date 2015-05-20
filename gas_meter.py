@@ -9,6 +9,9 @@ from render import DXF as dxf
 #
 #
 
+# 0.1 inch pin spacing
+pin_spacing = 2.54
+
 # Surround dimensions
 w_inner = 94.0
 h_inner = 50.1
@@ -22,9 +25,6 @@ dial_dx = 16.0 # from rh edge
 # Nano dimensions
 nano_w = 17.9
 nano_h = 43.3
-
-# 0.1 inch pin spacing
-pin_spacing = 2.54
 
 # other d
 board_edge_w = pin_spacing
@@ -46,12 +46,11 @@ plate_h = h_inner + (2.0 * edge)
 # PCB dimensions
 board_h = plate_h
 board_w = nano_w + chip_w + (3 * board_edge_w) + (3 * pin_spacing)
-board_hole_inset = edge / 2.0
 
 plate_w = board_w
 
 # corner supports
-support_w = 14.0
+support_w = 12.0
 
 board_dx = (plate_w - board_w) / 2.0
 board_dy = edge + ((h_inner - board_h) / 2.0) # mid
@@ -64,6 +63,15 @@ led_dy = 3 * pin_spacing # above centre of sensor
 led_dy2 = 3 * pin_spacing # below centre of sensor
 led_dx = 2 * pin_spacing
 
+#
+#
+
+def nearest_01_inch(x):
+    x /= pin_spacing
+    x += 0.5
+    x = int(x)
+    x *= pin_spacing
+    return x
 #
 #
 
@@ -90,22 +98,36 @@ def make_board(draw):
     if draw:
         work.add(r)
 
-    # fixing holes
-    if 0:
-        for point in r.points[:-1]:
-            x, y = point
-            def fn(a):
-                if a:
-                    return a - board_hole_inset
-                return a + board_hole_inset
-            x, y = fn(x), fn(y)
-            c = Circle((x, y), hole_r)
-            work.add(c)
+    # make 0.1 inch grid
+    if draw:
+        i = 0
+        while i < board_w:
+            j = 0
+            while j < board_h:
+                c = Circle((i, j), 0.05, colour=Config.draw_colour)
+                work.add(c)
+                j += pin_spacing
+            i += pin_spacing
 
     if draw:
         r = Rectangle((0, 0), (nano_w, nano_h), colour=Config.draw_colour)
         r.translate(board_edge_w * 1, pin_spacing * 5)
         work.add(r)
+
+    if 1:
+        # add corner holes
+
+        x0 = 2 * pin_spacing
+        x1 = nearest_01_inch(board_w - (2 * pin_spacing))
+        y0 = x0
+        y1 = nearest_01_inch(board_h - (2 * pin_spacing))
+        holes = [
+            (x0, y0), (x1, y0), (x0, y1), (x1, y1),
+        ]
+
+        for x, y in holes:
+            c = Circle((x, y), hole_r)
+            work.add(c)
 
     # add the chip so it's chip_dy optical centre aligns with the dial centre
     chip = make_chip(draw)
@@ -130,6 +152,7 @@ def make_board(draw):
     work.info = { 
         "sensor" : (sensor.x, sensor.y),
         "board"  : (board_w, board_h),
+        "holes"  : holes,
     }
     return work
 
@@ -158,29 +181,26 @@ def make_face(draw):
     sdx, sdy = board.info["sensor"]
     work.info.update(board.info)
 
-    # fixing holes for the plate
-    dy = edge / 2.0
     d = sdx + dial_dx # d = from board left edge to inner right edge
     dx = edge + (w_inner - d)
     work.info["board_dx"] = dx
-    xy = [
-        (dx+inset, dy), 
-        (dx+plate_w-inset, dy), 
-        (dx+inset, h_outer-dy), 
-        (dx+plate_w-inset, h_outer-dy),
-    ]
-    for x, y in xy:
-        c = Circle((x, y), hole_r)
-        work.add(c)
 
-    # fixing holes for the corners
-    c = Circle((support_w+(edge/2), h_outer-(edge/2)), hole_r)
+    # fixing holes for the plate
+    if 1:
+        holes = board.info["holes"]
+        for x, y in holes:
+            c = Circle((x+dx, y), hole_r)
+            work.add(c)
+
+    # fixing holes for the corner supports
+    e = edge / 2.0
+    c = Circle((support_w+e, h_outer-e), hole_r)
     work.add(c)
-    c = Circle((edge/2, h_outer-edge-support_w+(edge/2)), hole_r)
+    c = Circle((e, h_outer-edge-support_w+e), hole_r)
     work.add(c)
-    c = Circle((support_w+edge-(edge/2), (edge/2)), hole_r)
+    c = Circle((support_w+edge-e, e), hole_r)
     work.add(c)
-    c = Circle((edge/2, support_w+edge-(edge/2)), hole_r)
+    c = Circle((e, support_w+edge-e), hole_r)
     work.add(c)
 
     if draw:
@@ -206,19 +226,11 @@ def make_face(draw):
 
     # make the plate
 
+    work = Collection()
     r = Rectangle((0, 0), (plate_w, plate_h))
-    for p in r.points[:-1]:
-        def fn(a):
-            if a:
-                return a - inset
-            return a + inset
-        x, y = p
-        x, y = fn(x), fn(y)
-        c = Circle((x, y), hole_r)
-        r.add_arc(c)
 
     # add the board to the plate
-    work = Collection(r)
+    work.add(r)
     p = make_board(draw)
     p.translate(board_dx, board_dy)
     work.add(p)
@@ -226,14 +238,8 @@ def make_face(draw):
     info["plate"] = work
 
     # make the corner supports
-
-    work = Polygon()
-    work.add(0, 0)
-    work.add(0, support_w+edge) # corner
-    work.add(support_w+edge, support_w+edge)
-    work.add(support_w+edge, support_w)
-    work.add(edge, 0)
-    work.close()
+    work = Rectangle((0, 0), (support_w+edge, support_w+edge))
+    work = corner(work, (support_w+edge, 0), edge)
     work = corner(work, (0, support_w+edge), edge)
 
     c = Circle((support_w+(edge/2), support_w+(edge/2)), hole_r)
@@ -307,6 +313,7 @@ if __name__ == "__main__":
         p.translate(dx, dy)
         work.add(p)
 
+    work.translate(10, 20) # for printing
     work.draw(drawing, config.cut())
 
     drawing.save()
