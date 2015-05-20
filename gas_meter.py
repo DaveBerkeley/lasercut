@@ -40,12 +40,14 @@ chip_mag = 1.8 # make the hole this much bigger than the sensor opening
 # meter digits (approx position)
 digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
 
-# PCB dimensions
-board_h = nano_h + (2 * board_edge_h)
-board_w = nano_w + chip_w + (4 * board_edge_w)
-
 # Plate dimensions
 plate_h = h_inner + (2.0 * edge)
+
+# PCB dimensions
+board_h = plate_h
+board_w = nano_w + chip_w + (3 * board_edge_w) + (3 * pin_spacing)
+board_hole_inset = edge / 2.0
+
 plate_w = board_w
 
 # corner supports
@@ -57,8 +59,10 @@ mouse_w = 5.0
 mouse_h = 5.0
 mouse_dx = (board_w - mouse_w) / 2.0
 mouse_dy = (board_h - mouse_h) / 2.0
-led_r = 2.0
-led_dy = 7.0 # above centre of sensor
+led_r = 5 / 2.0
+led_dy = 3 * pin_spacing # above centre of sensor
+led_dy2 = 3 * pin_spacing # below centre of sensor
+led_dx = 2 * pin_spacing
 
 #
 #
@@ -87,34 +91,40 @@ def make_board(draw):
         work.add(r)
 
     # fixing holes
-    inset = 3.0
-    for point in r.points[:-1]:
-        x, y = point
-        def fn(a):
-            if a:
-                return a - inset
-            return a + inset
-        x, y = fn(x), fn(y)
-        c = Circle((x, y), hole_r)
-        work.add(c)
+    if 0:
+        for point in r.points[:-1]:
+            x, y = point
+            def fn(a):
+                if a:
+                    return a - board_hole_inset
+                return a + board_hole_inset
+            x, y = fn(x), fn(y)
+            c = Circle((x, y), hole_r)
+            work.add(c)
 
     if draw:
         r = Rectangle((0, 0), (nano_w, nano_h), colour=Config.draw_colour)
-        r.translate(board_edge_w * 2, board_edge_h)
+        r.translate(board_edge_w * 1, pin_spacing * 5)
         work.add(r)
 
     # add the chip so it's chip_dy optical centre aligns with the dial centre
     chip = make_chip(draw)
     dy = edge + dial_dy - board_dy - chip_dy
-    chip.translate((board_edge_w * 3) + nano_w, dy)
+    chip.translate((board_edge_w * 2) + nano_w, dy)
     work.add(chip)
 
     sensor = chip.info["sensor"]
     c = Circle((sensor.x, sensor.y), chip_r * chip_mag)
     work.add(c)
 
-    # hole for the LED
-    c = Circle((sensor.x, sensor.y + led_dy), led_r)
+    # holes for the LEDs
+    c = Circle((sensor.x + led_dx, sensor.y + led_dy), led_r)
+    work.add(c)
+    c = Circle((sensor.x - led_dx, sensor.y + led_dy), led_r)
+    work.add(c)
+    c = Circle((sensor.x + led_dx, sensor.y - led_dy2), led_r)
+    work.add(c)
+    c = Circle((sensor.x - led_dx, sensor.y - led_dy2), led_r)
     work.add(c)
 
     work.info = { 
