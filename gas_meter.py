@@ -26,7 +26,7 @@ dial_dx = 16.0 # from rh edge
 nano_w = 17.9
 nano_h = 43.3
 
-# ADNS2610 chip
+# ADNS2610 chip (from data sheet)
 chip_body = 9.1
 chip_w = 12.85
 chip_h = 9.9
@@ -51,11 +51,8 @@ support_w = 12.0
 
 board_dx = (plate_w - board_w) / 2.0
 board_dy = edge + ((h_inner - board_h) / 2.0) # mid
-mouse_w = 5.0
-mouse_h = 5.0
-mouse_dx = (board_w - mouse_w) / 2.0
-mouse_dy = (board_h - mouse_h) / 2.0
-led_r = 5 / 2.0
+
+led_r = 5 / 2.0 # 5mm Green LEDs
 led_dy = 4 * pin_spacing # above centre of sensor
 led_dy2 = 3 * pin_spacing # below centre of sensor
 led_dx = 2 * pin_spacing
