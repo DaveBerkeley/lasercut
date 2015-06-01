@@ -50,7 +50,7 @@ def make_board(draw):
         work.add(r)
 
     for x, y in holes:
-        c = Circle((x, y), 3.0/2)
+        c = Circle((x, y), hole_r)
         work.add(c)
 
     if draw:
