@@ -124,11 +124,16 @@ def make_face(draw):
     work.info["board_dx"] = dx
 
     # fixing holes for the plate
-    if 0:
-        holes = board.info["holes"]
-        for x, y in holes:
-            c = Circle((x+dx, y), hole_r)
-            work.add(c)
+    e = edge / 2.0
+    holes = [
+        (e, e),
+        (plate_w - e, e),
+        (plate_w - e, plate_h - e),
+        (e, plate_h - e),
+    ]
+    for x, y in holes:
+        c = Circle((x+dx, y), hole_r)
+        work.add(c)
 
     # fixing holes for the corner supports
     e = edge / 2.0
@@ -172,6 +177,11 @@ def make_face(draw):
     p = make_board(draw)
     p.translate(board_dx, edge + (dial_dy - sdy))
     work.add(p)
+
+    # add fixing holes
+    for x, y in holes:
+        c = Circle((x, y), hole_r)
+        work.add(c)
 
     info["plate"] = work
 
