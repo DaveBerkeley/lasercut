@@ -23,16 +23,16 @@ dial_dy = 25.0 # from bot of face
 dial_dx = 16.0 # from rh edge
 
 # Nano dimensions
-nano_w = 17.9
-nano_h = 43.3
+#nano_w = 17.9
+#nano_h = 43.3
 
 # ADNS2610 chip (from data sheet)
-chip_body = 9.1
-chip_w = 12.85
-chip_h = 9.9
-chip_r = 5.6 / 2
-chip_dy = chip_h - 4.45
-chip_mag = 1.8 # make the hole this much bigger than the sensor opening
+#chip_body = 9.1
+#chip_w = 12.85
+#chip_h = 9.9
+#chip_r = 5.6 / 2
+#chip_dy = chip_h - 4.45
+#chip_mag = 1.8 # make the hole this much bigger than the sensor opening
 
 # meter digits (approx position)
 digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
@@ -40,9 +40,40 @@ digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
 # Plate dimensions
 plate_h = h_inner + (2.0 * edge)
 
+#
+#
+
+def make_board(draw):
+    work = Collection()
+
+    # data from Gerber files for PCB
+    sensor_x, sensor_y = 32.385, 24.638 
+    board_w, board_h = 48.26, 45.72
+    holes = [
+        (10.16, 40.64),
+        (10.16, 5.08),
+        (43.18, 40.64),
+        (43.18, 5.08),
+        (sensor_x, sensor_y),
+    ]
+
+    r = Rectangle((0, 0), (board_w, board_h), colour=Config.draw_colour)
+    if draw:
+        work.add(r)
+
+    work.info = { 
+        "sensor" : (sensor_x, sensor_y),
+        "board"  : (board_w, board_h),
+        "holes"  : holes,
+    }
+
+    return work
+
+#
 # PCB dimensions
-board_h = plate_h
-board_w = nano_w + chip_w + (6 * pin_spacing)
+w = make_board(True)
+b = w.info["board"]
+board_w, board_h = b
 
 plate_w = board_w
 
@@ -66,100 +97,6 @@ def nearest_01_inch(x):
     x = int(x)
     x *= pin_spacing
     return x
-
-#
-#
-
-def make_chip(draw):
-    work = Collection()
-    c = Circle((chip_w/2.0, chip_dy), chip_r, colour=Config.draw_colour)
-    work.add(c)
-    work.info = { "sensor" : c }
-    if draw:
-        r = Rectangle((0, 0), (chip_w, chip_h), colour=Config.draw_colour)
-        work.add(r)
-        r = Rectangle((0, 0), (chip_body, chip_h), colour=Config.draw_colour)
-        r.translate((chip_w - chip_body) / 2.0, 0)
-        work.add(r)
-    return work
-
-#
-#
-
-def make_board(draw):
-    work = Collection()
-
-    r = Rectangle((0, 0), (board_w, board_h), colour=Config.draw_colour)
-    if draw:
-        work.add(r)
-
-    # make 0.1 inch grid
-    if draw:
-        i = 0
-        while i < board_w:
-            j = 0
-            while j < board_h:
-                c = Circle((i, j), 0.05, colour=Config.draw_colour)
-                work.add(c)
-                j += pin_spacing
-            i += pin_spacing
-
-    if draw:
-        # Draw the Nano outline
-        r = Rectangle((0, 0), (nano_w, nano_h), colour=Config.draw_colour)
-        r.translate(pin_spacing * 1.5, pin_spacing * 5.5)
-        work.add(r)
-        # and the pins
-        for x in [ 2, 8 ]:
-            x *= pin_spacing
-            for y in range(15):
-                y += 7
-                y *= pin_spacing
-                c = Circle((x, y), 0.5, colour=Config.draw_colour)
-                work.add(c)
-
-    if 1:
-        # add corner holes
-        x0 = 2 * pin_spacing
-        x1 = nearest_01_inch(board_w - (2 * pin_spacing))
-        y0 = x0
-        y1 = nearest_01_inch(board_h - (2 * pin_spacing))
-        holes = [
-            (x0, y0), (x1, y0), (x0, y1), (x1, y1),
-        ]
-
-        for x, y in holes:
-            c = Circle((x, y), hole_r)
-            work.add(c)
-
-    # add the chip so it's chip_dy optical centre aligns with the dial centre
-    chip = make_chip(draw)
-    dy = edge + dial_dy - board_dy - chip_dy
-    chip.translate((pin_spacing * 3) + nano_w, dy)
-    work.add(chip)
-
-    sensor = chip.info["sensor"]
-    c = Circle((sensor.x, sensor.y), chip_r * chip_mag)
-    work.add(c)
-
-    # holes for the LEDs
-    def nearest(x, y):
-        return nearest_01_inch(x), nearest_01_inch(y)
-    c = Circle(nearest(sensor.x + led_dx, sensor.y + led_dy), led_r)
-    work.add(c)
-    c = Circle(nearest(sensor.x - led_dx, sensor.y + led_dy), led_r)
-    work.add(c)
-    c = Circle(nearest(sensor.x + led_dx, sensor.y - led_dy2), led_r)
-    work.add(c)
-    c = Circle(nearest(sensor.x - led_dx, sensor.y - led_dy2), led_r)
-    work.add(c)
-
-    work.info = { 
-        "sensor" : (sensor.x, sensor.y),
-        "board"  : (board_w, board_h),
-        "holes"  : holes,
-    }
-    return work
 
 #
 #
