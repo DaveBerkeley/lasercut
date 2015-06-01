@@ -125,13 +125,13 @@ def make_face(draw):
 
     # fixing holes for the plate
     e = edge / 2.0
-    holes = [
+    plate_holes = [
         (e, e),
         (plate_w - e, e),
         (plate_w - e, plate_h - e),
         (e, plate_h - e),
     ]
-    for x, y in holes:
+    for x, y in plate_holes:
         c = Circle((x+dx, y), hole_r)
         work.add(c)
 
@@ -175,13 +175,18 @@ def make_face(draw):
     # add the board to the plate
     work.add(r)
     p = make_board(draw)
-    p.translate(board_dx, edge + (dial_dy - sdy))
+    dup = edge + (dial_dy - sdy)
+    p.translate(board_dx, dup)
     work.add(p)
 
     # add fixing holes
-    for x, y in holes:
+    for x, y in plate_holes:
         c = Circle((x, y), hole_r)
         work.add(c)
+
+    # cut a big hole for the camera and LEDs
+    c = Circle((sdx, dup + sdy), dial_r)
+    work.add(c)
 
     info["plate"] = work
 
