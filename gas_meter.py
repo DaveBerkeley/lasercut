@@ -22,18 +22,6 @@ dial_r = 10.0
 dial_dy = 25.0 # from bot of face
 dial_dx = 16.0 # from rh edge
 
-# Nano dimensions
-#nano_w = 17.9
-#nano_h = 43.3
-
-# ADNS2610 chip (from data sheet)
-#chip_body = 9.1
-#chip_w = 12.85
-#chip_h = 9.9
-#chip_r = 5.6 / 2
-#chip_dy = chip_h - 4.45
-#chip_mag = 1.8 # make the hole this much bigger than the sensor opening
-
 # meter digits (approx position)
 digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
 
@@ -54,12 +42,20 @@ def make_board(draw):
         (10.16, 5.08),
         (43.18, 40.64),
         (43.18, 5.08),
-        (sensor_x, sensor_y),
+        #(sensor_x, sensor_y),
     ]
 
     r = Rectangle((0, 0), (board_w, board_h), colour=Config.draw_colour)
     if draw:
         work.add(r)
+
+    for x, y in holes:
+        c = Circle((x, y), 3.0/2)
+        work.add(c)
+
+    if draw:
+        c = Circle((sensor_x, sensor_y), 5.6/2, colour=Config.draw_colour)
+        work.add(c)
 
     work.info = { 
         "sensor" : (sensor_x, sensor_y),
@@ -128,7 +124,7 @@ def make_face(draw):
     work.info["board_dx"] = dx
 
     # fixing holes for the plate
-    if 1:
+    if 0:
         holes = board.info["holes"]
         for x, y in holes:
             c = Circle((x+dx, y), hole_r)
@@ -160,7 +156,7 @@ def make_face(draw):
         x, y = edge + w_inner - dial_dx, edge + dial_dy
         c = Circle((x, y), dial_r, colour=Config.draw_colour)
         work.add(c)
-        c = Circle((x, y), 3.0, colour=Config.draw_colour)
+        c = Circle((x, y), 3.5, colour=Config.draw_colour)
         work.add(c)
 
     info = {}
@@ -174,7 +170,7 @@ def make_face(draw):
     # add the board to the plate
     work.add(r)
     p = make_board(draw)
-    p.translate(board_dx, board_dy)
+    p.translate(board_dx, edge + (dial_dy - sdy))
     work.add(p)
 
     info["plate"] = work
