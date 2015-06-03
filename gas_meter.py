@@ -127,6 +127,10 @@ def make_face(draw):
     c = Circle((e, support_w+edge-e), hole_r)
     work.add(c)
 
+    # hole for optional cable tie
+    c = Circle((w_inner+e+edge, edge+(h_inner/2.0)), hole_r)
+    work.add(c)
+
     if draw:
         # show meter digits
         r = Rectangle((0, 0), (digit_w, digit_h), colour=Config.draw_colour)
