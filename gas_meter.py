@@ -9,9 +9,6 @@ from render import DXF as dxf
 #
 #
 
-# 0.1 inch pin spacing
-pin_spacing = 2.54
-
 # Surround dimensions
 w_inner = 94.0
 h_inner = 50.1
@@ -42,7 +39,6 @@ def make_board(draw):
         (10.16, 5.08),
         (43.18, 40.64),
         (43.18, 5.08),
-        #(sensor_x, sensor_y),
     ]
 
     r = Rectangle((0, 0), (board_w, board_h), colour=Config.draw_colour)
@@ -78,21 +74,6 @@ support_w = 12.0
 
 board_dx = (plate_w - board_w) / 2.0
 board_dy = edge + ((h_inner - board_h) / 2.0) # mid
-
-led_r = 5 / 2.0 # 5mm Green LEDs
-led_dy = 4 * pin_spacing # above centre of sensor
-led_dy2 = 3 * pin_spacing # below centre of sensor
-led_dx = 2 * pin_spacing
-
-#
-#
-
-def nearest_01_inch(x):
-    x /= pin_spacing
-    x += 0.5
-    x = int(x)
-    x *= pin_spacing
-    return x
 
 #
 #
