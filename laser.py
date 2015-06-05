@@ -375,6 +375,8 @@ class Text:
     def translate(self, dx, dy):
         self.origin = self.origin[0] + dx, self.origin[1] + dy
     def rotate(self, degrees):
+        rad = radians(degrees)
+        self.origin = rotate_2d(rad, self.origin[0], self.origin[1])        
         self.rot += degrees
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
