@@ -3,7 +3,7 @@
 import sys
 
 from laser import Rectangle, Polygon, Circle, Collection, Config
-from laser import corner
+from laser import corner, Text
 from render import DXF as dxf
 
 #
@@ -169,8 +169,12 @@ def make_face(draw):
         c = Circle((x, y), hole_r)
         work.add(c)
 
-    # cut a big hole for the camera and LEDs
-    c = Circle((sdx, dup + sdy), dial_r)
+    if 0:
+        # cut a big hole for the camera and LEDs
+        c = Circle((sdx, dup + sdy), dial_r)
+        work.add(c)
+
+    c = Text((edge, 8), "Polyphemouse\nGas Meter Reader", height=2.0, colour=Config.engrave_colour)
     work.add(c)
 
     info["plate"] = work
