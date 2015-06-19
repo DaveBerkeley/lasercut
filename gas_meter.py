@@ -25,6 +25,8 @@ digit_w, digit_h, digit_dx = 7.0, 10.0, 9.0
 # Plate dimensions
 plate_h = h_inner + (2.0 * edge)
 
+led_d = 5.0 # 
+
 #
 #
 
@@ -168,9 +170,9 @@ def make_face(draw):
         c = Circle((x, y), hole_r)
         work.add(c)
 
-    if 0:
+    if 1:
         # cut a big hole for the camera and LEDs
-        c = Circle((sdx, dup + sdy), dial_r)
+        c = Circle((sdx, dup + sdy), dial_r + (led_d / 2.0))
         work.add(c)
 
     info["plate"] = work
