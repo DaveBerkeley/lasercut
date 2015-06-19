@@ -109,8 +109,7 @@ def make_face(draw):
     plate_holes = [
         (e, e),
         (plate_w - e, e),
-        (plate_w - e, plate_h - e),
-        (e, plate_h - e),
+        (plate_w / 2.0, plate_h - e),
     ]
     for x, y in plate_holes:
         c = Circle((x+dx, y), hole_r)
