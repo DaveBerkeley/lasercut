@@ -3,8 +3,8 @@
 import sys
 import math
 
-from laser import Polygon, Circle, Collection, Config
-from laser import radians, rotate_2d
+from laser import Circle, Collection, Config
+from laser import radians
 from render import DXF as dxf
 
 #
@@ -31,6 +31,18 @@ def project(angle):
 #
 #
 
+class Circ:
+
+    def __init__(self, x, r):
+        self.x = x
+        self.r = r
+
+    def shape(self, s):
+        return Circle((self.x * s, 0), self.r * s)
+
+#
+#
+
 if __name__ == "__main__":
 
     s = 100
@@ -43,8 +55,13 @@ if __name__ == "__main__":
     for a in range(0, 91, 5):
         m, r = project(a)
         print a, m, r
-        c = Circle((m * s, 0), r * s)
+        cc = Circ(m, r)
+        c = cc.shape(s)
         work.add(c)
+
+    cc = Circ(0, 1)
+    c = cc.shape(s)
+    work.add(c)
 
     work.draw(drawing, config.cut())
 
