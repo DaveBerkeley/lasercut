@@ -3,8 +3,8 @@
 import sys
 import math
 
-from laser import Circle, Collection, Config
-from laser import radians
+from laser import Arc, Circle, Collection, Config
+from laser import radians, degrees
 from render import DXF as dxf
 
 #
@@ -103,14 +103,24 @@ if __name__ == "__main__":
         ii = cc.intersect(unit)
         if ii:
             x0, y0, x1, y1 = ii
-            print ii
-            c = Circle((s* x0, s * y0), s * 0.05)
-            work.add(c)
-            c = Circle((s* x1, s * y1), s * 0.05)
-            work.add(c)
+            #c = Circle((s* x0, s * y0), s * 0.05)
+            #work.add(c)
+            #c = Circle((s* x1, s * y1), s * 0.05)
+            #work.add(c)
 
-        c = cc.shape(s)
-        work.add(c)
+            x = x0 - m
+            y = y0
+            a = degrees(math.atan2(y, x))
+            x = x1 - m
+            y = y1
+            b = degrees(math.atan2(y, x))
+            print a, b
+
+            arc = Arc((s * m, 0), s * r, b, a)
+            work.add(arc)
+        else:
+            c = cc.shape(s)
+            work.add(c)
 
     work.draw(drawing, config.cut())
 
