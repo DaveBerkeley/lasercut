@@ -3,15 +3,15 @@
 import sys
 import math
 
-from laser import Arc, Circle, Collection, Config
+from laser import Arc, Circle, Polygon, Collection, Config
 from laser import radians, degrees
 from render import DXF as dxf
 
 #
 #
 
-axial_tilt = 23.4
-latitude = 52.0
+axial_tilt = 23.43721
+latitude = 40.0 # 52.0
 
 def project_1(angle):
     A = angle + (90.0 - latitude)
@@ -78,6 +78,20 @@ class Circ:
     def intersect(self, c):
         return intersect(self.x, self.r, c.x, c.r)
 
+#
+#
+
+def ticks(work, xy, r1, r2, a1, a2, step):
+    a = a1
+    assert a1 <= a2
+    while a <= a2:
+        p = Polygon()
+        x = math.sin(radians(a))
+        y = math.cos(radians(a))
+        p.add(r1 * x, r1 * y)
+        p.add(r2 * x, r2 * y)
+        work.add(p)
+        a += step
 
 #
 #
@@ -103,10 +117,6 @@ if __name__ == "__main__":
         ii = cc.intersect(unit)
         if ii:
             x0, y0, x1, y1 = ii
-            #c = Circle((s* x0, s * y0), s * 0.05)
-            #work.add(c)
-            #c = Circle((s* x1, s * y1), s * 0.05)
-            #work.add(c)
 
             x = x0 - m
             y = y0
@@ -121,6 +131,28 @@ if __name__ == "__main__":
         else:
             c = cc.shape(s)
             work.add(c)
+
+    #m, r = project(-5)
+    #tropic = Circ(0, m)
+    #c = tropic.shape(s)
+    #work.add(c)
+    #m, r = project(-axial_tilt)
+    #tropic = Circ(0, m)
+    #c = tropic.shape(s)
+    #work.add(c)
+
+    xy = 0, 0
+    outer = 1.05 * s
+    inner = 1.2 * s
+    mid = 1.15 * s
+    ticks(work, xy, mid, outer, 0, 360, 360 / 24.0)
+    ticks(work, xy, inner, mid, 0, 360, 360 / 120.0)
+    c = Circle(xy, inner)
+    work.add(c)
+    c = Circle(xy, mid)
+    work.add(c)
+    c = Circle(xy, outer)
+    work.add(c)
 
     work.draw(drawing, config.cut())
 
