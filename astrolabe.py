@@ -29,6 +29,17 @@ def project(angle):
     return mid, r
 
 #
+#   Equations from "The Astrolabe" by James E Morrison.
+
+def r_eq(r_cap, e=axial_tilt):
+    # radius of equator, given radius of tropic of capricorn
+    return r_cap * math.tan(radians((90.0 - e) / 2.0))
+
+def r_can(r_eq, e=axial_tilt):
+    # radius of tropic of cancer, given the equator
+    return r_eq * math.tan(radians((90.0 - e) / 2.0))
+
+#
 #
 
 def intersect(x0, r0, x1, r1):
@@ -72,7 +83,7 @@ class Circ:
         self.x = x
         self.r = r
 
-    def shape(self, s):
+    def shape(self, s=1.0):
         return Circle((self.x * s, 0), self.r * s)
 
     def intersect(self, c):
@@ -96,8 +107,7 @@ def ticks(work, xy, r1, r2, a1, a2, step):
 #
 #
 
-if __name__ == "__main__":
-
+def old():
     s = 100
 
     config = Config()
@@ -157,5 +167,37 @@ if __name__ == "__main__":
     work.draw(drawing, config.cut())
 
     drawing.save()
+
+#
+#
+
+def astrolabe():
+    s = 100
+
+    config = Config()
+    work = Collection()
+
+    drawing = dxf.drawing("test.dxf")
+
+    # equator and tropics
+    rad_cap = s
+    rad_eq = r_eq(rad_cap)
+    rad_can = r_can(rad_eq)
+
+    for r in [ rad_cap, rad_eq, rad_can ]:
+        circ = Circ(0, r)
+        c = circ.shape()
+        work.add(c)
+
+    work.draw(drawing, config.engrave_colour)
+
+    drawing.save()
+    print dir(config)
+
+#
+#
+
+if __name__ == "__main__":
+    astrolabe()
 
 # FIN
