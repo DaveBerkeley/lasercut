@@ -11,7 +11,7 @@ from render import DXF as dxf
 #
 
 axial_tilt = 23.43721
-latitude = 40.0 # 52.0
+latitude = 52.0
 
 def project_1(angle):
     A = angle + (90.0 - latitude)
@@ -38,6 +38,12 @@ def r_eq(r_cap, e=axial_tilt):
 def r_can(r_eq, e=axial_tilt):
     # radius of tropic of cancer, given the equator
     return r_eq * math.tan(radians((90.0 - e) / 2.0))
+
+def almucantar(a, req, lat=latitude):
+    aa, ll = radians(a), radians(lat)
+    ra = req * math.cos(aa) / (math.sin(ll) + math.sin(aa))
+    ya = req * math.cos(ll) / (math.sin(ll) + math.sin(aa))
+    return ra, ya
 
 #
 #
@@ -186,6 +192,12 @@ def astrolabe():
 
     for r in [ rad_cap, rad_eq, rad_can ]:
         circ = Circ(0, r)
+        c = circ.shape()
+        work.add(c)
+
+    for a in range(0, 90, 5):
+        ra, ya = almucantar(a, rad_eq)
+        circ = Circ(ya, ra)
         c = circ.shape()
         work.add(c)
 
