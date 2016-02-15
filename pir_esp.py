@@ -14,7 +14,7 @@ from parts import M3
 
 #
 
-thick = 3
+thick = 2.8
 spacing = 1
 
 x_margin = 10
