@@ -3,7 +3,7 @@
 import sys
 import math
 
-from laser import Arc, Circle, Polygon, Collection, Config
+from laser import Arc, Circle, Polygon, Collection, Config, Text
 from laser import radians, degrees
 from render import DXF as dxf
 
@@ -183,16 +183,29 @@ def mater(drawing, config, size):
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
 
+    # draw ticks
     ticks(work, (0, 0), inner, outer, 0, 360, 15)
     ticks(work, (0, 0), mid, outer, 0, 360, 3)
     ticks(work, (0, 0), small, outer, 0, 360, 1)
 
+    # draw / cut circles
     c = Circle((0, 0), inner, colour=config.cut())
     work.add(c)
     c = Circle((0, 0), mid, colour=config.thick_colour)
     work.add(c)
     c = Circle((0, 0), outer, colour=config.cut())
     work.add(c)
+
+    # label the hours
+    for a in range(0, 360, 15):
+        aa = a + 1
+        r = mid - 2
+        rad = radians(aa)
+        x, y = r * math.sin(rad), r * math.cos(rad)
+        t = Text((0, 0), "%0.1d" % a, height=5.0)
+        t.rotate(-aa)
+        t.translate(x, y)
+        work.add(t)
 
     work.draw(drawing, config.thick_colour)
 
