@@ -66,6 +66,8 @@ class Config:
     draw_colour = 4
     dotted_colour = 5
     engrave_colour = 2
+    thick_colour = 6
+    thin_colour = 7
 
     def __init__(self, **kwargs):
         self.data = kwargs
