@@ -178,8 +178,8 @@ def plate(drawing, config, size):
 
 def mater(drawing, config, size):
     work = Collection()
-    inner = size + 1
-    outer = size + 20
+    inner = size * 1.01
+    outer = size * 1.2
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
 
@@ -202,8 +202,7 @@ def mater(drawing, config, size):
     ] 
     # label the limb
     for idx, a in enumerate(range(0, 360, 15)):
-        aa = a + 1
-        rad = radians(aa)
+        rad = radians(a)
 
         if a > 270:
             label = 360 - a
@@ -215,17 +214,17 @@ def mater(drawing, config, size):
             label = a
 
         # degrees
-        t = Text((0, 0), "%0.1d" % label, height=3.0)
+        t = Text((0, 0), "%0.1d" % label, height=size/35.0)
         t.rotate(-a)
         r = small - 1
         x, y = r * math.sin(rad), r * math.cos(rad)
         t.translate(x, y)
-        t.rotate(0.6)
+        t.rotate(-0.3)
         work.add(t)
 
         # hours
-        t = Text((0, 0), hours[idx % 12], height=5.0)
-        t.rotate(-aa)
+        t = Text((0, 0), hours[idx % 12], height=size/20.0)
+        t.rotate(-a)
         r = mid - 2
         x, y = r * math.sin(rad), r * math.cos(rad)
         t.translate(x, y)
