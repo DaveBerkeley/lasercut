@@ -98,6 +98,31 @@ def ticks(work, xy, r1, r2, a1, a2, step):
 #
 #
 
+def draw_almucantar(a, colour, work, rad_eq, outer):
+    ra, ya = almucantar(a, rad_eq)
+    circ = Circ(ya, ra)
+    ii = outer.intersect(circ)
+    if ii:
+        x0, y0, x1, y1 = ii
+        m = circ.x
+
+        x = x0 - m
+        y = y0
+
+        a = degrees(math.atan2(y, x))
+        x = x1 - m
+        y = y1
+        
+        b = degrees(math.atan2(y, x))
+
+        arc = Arc((m, 0), ra, a, b, colour=colour)
+        work.add(arc)
+    else:
+        c = circ.shape(colour=colour)
+        c.rotate(radians(90.0))
+        work.add(c)
+
+
 def plate(drawing, config, size):
     s = size
 
@@ -111,37 +136,35 @@ def plate(drawing, config, size):
 
     for r in [ rad_cap, rad_eq, rad_can ]:
         circ = Circ(0, r)
-        c = circ.shape()
+        c = circ.shape(colour=config.thick_colour)
         work.add(c)
 
+    # quarters
+    p = Polygon(colour=config.thick_colour)
+    p.add(-s, 0)
+    p.add(s, 0)
+    work.add(p)
+
+    p = Polygon(colour=config.thick_colour)
+    p.add(0, -s)
+    p.add(0, s)
+    work.add(p)
+
+    # draw the almucantar lines
     for a in range(0, 90, 2):
         colour = config.thin_colour
         if (a % 10) == 0:
             colour = config.thick_colour
-        ra, ya = almucantar(a, rad_eq)
-        circ = Circ(ya, ra)
-        ii = outer.intersect(circ)
-        if ii:
-            x0, y0, x1, y1 = ii
-            m = circ.x
+        draw_almucantar(a, colour, work, rad_eq, outer)
 
-            x = x0 - m
-            y = y0
+    colour = config.dotted_colour
+    nautical_twilight = -12
+    civil_twilight = -6
+    astronomical_twilight = -18
+    for twilight in [ nautical_twilight, civil_twilight, astronomical_twilight ]:
+        draw_almucantar(twilight, colour, work, rad_eq, outer)
 
-            a = degrees(math.atan2(y, x))
-            x = x1 - m
-            y = y1
-            
-            b = degrees(math.atan2(y, x))
-
-            arc = Arc((m, 0), ra, a, b, colour=colour)
-            work.add(arc)
-        else:
-            c = circ.shape(colour=colour)
-            c.rotate(radians(90.0))
-            work.add(c)
-
-    work.draw(drawing, config.thin_colour)
+    work.draw(drawing, config.thick_colour)
 
 #
 #
