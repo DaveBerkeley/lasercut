@@ -196,15 +196,40 @@ def mater(drawing, config, size):
     c = Circle((0, 0), outer, colour=config.cut())
     work.add(c)
 
-    # label the hours
-    for a in range(0, 360, 15):
+    hours = [ 
+        "I", "II", "III", "IIII", "V", "VI", 
+        "VII", "VIII", "IX", "X", "XI", "XII", 
+    ] 
+    # label the limb
+    for idx, a in enumerate(range(0, 360, 15)):
         aa = a + 1
-        r = mid - 2
         rad = radians(aa)
+
+        if a > 270:
+            label = 360 - a
+        elif a > 180:
+            label = a - 180
+        elif a > 90:
+            label = 180 - a
+        else:
+            label = a
+
+        # degrees
+        t = Text((0, 0), "%0.1d" % label, height=3.0)
+        t.rotate(-a)
+        r = small - 1
         x, y = r * math.sin(rad), r * math.cos(rad)
-        t = Text((0, 0), "%0.1d" % a, height=5.0)
-        t.rotate(-aa)
         t.translate(x, y)
+        t.rotate(0.6)
+        work.add(t)
+
+        # hours
+        t = Text((0, 0), hours[idx % 12], height=5.0)
+        t.rotate(-aa)
+        r = mid - 2
+        x, y = r * math.sin(rad), r * math.cos(rad)
+        t.translate(x, y)
+        t.rotate(-90 - 8)
         work.add(t)
 
     work.draw(drawing, config.thick_colour)
