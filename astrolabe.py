@@ -13,21 +13,6 @@ from render import DXF as dxf
 axial_tilt = 23.43721
 latitude = 52.0
 
-def project_1(angle):
-    A = angle + (90.0 - latitude)
-    a = math.cos(radians(A))
-    b = math.sin(radians(A))
-
-    x = -a / (b + 1)
-    return x
-
-def project(angle):
-    x1 = project_1(angle)
-    x2 = project_1(180.0 - angle)
-    mid = (x1 + x2) / 2.0
-    r = abs((x2 - x1) / 2.0)
-    return mid, r
-
 #
 #   Equations from "The Astrolabe" by James E Morrison.
 
@@ -113,77 +98,10 @@ def ticks(work, xy, r1, r2, a1, a2, step):
 #
 #
 
-def old():
-    s = 100
+def plate(drawing, config, size):
+    s = size
 
-    config = Config()
     work = Collection()
-
-    drawing = dxf.drawing("test.dxf")
-
-    unit = Circ(0, 1)
-    c = unit.shape(s)
-    work.add(c)
-
-    for a in range(0, 91, 5):
-        print a,
-        m, r = project(a)
-        #print a, m, r
-        cc = Circ(m, r)
-        ii = cc.intersect(unit)
-        if ii:
-            x0, y0, x1, y1 = ii
-
-            x = x0 - m
-            y = y0
-            a = degrees(math.atan2(y, x))
-            x = x1 - m
-            y = y1
-            b = degrees(math.atan2(y, x))
-            print a, b
-
-            arc = Arc((s * m, 0), s * r, b, a)
-            work.add(arc)
-        else:
-            c = cc.shape(s)
-            work.add(c)
-
-    #m, r = project(-5)
-    #tropic = Circ(0, m)
-    #c = tropic.shape(s)
-    #work.add(c)
-    #m, r = project(-axial_tilt)
-    #tropic = Circ(0, m)
-    #c = tropic.shape(s)
-    #work.add(c)
-
-    xy = 0, 0
-    outer = 1.05 * s
-    inner = 1.2 * s
-    mid = 1.15 * s
-    ticks(work, xy, mid, outer, 0, 360, 360 / 24.0)
-    ticks(work, xy, inner, mid, 0, 360, 360 / 120.0)
-    c = Circle(xy, inner)
-    work.add(c)
-    c = Circle(xy, mid)
-    work.add(c)
-    c = Circle(xy, outer)
-    work.add(c)
-
-    work.draw(drawing, config.cut())
-
-    drawing.save()
-
-#
-#
-
-def astrolabe():
-    s = 100
-
-    config = Config()
-    work = Collection()
-
-    drawing = dxf.drawing("test.dxf")
 
     # equator and tropics
     rad_cap = s
@@ -225,13 +143,15 @@ def astrolabe():
 
     work.draw(drawing, config.thin_colour)
 
-    drawing.save()
-    print dir(config)
-
 #
 #
 
 if __name__ == "__main__":
-    astrolabe()
+    drawing = dxf.drawing("test.dxf")
+    config = Config()
+
+    size = 100
+    plate(drawing, config, size)
+    drawing.save()
 
 # FIN
