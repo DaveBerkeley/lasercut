@@ -89,8 +89,8 @@ class Circ:
         self.x = x
         self.r = r
 
-    def shape(self, s=1.0):
-        return Circle((self.x * s, 0), self.r * s)
+    def shape(self, s=1.0, **kwargs):
+        return Circle((self.x * s, 0), self.r * s, **kwargs)
 
     def intersect(self, c):
         return intersect(self.x, self.r, c.x, c.r)
@@ -189,19 +189,44 @@ def astrolabe():
     rad_cap = s
     rad_eq = r_eq(rad_cap)
     rad_can = r_can(rad_eq)
+    outer = Circ(0, rad_cap)
 
     for r in [ rad_cap, rad_eq, rad_can ]:
         circ = Circ(0, r)
         c = circ.shape()
         work.add(c)
 
-    for a in range(0, 90, 5):
+    for a in range(0, 90, 2):
         ra, ya = almucantar(a, rad_eq)
         circ = Circ(ya, ra)
-        c = circ.shape()
-        work.add(c)
+        ii = circ.intersect(outer)
+        if ii:
+            x0, y0, x1, y1 = ii
+            m = outer.x
 
-    work.draw(drawing, config.engrave_colour)
+            x = x0 - m
+            y = y0
+
+            a = degrees(math.atan2(y, x))
+            x = x1 - m
+            y = y1
+            
+            cc = Circle((x, y), 2, colour=2)
+            work.add(cc)
+            cc = Circle((x, -y), 2, colour=2)
+            work.add(cc)
+
+            b = degrees(math.atan2(y, x))
+            print a, b
+
+            arc = Arc((circ.x, 0), ra, b, a, colour=config.thick_colour)
+            work.add(arc)
+        else:
+            c = circ.shape(colour=config.thin_colour)
+            c.rotate(radians(90.0))
+            work.add(c)
+
+    work.draw(drawing, config.thin_colour)
 
     drawing.save()
     print dir(config)
