@@ -197,12 +197,15 @@ def astrolabe():
         work.add(c)
 
     for a in range(0, 90, 2):
+        colour = config.thin_colour
+        if (a % 10) == 0:
+            colour = config.thick_colour
         ra, ya = almucantar(a, rad_eq)
         circ = Circ(ya, ra)
-        ii = circ.intersect(outer)
+        ii = outer.intersect(circ)
         if ii:
             x0, y0, x1, y1 = ii
-            m = outer.x
+            m = circ.x
 
             x = x0 - m
             y = y0
@@ -211,18 +214,12 @@ def astrolabe():
             x = x1 - m
             y = y1
             
-            cc = Circle((x, y), 2, colour=2)
-            work.add(cc)
-            cc = Circle((x, -y), 2, colour=2)
-            work.add(cc)
-
             b = degrees(math.atan2(y, x))
-            print a, b
 
-            arc = Arc((circ.x, 0), ra, b, a, colour=config.thick_colour)
+            arc = Arc((m, 0), ra, a, b, colour=colour)
             work.add(arc)
         else:
-            c = circ.shape(colour=config.thin_colour)
+            c = circ.shape(colour=colour)
             c.rotate(radians(90.0))
             work.add(c)
 
