@@ -132,12 +132,18 @@ def plate(drawing, config, size):
     rad_cap = s
     rad_eq = r_eq(rad_cap)
     rad_can = r_can(rad_eq)
-    outer = Circ(0, rad_cap)
 
-    for r in [ rad_cap, rad_eq, rad_can ]:
-        circ = Circ(0, r)
-        c = circ.shape(colour=config.thick_colour)
-        work.add(c)
+    outer = Circ(0, rad_cap)
+    c = outer.shape(colour=config.cut())
+    work.add(c)
+
+    circ = Circ(0, rad_eq)
+    c = circ.shape(colour=config.thick_colour)
+    work.add(c)
+
+    circ = Circ(0, rad_can)
+    c = circ.shape(colour=config.thick_colour)
+    work.add(c)
 
     # quarters
     p = Polygon(colour=config.thick_colour)
@@ -157,6 +163,7 @@ def plate(drawing, config, size):
             colour = config.thick_colour
         draw_almucantar(a, colour, work, rad_eq, outer)
 
+    # twilight arcs
     colour = config.dotted_colour
     nautical_twilight = -12
     civil_twilight = -6
@@ -169,12 +176,38 @@ def plate(drawing, config, size):
 #
 #
 
+def mater(drawing, config, size):
+    work = Collection()
+    inner = size + 1
+    outer = size + 20
+    mid = (inner + outer) / 2
+    small = (mid + outer) / 2
+
+    ticks(work, (0, 0), inner, outer, 0, 360, 15)
+    ticks(work, (0, 0), mid, outer, 0, 360, 3)
+    ticks(work, (0, 0), small, outer, 0, 360, 1)
+
+    c = Circle((0, 0), inner, colour=config.cut())
+    work.add(c)
+    c = Circle((0, 0), mid, colour=config.thick_colour)
+    work.add(c)
+    c = Circle((0, 0), outer, colour=config.cut())
+    work.add(c)
+
+    work.draw(drawing, config.thick_colour)
+
+#
+#
+
 if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
 
     size = 100
     plate(drawing, config, size)
+
+    mater(drawing, config, size)
+
     drawing.save()
 
 # FIN
