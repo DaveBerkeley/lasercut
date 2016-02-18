@@ -157,19 +157,34 @@ def plate(drawing, config, size):
     work.add(p)
 
     # draw the almucantar lines
-    for a in range(0, 90, 2):
+    #for a in range(0, 90, 2):
+    for a in range(0, 90, 5):
         colour = config.thin_colour
         if (a % 10) == 0:
             colour = config.thick_colour
         draw_almucantar(a, colour, work, rad_eq, outer)
 
     # twilight arcs
-    colour = config.dotted_colour
-    nautical_twilight = -12
-    civil_twilight = -6
-    astronomical_twilight = -18
-    for twilight in [ nautical_twilight, civil_twilight, astronomical_twilight ]:
-        draw_almucantar(twilight, colour, work, rad_eq, outer)
+    if 0:
+        colour = config.dotted_colour
+        nautical_twilight = -12
+        civil_twilight = -6
+        astronomical_twilight = -18
+        for twilight in [ nautical_twilight, civil_twilight, astronomical_twilight ]:
+            draw_almucantar(twilight, colour, work, rad_eq, outer)
+
+    # azimuth lines
+    yz =  rad_eq * math.tan(radians(90.0 - latitude) / 2.0)
+    yn = -rad_eq * math.tan(radians(90.0 + latitude) / 2.0)
+    yc = (yz + yn) / 2.0
+    yaz = (yz - yn) / 2.0
+    for angle in range(15, 180, 15):
+        if angle in [ 90 ]:
+            continue
+        xa = yaz * math.tan(radians(angle))
+        ra = yaz / math.cos(radians(angle))
+        c = Circle((yc, xa), ra)
+        work.add(c)
 
     work.draw(drawing, config.thick_colour)
 
@@ -240,10 +255,10 @@ if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
 
-    size = 100
+    size = 100.0
     plate(drawing, config, size)
 
-    mater(drawing, config, size)
+    #mater(drawing, config, size)
 
     drawing.save()
 
