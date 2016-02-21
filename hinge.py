@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-from laser import Rectangle, Polygon, Circle, Config
-from laser import Collection, Text, hinge, corner
-from render import DXF as dxf
+from laser.laser import Rectangle, Polygon, Circle, Config
+from laser.laser import Collection, Text, hinge, corner
+from laser.render import DXF as dxf
 
 #
 #

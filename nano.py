@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-from render import DXF as dxf
-from parts import mini_usb
-from laser import Config, Collection, corner, Polygon
+from laser.render import DXF as dxf
+from laser.parts import mini_usb
+from laser.laser import Config, Collection, corner, Polygon
 
 #
 #
