@@ -3,9 +3,9 @@
 import sys
 import math
 
-from laser import Arc, Circle, Polygon, Collection, Config, Text
-from laser import radians, degrees
-from render import DXF as dxf
+from laser.laser import Arc, Circle, Polygon, Collection, Config, Text
+from laser.laser import radians, degrees
+from laser.render import DXF as dxf
 
 #
 #
