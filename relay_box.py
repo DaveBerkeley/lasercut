@@ -2,11 +2,11 @@
 
 import sys
 
-from laser import Rectangle, Polygon, Circle, Collection, Config, Material
-from laser import TCut, Text, splice, cutout, corner
-from render import DXF as dxf
+from laser.laser import Rectangle, Polygon, Circle, Collection, Config, Material
+from laser.laser import TCut, Text, splice, cutout, corner
+from laser.render import DXF as dxf
 
-from parts import mini_usb
+from laser.parts import mini_usb
 
 #
 #

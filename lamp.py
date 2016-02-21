@@ -3,11 +3,11 @@
 import sys
 import math
 
-from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import radians, degrees, angle, rotate_2d, splice, corner
-from render import DXF as dxf
+from laser.laser import Rectangle, Polygon, Circle, Arc, Collection, Config
+from laser.laser import radians, degrees, angle, rotate_2d, splice, corner
+from laser.render import DXF as dxf
 
-import ops
+import laser.ops as ops
 
 #
 #
