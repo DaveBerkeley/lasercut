@@ -150,7 +150,7 @@ def draw_almucantar(a, config, colour, work, rad_equator, outer):
         a = degrees(math.atan2(y, x))
         x = x1 - m
         y = y1
-        
+
         b = degrees(math.atan2(y, x))
 
         arc = Arc((m, 0), ra, a, b, colour=colour)
@@ -164,11 +164,30 @@ def draw_almucantar(a, config, colour, work, rad_equator, outer):
 #   Plate basic shape
 
 def cut_plate(drawing, config):
-    # TODO : handle locator key
-    s = config.size
+    size = config.size
+    key_angle = 1.0
+    key_size = size * 0.98
     work = Collection()
-    c = Circle((0, 0), s)
+    a1 = 180.0 - key_angle
+    a2 = 180.0 + key_angle
+    
+    # leave space for the locator key
+    c = Arc((0, 0), size, a2, a1)
     work.add(c)
+    # top of the locator key
+    c = Arc((0, 0), key_size, a1, a2)
+    work.add(c)
+
+    def spoke(angle):
+        angle = radians(angle)
+        p = Polygon()
+        p.add(size * math.cos(angle), size * math.sin(angle))
+        p.add(key_size * math.cos(angle), key_size * math.sin(angle))
+        work.add(p)
+
+    spoke(a1)
+    spoke(a2)
+
     work.draw(drawing, config.cut())
 
 
@@ -268,7 +287,7 @@ def plate(drawing, config):
 
 def mater(drawing, config):
     work = Collection()
-    inner = config.size * 1.01
+    inner = config.size
     outer = config.size * 1.2
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
@@ -279,8 +298,8 @@ def mater(drawing, config):
     ticks(work, (0, 0), small, outer, 0, 360, 1)
 
     # draw / cut circles
-    c = Circle((0, 0), inner, colour=config.cut())
-    work.add(c)
+    cut_plate(drawing, config)
+
     c = Circle((0, 0), mid, colour=config.thick_colour)
     work.add(c)
     c = Circle((0, 0), outer, colour=config.cut())
@@ -353,6 +372,7 @@ if __name__ == "__main__":
     config.azimuth = 15
 
     config.size = 100.0
+
     plate(drawing, config)
 
     mater(drawing, config)
