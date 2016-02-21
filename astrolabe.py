@@ -11,7 +11,6 @@ from render import DXF as dxf
 #
 
 axial_tilt = 23.43721
-latitude = 52.0
 
 #
 #   Equations from "The Astrolabe" by James E Morrison.
@@ -24,7 +23,7 @@ def r_can(r_eq, e=axial_tilt):
     # radius of tropic of cancer, given the equator
     return r_eq * math.tan(radians((90.0 - e) / 2.0))
 
-def almucantar(a, req, lat=latitude):
+def almucantar(a, req, lat):
     aa, ll = radians(a), radians(lat)
     ra = req * math.cos(aa) / (math.sin(ll) + math.sin(aa))
     ya = req * math.cos(ll) / (math.sin(ll) + math.sin(aa))
@@ -98,8 +97,8 @@ def ticks(work, xy, r1, r2, a1, a2, step):
 #
 #
 
-def draw_almucantar(a, colour, work, rad_eq, outer):
-    ra, ya = almucantar(a, rad_eq)
+def draw_almucantar(a, config, colour, work, rad_eq, outer):
+    ra, ya = almucantar(a, rad_eq, config.latitude)
     circ = Circ(ya, ra)
     ii = outer.intersect(circ)
     if ii:
@@ -157,20 +156,17 @@ def plate(drawing, config, size):
     work.add(p)
 
     # draw the almucantar lines
-    for a in range(0, 90, 2):
+    for a in range(0, 90, config.almucantar):
         colour = config.thin_colour
         if (a % 10) == 0:
             colour = config.thick_colour
-        draw_almucantar(a, colour, work, rad_eq, outer)
+        draw_almucantar(a, config, colour, work, rad_eq, outer)
 
     # twilight arcs
-    if 1:
+    if config.twilight:
         colour = config.dotted_colour
-        nautical_twilight = -12
-        civil_twilight = -6
-        astronomical_twilight = -18
-        for twilight in [ nautical_twilight, civil_twilight, astronomical_twilight ]:
-            draw_almucantar(twilight, colour, work, rad_eq, outer)
+        for twilight in config.twilight:
+            draw_almucantar(twilight, config, colour, work, rad_eq, outer)
 
     # azimuth lines
     if 0:
@@ -178,7 +174,7 @@ def plate(drawing, config, size):
         yn = -rad_eq * math.tan(radians(90.0 + latitude) / 2.0)
         yc = (yz + yn) / 2.0
         yaz = (yz - yn) / 2.0
-        for angle in range(0, 180, 15):
+        for angle in range(0, 180, config.azimuth):
             if angle in [ 90 ]:
                 continue
             xa = yaz * math.tan(radians(angle))
@@ -255,6 +251,15 @@ def mater(drawing, config, size):
 if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
+
+    nautical_twilight = -12
+    civil_twilight = -6
+    astronomical_twilight = -18
+
+    config.latitude = 52.0
+    config.twilight = [ nautical_twilight, civil_twilight, astronomical_twilight ]
+    config.almucantar = 2
+    config.azimuth = 15
 
     size = 100.0
     plate(drawing, config, size)
