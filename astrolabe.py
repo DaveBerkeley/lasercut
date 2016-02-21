@@ -160,8 +160,25 @@ def draw_almucantar(a, config, colour, work, rad_equator, outer):
         c.rotate(radians(90.0))
         work.add(c)
 
+#
+#   Plate basic shape
+
+def cut_plate(drawing, config):
+    # TODO : handle locator key
+    s = config.size
+    work = Collection()
+    c = Circle((0, 0), s)
+    work.add(c)
+    work.draw(drawing, config.cut())
+
+
+#
+#   Plate detail
 
 def plate(drawing, config):
+
+    cut_plate(drawing, config)
+
     s = config.size
 
     work = Collection()
@@ -172,27 +189,21 @@ def plate(drawing, config):
     rad_cancer = r_can(rad_equator)
 
     outer = Circ(0, rad_capricorn)
-    c = outer.shape(colour=config.cut())
-    work.add(c)
 
-    circ = Circ(0, rad_equator)
-    c = circ.shape(colour=config.thick_colour)
+    c = Circle((0, 0), rad_equator, colour=config.thick_colour)
     work.add(c)
-
-    circ = Circ(0, rad_cancer)
-    c = circ.shape(colour=config.thick_colour)
+    c = Circle((0, 0), rad_cancer, colour=config.thick_colour)
     work.add(c)
 
     # quarters
-    p = Polygon(colour=config.thick_colour)
-    p.add(-s, 0)
-    p.add(s, 0)
-    work.add(p)
+    def make_lines(points):
+        p = Polygon(colour=config.thick_colour)
+        for point in points:
+            p.add(*point)
+        work.add(p)
 
-    p = Polygon(colour=config.thick_colour)
-    p.add(0, -s)
-    p.add(0, s)
-    work.add(p)
+    make_lines([ (-s, 0), (s, 0), ])
+    make_lines([ (0, -s), (0, s), ])
 
     # draw the almucantar lines
     for a in range(0, 90, config.almucantar):
@@ -208,7 +219,7 @@ def plate(drawing, config):
             draw_almucantar(twilight, config, colour, work, rad_equator, outer)
 
     # azimuth lines
-    if 1:
+    if config.azimuth:
         # horizon circle
         hr, hx = almucantar(0.0, rad_equator, config.latitude)
         # zenith / nadir
