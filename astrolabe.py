@@ -215,29 +215,30 @@ def plate(drawing, config):
         # x centre for all circles
         yc = (yz + yn) / 2.0
         yaz = (yz - yn) / 2.0
-        #for angle in range(0, 180, config.azimuth):
         for angle in range(0, 90, config.azimuth):
-            if angle == 90: # straight line on the meridian
-                continue
             # calculate the azimuth circle x and radius
             xa = yaz * math.tan(radians(angle))
             ra = yaz / math.cos(radians(angle))
 
             # intersection with the horizon circle
             inter = intersect2((hx, 0), hr, (yc, xa), ra)
-            if inter:
-                print "inter", inter
-                (x1, y1), (x2, y2) = inter
+            assert inter, angle
+            (x1, y1), (x2, y2) = inter
 
-                # calculate the arc angles
-                a1 = -math.atan2(x1 - yc, y1 - xa)
-                a2 = -math.atan2(x2 - yc, y2 - xa)
-                print a1, a2
-                c = Arc((yc, xa), ra, degrees(a1)+90.0, degrees(a2)+90.0)
-                work.add(c)
+            # calculate the arc angles
+            a1 = 90.0 - degrees(math.atan2(x1 - yc, y1 - xa))
+            a2 = 90.0 - degrees(math.atan2(x2 - yc, y2 - xa))
 
-            #c = Circle((yc, xa), ra)
-            #work.add(c)
+            # intersection with the tropic of capricorn
+            inter = intersect2((0, 0), rad_cap, (yc, xa), ra)
+            assert inter, angle
+            (x1, y1), (x2, y2) = inter
+            a3 = 90.0 - degrees(math.atan2(x2 - yc, y2 - xa))
+            if a3 < a2:
+                a2 = a3
+
+            c = Arc((yc, xa), ra, a1, a2)
+            work.add(c)
 
     work.draw(drawing, config.thick_colour)
 
@@ -325,9 +326,9 @@ if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
 
-    config.latitude = 52.0
+    config.latitude = 50.37
     config.twilight = [ Twilight.nautical, Twilight.civil, Twilight.astronomical ]
-    config.almucantar = 2
+    config.almucantar = 5 # 2
     config.azimuth = 15
 
     config.size = 100.0
