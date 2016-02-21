@@ -2,12 +2,12 @@
 
 import sys
 
-from laser import Polygon, Circle, Collection, Config
-from laser import radians, rotate_2d
-from render import DXF as dxf
+from laser.laser import Polygon, Circle, Collection, Config
+from laser.laser import radians, rotate_2d
+from laser.render import DXF as dxf
 
-from gears import make_involute
-from kerf import dekerf
+from laser.gears import make_involute
+from laser.kerf import dekerf
 
 #
 #

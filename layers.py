@@ -3,8 +3,8 @@
 import sys
 import math
 
-from render import DXF as dxf
-from laser import Config, Collection, Polygon, Circle, Rectangle, corner, radians
+from laser.render import DXF as dxf
+from laser.laser import Config, Collection, Polygon, Circle, Rectangle, corner, radians
 
 #
 #
