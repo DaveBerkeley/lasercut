@@ -281,6 +281,11 @@ class Arc:
         self.end_angle = reflect_angle(self.end_angle)
         self.start_angle, self.end_angle = self.end_angle, self.start_angle
 
+    def reflect_h(self):
+        self.rotate(90)
+        self.reflect_v()
+        self.rotate(-90)
+
     def copy(self):
         a = Arc((self.x, self.y), self.radius, self.start_angle, self.end_angle)
         a.kwargs = self.kwargs

@@ -71,13 +71,15 @@ def intersect(x0, r0, x1, r1):
 
     return (xi, yi), (xii, yii)
 
+#
+#   Intersection of 2 circles
+
 def intersect2(xy1, r1, xy2, r2):
     x1, y1 = xy1
     x2, y2 = xy2
     dx, dy = (x2 - x1), (y2 - y1)
     angle = math.atan2(dy, dx)
     dc = math.sqrt((dx * dx) + (dy * dy))
-    print angle, dc
 
     c1 = Circle((x1, y1), r1)
     c2 = Circle((x2, y2), r2)
@@ -134,8 +136,8 @@ def ticks(work, xy, r1, r2, a1, a2, step):
 #
 #
 
-def draw_almucantar(a, config, colour, work, rad_eq, outer):
-    ra, ya = almucantar(a, rad_eq, config.latitude)
+def draw_almucantar(a, config, colour, work, rad_equator, outer):
+    ra, ya = almucantar(a, rad_equator, config.latitude)
     circ = Circ(ya, ra)
     ii = outer.intersect(circ)
     if ii:
@@ -165,19 +167,19 @@ def plate(drawing, config):
     work = Collection()
 
     # equator and tropics
-    rad_cap = s
-    rad_eq = r_eq(rad_cap)
-    rad_can = r_can(rad_eq)
+    rad_capricorn = s
+    rad_equator = r_eq(rad_capricorn)
+    rad_cancer = r_can(rad_equator)
 
-    outer = Circ(0, rad_cap)
+    outer = Circ(0, rad_capricorn)
     c = outer.shape(colour=config.cut())
     work.add(c)
 
-    circ = Circ(0, rad_eq)
+    circ = Circ(0, rad_equator)
     c = circ.shape(colour=config.thick_colour)
     work.add(c)
 
-    circ = Circ(0, rad_can)
+    circ = Circ(0, rad_cancer)
     c = circ.shape(colour=config.thick_colour)
     work.add(c)
 
@@ -197,21 +199,21 @@ def plate(drawing, config):
         colour = config.thin_colour
         if (a % 10) == 0:
             colour = config.thick_colour
-        draw_almucantar(a, config, colour, work, rad_eq, outer)
+        draw_almucantar(a, config, colour, work, rad_equator, outer)
 
     # twilight arcs
     if config.twilight:
         colour = config.dotted_colour
         for twilight in config.twilight:
-            draw_almucantar(twilight, config, colour, work, rad_eq, outer)
+            draw_almucantar(twilight, config, colour, work, rad_equator, outer)
 
     # azimuth lines
     if 1:
         # horizon circle
-        hr, hx = almucantar(0.0, rad_eq, config.latitude)
+        hr, hx = almucantar(0.0, rad_equator, config.latitude)
         # zenith / nadir
-        yz =  rad_eq * math.tan(radians(90.0 - config.latitude) / 2.0)
-        yn = -rad_eq * math.tan(radians(90.0 + config.latitude) / 2.0)
+        yz =  rad_equator * math.tan(radians(90.0 - config.latitude) / 2.0)
+        yn = -rad_equator * math.tan(radians(90.0 + config.latitude) / 2.0)
         # x centre for all circles
         yc = (yz + yn) / 2.0
         yaz = (yz - yn) / 2.0
@@ -232,7 +234,7 @@ def plate(drawing, config):
             a2 = arc_angle(x2, y2)
 
             # intersection with the tropic of capricorn
-            inter = intersect2((0, 0), rad_cap, (yc, xa), ra)
+            inter = intersect2((0, 0), rad_capricorn, (yc, xa), ra)
             assert inter, angle
             (x1, y1), (x2, y2) = inter
             # calculate the arc angle
@@ -245,9 +247,7 @@ def plate(drawing, config):
             work.add(c)
             # add same reflected in the x axis
             c = Arc((yc, xa), ra, a1, a2)
-            c.rotate(90)
-            c.reflect_v()
-            c.rotate(-90)
+            c.reflect_h()
             work.add(c)
 
     work.draw(drawing, config.thick_colour)
