@@ -122,8 +122,8 @@ def draw_almucantar(a, config, colour, work, rad_eq, outer):
         work.add(c)
 
 
-def plate(drawing, config, size):
-    s = size
+def plate(drawing, config):
+    s = config.size
 
     work = Collection()
 
@@ -188,10 +188,10 @@ def plate(drawing, config, size):
 #
 #
 
-def mater(drawing, config, size):
+def mater(drawing, config):
     work = Collection()
-    inner = size * 1.01
-    outer = size * 1.2
+    inner = config.size * 1.01
+    outer = config.size * 1.2
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
 
@@ -226,7 +226,7 @@ def mater(drawing, config, size):
             label = a
 
         # degrees
-        t = Text((0, 0), "%0.1d" % label, height=size/35.0)
+        t = Text((0, 0), "%0.1d" % label, height=config.size/35.0)
         t.rotate(-a)
         r = small - 1
         x, y = r * math.sin(rad), r * math.cos(rad)
@@ -235,7 +235,7 @@ def mater(drawing, config, size):
         work.add(t)
 
         # hours
-        t = Text((0, 0), hours[idx % 12], height=size/20.0)
+        t = Text((0, 0), hours[idx % 12], height=config.size/20.0)
         t.rotate(-a)
         r = mid - 2
         x, y = r * math.sin(rad), r * math.cos(rad)
@@ -243,6 +243,23 @@ def mater(drawing, config, size):
         t.rotate(-90 - 8)
         work.add(t)
 
+
+    # throne
+    throne_base = outer * 1.05
+    throne_angle = 10
+    throne_r = config.size / 8.0
+    throne_hole = throne_r / 4
+    p = Collection()
+    c = Arc((0, 0), throne_base, -throne_angle, throne_angle)
+    p.add(c)
+    work.add(p)
+
+    c = Circle((outer + throne_r, 0), throne_r)
+    work.add(c)
+    c = Circle((outer + throne_r, 0), throne_hole, colour=config.cut())
+    work.add(c)
+
+    # draw it all
     work.draw(drawing, config.thick_colour)
 
 #
@@ -252,19 +269,20 @@ if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
 
-    nautical_twilight = -12
-    civil_twilight = -6
-    astronomical_twilight = -18
+    class Twilight:
+        nautical = -12
+        civil = -6
+        astronomical = -18
 
     config.latitude = 52.0
-    config.twilight = [ nautical_twilight, civil_twilight, astronomical_twilight ]
+    config.twilight = [ Twilight.nautical, Twilight.civil, Twilight.astronomical ]
     config.almucantar = 2
     config.azimuth = 15
 
-    size = 100.0
-    plate(drawing, config, size)
+    config.size = 100.0
+    plate(drawing, config)
 
-    mater(drawing, config, size)
+    mater(drawing, config)
 
     drawing.save()
 
