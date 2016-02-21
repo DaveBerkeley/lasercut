@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-from laser import Config, Polygon, Rectangle, Circle, Collection
-from laser import angle, radians, degrees, rotate_2d, parallel_intersect
-from render import DXF as dxf
+from laser.laser import Config, Polygon, Rectangle, Circle, Collection
+from laser.laser import angle, radians, degrees, rotate_2d, parallel_intersect
+from laser.render import DXF as dxf
 
-from gears import make_involute
+from laser.gears import make_involute
 
 #
 #   Compensate for kerf

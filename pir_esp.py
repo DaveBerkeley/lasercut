@@ -2,19 +2,19 @@
 
 import sys
 
-from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import TCut, Text, splice, cutout, corner
-from render import DXF as dxf
+from laser.laser import Rectangle, Polygon, Circle, Arc, Collection, Config
+from laser.laser import TCut, Text, splice, cutout, corner
+from laser.render import DXF as dxf
 
-from parts import ESP_Olimex_Dev as ESP
-from parts import PIR_DYPME003 as PIR
-from parts import Temperature_DS18b20 as Temperature
-from parts import Hanger
-from parts import M3
+from laser.parts import ESP_Olimex_Dev as ESP
+from laser.parts import PIR_DYPME003 as PIR
+from laser.parts import Temperature_DS18b20 as Temperature
+from laser.parts import Hanger
+from laser.parts import M3
 
 #
 
-thick = 3
+thick = 2.8
 spacing = 1
 
 x_margin = 10

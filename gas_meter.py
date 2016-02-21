@@ -2,9 +2,9 @@
 
 import sys
 
-from laser import Rectangle, Polygon, Circle, Collection, Config
-from laser import corner, Text
-from render import DXF as dxf
+from laser.laser import Rectangle, Polygon, Circle, Collection, Config
+from laser.laser import corner, Text
+from laser.render import DXF as dxf
 
 #
 #
