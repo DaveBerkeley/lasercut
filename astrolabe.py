@@ -220,24 +220,34 @@ def plate(drawing, config):
             xa = yaz * math.tan(radians(angle))
             ra = yaz / math.cos(radians(angle))
 
+            def arc_angle(x, y):
+                return 90.0 - degrees(math.atan2(x - yc, y - xa))
+
             # intersection with the horizon circle
             inter = intersect2((hx, 0), hr, (yc, xa), ra)
             assert inter, angle
             (x1, y1), (x2, y2) = inter
-
             # calculate the arc angles
-            a1 = 90.0 - degrees(math.atan2(x1 - yc, y1 - xa))
-            a2 = 90.0 - degrees(math.atan2(x2 - yc, y2 - xa))
+            a1 = arc_angle(x1, y1)
+            a2 = arc_angle(x2, y2)
 
             # intersection with the tropic of capricorn
             inter = intersect2((0, 0), rad_cap, (yc, xa), ra)
             assert inter, angle
             (x1, y1), (x2, y2) = inter
-            a3 = 90.0 - degrees(math.atan2(x2 - yc, y2 - xa))
+            # calculate the arc angle
+            a3 = arc_angle(x2, y2)
             if a3 < a2:
                 a2 = a3
 
+            # add azimuth arc
             c = Arc((yc, xa), ra, a1, a2)
+            work.add(c)
+            # add same reflected in the x axis
+            c = Arc((yc, xa), ra, a1, a2)
+            c.rotate(90)
+            c.reflect_v()
+            c.rotate(-90)
             work.add(c)
 
     work.draw(drawing, config.thick_colour)
@@ -328,7 +338,7 @@ if __name__ == "__main__":
 
     config.latitude = 50.37
     config.twilight = [ Twilight.nautical, Twilight.civil, Twilight.astronomical ]
-    config.almucantar = 5 # 2
+    config.almucantar = 2
     config.azimuth = 15
 
     config.size = 100.0
