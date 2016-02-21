@@ -12,6 +12,11 @@ from render import DXF as dxf
 
 axial_tilt = 23.43721
 
+class Twilight:
+    civil = -6
+    nautical = -12
+    astronomical = -18
+
 #
 #   Equations from "The Astrolabe" by James E Morrison.
 
@@ -30,7 +35,9 @@ def almucantar(a, req, lat):
     return ra, ya
 
 #
-#
+#   Intersection of 2 circles.
+#   
+#   Assumes y==0 for both circles.
 
 def intersect(x0, r0, x1, r1):
     y0, y1 = 0, 0
@@ -62,7 +69,37 @@ def intersect(x0, r0, x1, r1):
     yi = y2 + ry
     yii = y2 - ry
 
-    return xi, yi, xii, yii
+    return (xi, yi), (xii, yii)
+
+def intersect2(xy1, r1, xy2, r2):
+    x1, y1 = xy1
+    x2, y2 = xy2
+    dx, dy = (x2 - x1), (y2 - y1)
+    angle = math.atan2(dy, dx)
+    dc = math.sqrt((dx * dx) + (dy * dy))
+    print angle, dc
+
+    c1 = Circle((x1, y1), r1)
+    c2 = Circle((x2, y2), r2)
+    p = Collection()
+    p.add(c1)
+    p.add(c2)
+    # translate/rotate so circles lie on y==0 axis
+    p.translate(-x1, -y1)
+    p.rotate(-degrees(angle))
+
+    inter = intersect(c1.x, c1.radius, c2.x, c2.radius)
+    if inter is None: # no intersection
+        return None
+
+    (xi, yi), (xii, yii) = inter
+    p = Polygon()
+    p.add(xi, yi)
+    p.add(xii, yii)
+    # reverse the translate/rotate to restore the y axis component
+    p.rotate(degrees(angle))
+    p.translate(x1, y1)
+    return p.points
 
 #
 #
@@ -102,7 +139,7 @@ def draw_almucantar(a, config, colour, work, rad_eq, outer):
     circ = Circ(ya, ra)
     ii = outer.intersect(circ)
     if ii:
-        x0, y0, x1, y1 = ii
+        (x0, y0), (x1, y1) = ii
         m = circ.x
 
         x = x0 - m
@@ -169,19 +206,38 @@ def plate(drawing, config):
             draw_almucantar(twilight, config, colour, work, rad_eq, outer)
 
     # azimuth lines
-    if 0:
-        yz =  rad_eq * math.tan(radians(90.0 - latitude) / 2.0)
-        yn = -rad_eq * math.tan(radians(90.0 + latitude) / 2.0)
+    if 1:
+        # horizon circle
+        hr, hx = almucantar(0.0, rad_eq, config.latitude)
+        # zenith / nadir
+        yz =  rad_eq * math.tan(radians(90.0 - config.latitude) / 2.0)
+        yn = -rad_eq * math.tan(radians(90.0 + config.latitude) / 2.0)
+        # x centre for all circles
         yc = (yz + yn) / 2.0
         yaz = (yz - yn) / 2.0
-        for angle in range(0, 180, config.azimuth):
-            if angle in [ 90 ]:
+        #for angle in range(0, 180, config.azimuth):
+        for angle in range(0, 90, config.azimuth):
+            if angle == 90: # straight line on the meridian
                 continue
+            # calculate the azimuth circle x and radius
             xa = yaz * math.tan(radians(angle))
             ra = yaz / math.cos(radians(angle))
-            print xa, ra
-            c = Circle((yc, xa), ra)
-            work.add(c)
+
+            # intersection with the horizon circle
+            inter = intersect2((hx, 0), hr, (yc, xa), ra)
+            if inter:
+                print "inter", inter
+                (x1, y1), (x2, y2) = inter
+
+                # calculate the arc angles
+                a1 = -math.atan2(x1 - yc, y1 - xa)
+                a2 = -math.atan2(x2 - yc, y2 - xa)
+                print a1, a2
+                c = Arc((yc, xa), ra, degrees(a1)+90.0, degrees(a2)+90.0)
+                work.add(c)
+
+            #c = Circle((yc, xa), ra)
+            #work.add(c)
 
     work.draw(drawing, config.thick_colour)
 
@@ -243,21 +299,21 @@ def mater(drawing, config):
         t.rotate(-90 - 8)
         work.add(t)
 
-
     # throne
-    throne_base = outer * 1.05
-    throne_angle = 10
-    throne_r = config.size / 8.0
-    throne_hole = throne_r / 4
-    p = Collection()
-    c = Arc((0, 0), throne_base, -throne_angle, throne_angle)
-    p.add(c)
-    work.add(p)
+    if 0:
+        throne_base = outer * 1.05
+        throne_angle = 10
+        throne_r = config.size / 8.0
+        throne_hole = throne_r / 4
+        p = Collection()
+        c = Arc((0, 0), throne_base, -throne_angle, throne_angle)
+        p.add(c)
+        work.add(p)
 
-    c = Circle((outer + throne_r, 0), throne_r)
-    work.add(c)
-    c = Circle((outer + throne_r, 0), throne_hole, colour=config.cut())
-    work.add(c)
+        c = Circle((outer + throne_r, 0), throne_r)
+        work.add(c)
+        c = Circle((outer + throne_r, 0), throne_hole, colour=config.cut())
+        work.add(c)
 
     # draw it all
     work.draw(drawing, config.thick_colour)
@@ -268,11 +324,6 @@ def mater(drawing, config):
 if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
-
-    class Twilight:
-        nautical = -12
-        civil = -6
-        astronomical = -18
 
     config.latitude = 52.0
     config.twilight = [ Twilight.nautical, Twilight.civil, Twilight.astronomical ]
