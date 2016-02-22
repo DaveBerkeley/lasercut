@@ -9,8 +9,10 @@ from laser.render import DXF as dxf
 
 #
 #
+#   http://solarsystem.nasa.gov/planets/earth/facts
 
-axial_tilt = 23.43721
+axial_tilt = 23.4393
+eccentricity = 0.01671123
 
 class Twilight:
     civil = -6
@@ -384,7 +386,6 @@ def rear_limb(drawing, config):
     r = ((small + mid) / 2.0) + ((small - mid) / 3.0)
     for angle in range(0, 360, 5):
         text = "%d" % (angle % 30)
-        print angle, text
         t = Text((0, 0), text, height=config.size/35.0)
         t.rotate(angle)
         rad = radians(360 - angle - (1.3 * len(text)))
@@ -392,15 +393,47 @@ def rear_limb(drawing, config):
         t.translate(x, y)
         work.add(t)
 
+    # text for zodiac
+    zodiac = [ 
+        "Aries",
+        "Taurus",
+        "Gemini",
+        "Cancer",
+        "Leo",
+        "Virgo",
+        "Libra",
+        "Scorpio",
+        "Sagittarius",
+        "Capricorn",
+        "Aquarius",
+        "Pisces",
+    ]
+    r = (mid + inner) / 2.0
+    for idx, sign in enumerate(zodiac):
+        angle = 180 + (idx * 30)
+        t = Text((0, 0), sign, height=config.size/25.0)
+        angle += 18
+        t.rotate(angle)
+        rad = radians(360 - angle)
+        x, y = r * math.sin(rad), r * math.cos(rad)
+        t.translate(x, y)
+        work.add(t)
+
     # draw it all
     work.draw(drawing, config.thick_colour)
 
+#
+#
 
 def rear_plate(drawing, config):
 
-    cut_plate(drawing, config)
+    #cut_plate(drawing, config)
 
     work = Collection()
+
+    c = Circle((0, 0), config.size, colour=config.thick_colour)
+    work.add(c)
+
     # draw it all
     work.draw(drawing, config.thick_colour)
 
