@@ -11,13 +11,39 @@ from laser.render import DXF as dxf
 #
 #   http://solarsystem.nasa.gov/planets/earth/facts
 
-axial_tilt = 23.4393
+axial_tilt = 23.4393 # degrees
 eccentricity = 0.01671123
+longitude_of_perihelion = 283.067 # degrees
 
 class Twilight:
     civil = -6
     nautical = -12
     astronomical = -18
+
+zodiac = [ 
+    "Aries", "Taurus", "Gemini",
+    "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius",
+    "Capricorn", "Aquarius", "Pisces",
+]
+
+months = [
+    ( "Jan",  31, ),
+    ( "Feb",  28, ),
+    ( "Mar",  31, ),
+    ( "Apr",  30, ),
+    ( "May",  31, ),
+    ( "Jun",  30, ),
+    ( "Jul",  31, ),
+    ( "Aug",  31, ),
+    ( "Sep",  30, ),
+    ( "Oct",  31, ),
+    ( "Nov",  30, ),
+    ( "Dec",  31, ),
+]
+
+days = sum([ x[1] for x in months ])
+assert days == 365
 
 #
 #   Equations from "The Astrolabe" by James E Morrison.
@@ -124,14 +150,15 @@ class Circ:
 #
 
 def ticks(work, xy, r1, r2, a1, a2, step):
+    x0, y0 = xy
     a = a1
     assert a1 <= a2
     while a <= a2:
         p = Polygon()
         x = math.sin(radians(a))
         y = math.cos(radians(a))
-        p.add(r1 * x, r1 * y)
-        p.add(r2 * x, r2 * y)
+        p.add(x0 + (r1 * x), y0 + (r1 * y))
+        p.add(x0 + (r2 * x), y0 + (r2 * y))
         work.add(p)
         a += step
 
@@ -295,8 +322,8 @@ def mater(drawing, config):
     small = (mid + outer) / 2
 
     # draw ticks
-    ticks(work, (0, 0), inner, outer, 0, 360, 15)
-    ticks(work, (0, 0), mid, outer, 0, 360, 3)
+    ticks(work, (0, 0), inner, mid, 0, 360, 15)
+    ticks(work, (0, 0), mid, small, 0, 360, 3)
     ticks(work, (0, 0), small, outer, 0, 360, 1)
 
     # draw / cut circles
@@ -378,8 +405,8 @@ def rear_limb(drawing, config):
     c = Circle((0, 0), mid, colour=config.thick_colour)
     work.add(c)
 
-    ticks(work, (0, 0), inner, outer, 0, 360, 30)
-    ticks(work, (0, 0), mid, outer, 0, 360, 5)
+    ticks(work, (0, 0), inner, mid, 0, 360, 30)
+    ticks(work, (0, 0), mid, small, 0, 360, 5)
     ticks(work, (0, 0), small, outer, 0, 360, 1)
 
     # degree text for zodiac
@@ -394,20 +421,6 @@ def rear_limb(drawing, config):
         work.add(t)
 
     # text for zodiac
-    zodiac = [ 
-        "Aries",
-        "Taurus",
-        "Gemini",
-        "Cancer",
-        "Leo",
-        "Virgo",
-        "Libra",
-        "Scorpio",
-        "Sagittarius",
-        "Capricorn",
-        "Aquarius",
-        "Pisces",
-    ]
     r = (mid + inner) / 2.0
     for idx, sign in enumerate(zodiac):
         angle = 180 + (idx * 30)
@@ -434,6 +447,27 @@ def rear_plate(drawing, config):
     c = Circle((0, 0), config.size, colour=config.thick_colour)
     work.add(c)
 
+    if 0:
+        r = config.outer
+        angle = longitude_of_perihelion
+        x = r * math.sin(radians(angle))
+        y = - r * math.cos(radians(angle))
+        c = Polygon()
+        c.add(x, y)
+        c.add(-x, -y)
+        work.add(c)
+
+        x0, y0 = 10, 10 # TODO
+        r = config.size - math.sqrt((x0 * x0) + (y0 * y0))
+        for day in range(days):
+            c = Polygon()
+            angle = day * 360.0 / days
+            x = r * math.sin(radians(angle))
+            y = r * math.cos(radians(angle))
+            c.add(x0 + x, y0 + y)
+            c.add(0, 0)
+            work.add(c)
+
     # draw it all
     work.draw(drawing, config.thick_colour)
 
@@ -445,18 +479,22 @@ if __name__ == "__main__":
     config = Config()
 
     config.latitude = 50.37
-    config.twilight = [ Twilight.nautical, Twilight.civil, Twilight.astronomical ]
+    config.twilight = [ 
+        Twilight.nautical, 
+        Twilight.civil, 
+        Twilight.astronomical,
+    ]
     config.almucantar = 2
     config.azimuth = 15
 
     config.size = 100.0
     config.outer = config.size * 1.2
 
-    rear_plate(drawing, config)
-    rear_limb(drawing, config)
+    #rear_plate(drawing, config)
+    #rear_limb(drawing, config)
 
-    #plate(drawing, config)
-    #mater(drawing, config)
+    plate(drawing, config)
+    mater(drawing, config)
 
     drawing.save()
 
