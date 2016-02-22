@@ -288,7 +288,7 @@ def plate(drawing, config):
 def mater(drawing, config):
     work = Collection()
     inner = config.size
-    outer = config.size * 1.2
+    outer = config.outer
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
 
@@ -362,6 +362,51 @@ def mater(drawing, config):
 #
 #
 
+def rear_limb(drawing, config):
+    work = Collection()
+
+    inner = config.size
+    outer = config.outer
+    mid = (outer + inner) / 2.0
+    small = (outer + mid) / 2.0
+
+    c = Circle((0, 0), outer, colour=config.cut())
+    work.add(c)
+
+    c = Circle((0, 0), mid, colour=config.thick_colour)
+    work.add(c)
+
+    ticks(work, (0, 0), inner, outer, 0, 360, 30)
+    ticks(work, (0, 0), mid, outer, 0, 360, 5)
+    ticks(work, (0, 0), small, outer, 0, 360, 1)
+
+    # degree text for zodiac
+    r = ((small + mid) / 2.0) + ((small - mid) / 3.0)
+    for angle in range(0, 360, 5):
+        text = "%d" % (angle % 30)
+        print angle, text
+        t = Text((0, 0), text, height=config.size/35.0)
+        t.rotate(angle)
+        rad = radians(360 - angle - (1.3 * len(text)))
+        x, y = r * math.sin(rad), r * math.cos(rad)
+        t.translate(x, y)
+        work.add(t)
+
+    # draw it all
+    work.draw(drawing, config.thick_colour)
+
+
+def rear_plate(drawing, config):
+
+    cut_plate(drawing, config)
+
+    work = Collection()
+    # draw it all
+    work.draw(drawing, config.thick_colour)
+
+#
+#
+
 if __name__ == "__main__":
     drawing = dxf.drawing("test.dxf")
     config = Config()
@@ -372,10 +417,13 @@ if __name__ == "__main__":
     config.azimuth = 15
 
     config.size = 100.0
+    config.outer = config.size * 1.2
 
-    plate(drawing, config)
+    rear_plate(drawing, config)
+    rear_limb(drawing, config)
 
-    mater(drawing, config)
+    #plate(drawing, config)
+    #mater(drawing, config)
 
     drawing.save()
 
