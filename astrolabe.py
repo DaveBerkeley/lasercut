@@ -486,7 +486,7 @@ if __name__ == "__main__":
     config.almucantar = 2
     config.azimuth = 15
 
-    config.size = 100.0
+    config.size = 70.0
     config.outer = config.size * 1.2
 
     work = Collection()
@@ -503,6 +503,8 @@ if __name__ == "__main__":
         p = mater(config)
         work.add(p)
 
+    s = config.size * 1.4
+    work.translate(s, s)
     work.draw(drawing)
     drawing.save()
 
