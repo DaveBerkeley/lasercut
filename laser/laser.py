@@ -325,17 +325,18 @@ class Circle(Arc):
 #
 
 class Collection:
-    def __init__(self, work=None):
+    def __init__(self, work=None, colour=None):
         self.data = []
         self.origin = None
         self.arcs = []
+        self.colour = colour
         if work:
             self.add(work)
     def add(self, obj):
         self.data.append(obj)
-    def draw(self, drawing, colour):
+    def draw(self, drawing, colour=None):
         for data in self.data:
-            data.draw(drawing, colour)
+            data.draw(drawing, colour or self.colour)
     def rotate(self, degrees):
         for data in self.data:
             data.rotate(degrees)

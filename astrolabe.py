@@ -149,12 +149,12 @@ class Circ:
 #
 #
 
-def ticks(work, xy, r1, r2, a1, a2, step):
+def ticks(work, xy, r1, r2, a1, a2, step, colour=None):
     x0, y0 = xy
     a = a1
     assert a1 <= a2
     while a <= a2:
-        p = Polygon()
+        p = Polygon(colour=colour)
         x = math.sin(radians(a))
         y = math.cos(radians(a))
         p.add(x0 + (r1 * x), y0 + (r1 * y))
@@ -192,14 +192,14 @@ def draw_almucantar(a, config, colour, work, rad_equator, outer):
 #
 #   Plate basic shape
 
-def cut_plate(drawing, config):
+def cut_plate(config):
     size = config.size
     key_angle = 1.0
     key_size = size * 0.98
-    work = Collection()
+    work = Collection(colour=config.cut())
     a1 = 180.0 - key_angle
     a2 = 180.0 + key_angle
-    
+ 
     # leave space for the locator key
     c = Arc((0, 0), size, a2, a1)
     work.add(c)
@@ -217,19 +217,20 @@ def cut_plate(drawing, config):
     spoke(a1)
     spoke(a2)
 
-    work.draw(drawing, config.cut())
+    return work
 
 
 #
 #   Plate detail
 
-def plate(drawing, config):
-
-    cut_plate(drawing, config)
-
-    s = config.size
+def plate(config):
 
     work = Collection()
+
+    p = cut_plate(config)
+    work.add(p)
+
+    s = config.size
 
     # equator and tropics
     rad_capricorn = s
@@ -309,25 +310,28 @@ def plate(drawing, config):
             c.reflect_h()
             work.add(c)
 
-    work.draw(drawing, config.thick_colour)
+    return work
 
 #
 #
 
-def mater(drawing, config):
-    work = Collection()
+def mater(config):
+    work = Collection(colour=config.thick_colour)
+
+    p = cut_plate(config)
+    work.add(p)
+
     inner = config.size
     outer = config.outer
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
 
     # draw ticks
-    ticks(work, (0, 0), inner, mid, 0, 360, 15)
-    ticks(work, (0, 0), mid, small, 0, 360, 3)
-    ticks(work, (0, 0), small, outer, 0, 360, 1)
+    ticks(work, (0, 0), inner, mid, 0, 360, 15, colour=config.thick_colour)
+    ticks(work, (0, 0), mid, small, 0, 360, 3, colour=config.thick_colour)
+    ticks(work, (0, 0), small, outer, 0, 360, 1, colour=config.thin_colour)
 
     # draw / cut circles
-    cut_plate(drawing, config)
 
     c = Circle((0, 0), mid, colour=config.thick_colour)
     work.add(c)
@@ -385,13 +389,12 @@ def mater(drawing, config):
         c = Circle((outer + throne_r, 0), throne_hole, colour=config.cut())
         work.add(c)
 
-    # draw it all
-    work.draw(drawing, config.thick_colour)
+    return work
 
 #
 #
 
-def rear_limb(drawing, config):
+def rear_limb(config):
     work = Collection()
 
     inner = config.size
@@ -405,9 +408,9 @@ def rear_limb(drawing, config):
     c = Circle((0, 0), mid, colour=config.thick_colour)
     work.add(c)
 
-    ticks(work, (0, 0), inner, mid, 0, 360, 30)
-    ticks(work, (0, 0), mid, small, 0, 360, 5)
-    ticks(work, (0, 0), small, outer, 0, 360, 1)
+    ticks(work, (0, 0), inner, mid, 0, 360, 30, colour=config.thick_colour)
+    ticks(work, (0, 0), mid, small, 0, 360, 5, colour=config.thick_colour)
+    ticks(work, (0, 0), small, outer, 0, 360, 1, colour=config.thin_colour)
 
     # degree text for zodiac
     r = ((small + mid) / 2.0) + ((small - mid) / 3.0)
@@ -432,15 +435,12 @@ def rear_limb(drawing, config):
         t.translate(x, y)
         work.add(t)
 
-    # draw it all
-    work.draw(drawing, config.thick_colour)
+    return work 
 
 #
 #
 
-def rear_plate(drawing, config):
-
-    #cut_plate(drawing, config)
+def rear_plate(config):
 
     work = Collection()
 
@@ -468,9 +468,8 @@ def rear_plate(drawing, config):
             c.add(0, 0)
             work.add(c)
 
-    # draw it all
-    work.draw(drawing, config.thick_colour)
-
+    return work
+    
 #
 #
 
@@ -490,12 +489,21 @@ if __name__ == "__main__":
     config.size = 100.0
     config.outer = config.size * 1.2
 
-    #rear_plate(drawing, config)
-    #rear_limb(drawing, config)
+    work = Collection()
 
-    plate(drawing, config)
-    mater(drawing, config)
+    if 0:
+        p = rear_plate(config)
+        work.add(p)
+        p = rear_limb(config)
+        work.add(p)
 
+    if 1:
+        p = plate(config)
+        work.add(p)
+        p = mater(config)
+        work.add(p)
+
+    work.draw(drawing)
     drawing.save()
 
 # FIN
