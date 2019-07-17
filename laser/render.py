@@ -79,22 +79,42 @@ class GCODE:
             print "G01 Z%(down)s F%(feeddown)s" % self.d
             self.z = self.d['down']
 
+    def goto(self, x, y):
+        if (self.x == x) and (self.y == y):
+            return
+
+        self.up()
+        print "G00 X%s Y%s F%s" % (x, y, self.d['fast'])
+        self.down()
+
+        self.x = x
+        self.y = y
+
+    def plot_line(self, line):
+        x0, y0 = line['start']
+        x1, y1 = line['end']
+
+        self.goto(x0, y0)
+        print "G01 X%s Y%s F%s" % (x1, y1, self.d['cut'])
+        self.x = x1
+        self.y = y1
+
+    def plot_circle(self, line):
+        radius = line['radius']
+        xc, yc = line['center']
+        x0, y0 = xc - radius, yc
+        self.goto(x0, y0)
+        print "G02 I%s F%s" % (radius, self.d['cut'])
+        self.x, self.y = x0, y0
+
     def save(self):
         for color, plot in self.plot.items():
             #print color
             for line in plot.data:
-                if line['fn'] != "line":
-                    continue
-                x0, y0 = line['start']
-                x1, y1 = line['end']
-
-                if (x0 != self.x) or (y0 != self.y):
-                    self.up()
-                    print "G00 X%s Y%s F%s" % (x0, y0, self.d['fast'])
-                    self.down()
-                print "G01 X%s Y%s F%s" % (x1, y1, self.d['cut'])
-                self.x = x1
-                self.y = y1
+                if line['fn'] == "line":
+                    self.plot_line(line)
+                if line['fn'] == "circle":
+                    self.plot_circle(line)
 
     def get_plot(self, color):
         if not color in self.plot:
