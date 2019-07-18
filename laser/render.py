@@ -1,8 +1,12 @@
 #
 #
 
+import math
+
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
+
+from laser import radians, distance
 
 #
 #
@@ -63,9 +67,10 @@ class GCODE:
         self.d = {
             'fast' : 300,
             'cut' : 50,
-            'feedup' : 100,
-            'up' : 3,
+            'feedup' : 300,
             'feeddown' : 50,
+            # heights
+            'up' : 3,
             'down' : -1,
         }
 
@@ -94,6 +99,12 @@ class GCODE:
         x0, y0 = line['start']
         x1, y1 = line['end']
 
+        # start at the nearest end
+        d0 = distance((self.x, self.y), (x0, y0))
+        d1 = distance((self.x, self.y), (x1, y1))
+        if d1 < d0:
+            x0, y0, x1, y1 = x1, y1, x0, y0
+
         self.goto(x0, y0)
         print "G01 X%s Y%s F%s" % (x1, y1, self.d['cut'])
         self.x = x1
@@ -107,7 +118,46 @@ class GCODE:
         print "G02 I%s F%s" % (radius, self.d['cut'])
         self.x, self.y = x0, y0
 
+    def plot_arc(self, line):
+        radius = line['radius']
+        xc, yc = line['center']
+        endangle = line['endangle']
+        startangle = line['startangle']
+
+        xx0 = radius * math.cos(radians(startangle))
+        yy0 = radius * math.sin(radians(startangle))
+        xx1 = radius * math.cos(radians(endangle))
+        yy1 = radius * math.sin(radians(endangle))
+        x0 = xc + xx0
+        y0 = yc + yy0
+        x1 = xc + xx1
+        y1 = yc + yy1
+        i = -xx0
+        j = -yy0
+        self.goto(x0, y0)
+        print "G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
+        self.x, self.y = x1, y1
+
     def save(self):
+
+        header = [
+            # junk I copied from the emulator
+            # FIX THIS
+            "G90 G94 G17 G69",
+            "G20",
+            "G53 G0 Z0",
+            "T1 M6",
+            "S7640 M3",
+            "G54",
+            "M8",
+            "G0 X4.4764 Y2.9321",
+            "G43 Z1.4 H1",
+            "T3",
+        ]
+
+        for line in header:
+            print line
+
         for color, plot in self.plot.items():
             #print color
             for line in plot.data:
@@ -115,6 +165,8 @@ class GCODE:
                     self.plot_line(line)
                 if line['fn'] == "circle":
                     self.plot_circle(line)
+                if line['fn'] == "arc":
+                    self.plot_arc(line)
 
     def get_plot(self, color):
         if not color in self.plot:
