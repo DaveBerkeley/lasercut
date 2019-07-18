@@ -134,8 +134,28 @@ class GCODE:
         y1 = yc + yy1
         i = -xx0
         j = -yy0
+
+        # start at the nearest end
+        if self.x and self.y:
+            d0 = distance((self.x, self.y), (x0, y0))
+            d1 = distance((self.x, self.y), (x1, y1))
+            if d1 < d0:
+                d = {
+                    'radius' : radius, 
+                    'center' : (xc,yc), 
+                    'endangle' : startangle, 
+                    'startangle' : endangle, 
+                    'reverse' : True,
+                }
+                return self.plot_arc(d)
+
         self.goto(x0, y0)
-        print "G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
+
+        if line.get('reverse'):
+            print "G02 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
+        else:
+            print "G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
+
         self.x, self.y = x1, y1
 
     def save(self):
