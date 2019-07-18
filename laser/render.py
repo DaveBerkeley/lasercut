@@ -76,13 +76,17 @@ class GCODE:
 
     def up(self):
         if self.z != self.d['up']:
-            print "G01 Z%(up)s F%(feedup)s" % self.d
+            print "G00 Z%(up)s F%(feedup)s" % self.d
             self.z = self.d['up']
 
     def down(self):
         if self.z != self.d['down']:
             print "G01 Z%(down)s F%(feeddown)s" % self.d
             self.z = self.d['down']
+
+    def setxy(self, x, y):
+        self.x = x
+        self.y = y
 
     def goto(self, x, y):
         if (self.x == x) and (self.y == y):
@@ -91,9 +95,7 @@ class GCODE:
         self.up()
         print "G00 X%s Y%s F%s" % (x, y, self.d['fast'])
         self.down()
-
-        self.x = x
-        self.y = y
+        self.setxy(x, y)
 
     def plot_line(self, line):
         x0, y0 = line['start']
@@ -107,8 +109,7 @@ class GCODE:
 
         self.goto(x0, y0)
         print "G01 X%s Y%s F%s" % (x1, y1, self.d['cut'])
-        self.x = x1
-        self.y = y1
+        self.setxy(x1, y1)
 
     def plot_circle(self, line):
         radius = line['radius']
@@ -116,7 +117,7 @@ class GCODE:
         x0, y0 = xc - radius, yc
         self.goto(x0, y0)
         print "G02 I%s F%s" % (radius, self.d['cut'])
-        self.x, self.y = x0, y0
+        self.setxy(x0, y0)
 
     def plot_arc(self, line):
         radius = line['radius']
@@ -156,7 +157,7 @@ class GCODE:
         else:
             print "G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
 
-        self.x, self.y = x1, y1
+        self.setxy(x1, y1)
 
     def save(self):
 
