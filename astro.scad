@@ -1,21 +1,21 @@
 
-thick = 60;
+thick = 0.60;
 z_lo = thick * 0.3;
 z_hi = thick * 0.7;
 
-r_outer = 1800;
-r_inner = 1700;
+r_outer = 18.00;
+r_inner = 17.00;
 
-r_solar_outer = 1400;
-r_solar_inner = 1200;
-r_solar_bevel = 1300;
+r_solar_outer = 14.00;
+r_solar_inner = 12.00;
+r_solar_bevel = 13.00;
 
-r_inner_disk = 200;
-r_hole = 50;
+r_inner_disk = 2.00;
+r_hole = 0.50;
 
-x_solar = 300;
+x_solar = 3.00;
 
-band = 100;
+band = 1.00;
 
 min_angle = 5; // todo 1;
 
