@@ -17,7 +17,7 @@ x_solar = 3.00;
 
 band = 1.00;
 
-min_angle = 5; // todo 1;
+min_angle = 1; // todo 1;
 
 // Ecliptic
 translate([ x_solar, 0, 0])
@@ -50,11 +50,9 @@ difference()
 {
     union()
     {
-        translate([-band, 0, 0])
-            cube([band, r_inner, thick]);
         translate([-band, -r_inner, 0])
-            cube([band, r_inner, thick]);
-        cylinder(thick, r1=r_inner_disk, r2=r_inner_disk);
+            cube([band, r_inner*2, thick]);
+        cylinder(thick, r1=r_inner_disk, r2=r_inner_disk, $fa=min_angle);
     }
-    cylinder(thick, r1=r_hole, r2=r_hole);
+    cylinder(thick, r1=r_hole, r2=r_hole, $fa=min_angle);
 }
