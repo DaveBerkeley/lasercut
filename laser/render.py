@@ -73,15 +73,19 @@ class GCODE:
             'up' : 3,
             'down' : -1,
         }
+        self.out = open(filename, "w")
+
+    def write(self, text):
+        self.out.write(text + "\n")
 
     def up(self):
         if self.z != self.d['up']:
-            print "G00 Z%(up)s F%(feedup)s" % self.d
+            self.write("G00 Z%(up)s F%(feedup)s" % self.d)
             self.z = self.d['up']
 
     def down(self):
         if self.z != self.d['down']:
-            print "G01 Z%(down)s F%(feeddown)s" % self.d
+            self.write("G01 Z%(down)s F%(feeddown)s" % self.d)
             self.z = self.d['down']
 
     def setxy(self, x, y):
@@ -93,7 +97,7 @@ class GCODE:
             return
 
         self.up()
-        print "G00 X%s Y%s F%s" % (x, y, self.d['fast'])
+        self.write("G00 X%s Y%s F%s" % (x, y, self.d['fast']))
         self.down()
         self.setxy(x, y)
 
@@ -108,7 +112,7 @@ class GCODE:
             x0, y0, x1, y1 = x1, y1, x0, y0
 
         self.goto(x0, y0)
-        print "G01 X%s Y%s F%s" % (x1, y1, self.d['cut'])
+        self.write("G01 X%s Y%s F%s" % (x1, y1, self.d['cut']))
         self.setxy(x1, y1)
 
     def plot_circle(self, line):
@@ -116,7 +120,7 @@ class GCODE:
         xc, yc = line['center']
         x0, y0 = xc - radius, yc
         self.goto(x0, y0)
-        print "G02 I%s F%s" % (radius, self.d['cut'])
+        self.write("G02 I%s F%s" % (radius, self.d['cut']))
         self.setxy(x0, y0)
 
     def plot_arc(self, line):
@@ -153,9 +157,9 @@ class GCODE:
         self.goto(x0, y0)
 
         if line.get('reverse'):
-            print "G02 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
+            self.write("G02 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut']))
         else:
-            print "G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut'])
+            self.write("G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut']))
 
         self.setxy(x1, y1)
 
@@ -177,7 +181,7 @@ class GCODE:
         ]
 
         for line in header:
-            print line
+            self.write(line)
 
         for color, plot in self.plot.items():
             #print color

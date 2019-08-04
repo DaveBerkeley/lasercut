@@ -2,10 +2,11 @@
 
 import sys
 import math
+import argparse
 
 from laser.laser import Arc, Circle, Polygon, Collection, Config, Text
 from laser.laser import radians, degrees
-from laser.render import DXF as dxf
+from laser.render import DXF, GCODE
 
 #
 #
@@ -474,7 +475,29 @@ def rear_plate(config):
 #
 
 if __name__ == "__main__":
-    drawing = dxf.drawing("test.dxf")
+
+    p = argparse.ArgumentParser()
+    p.add_argument('part', default='mater')
+    p.add_argument('--code', default='dxf')
+
+    args = p.parse_args()
+    parts = [ 'mater', 'rete', 'rear' ]
+    assert args.part in parts, (args, parts)
+    print >> sys.stderr, "Generating:", args.part
+
+    if args.code == 'dxf':
+        dxf = DXF
+        ext = '.dxf'
+    elif args.code == 'gcode':
+        dxf = GCODE
+        ext = '.ngc'
+    else:
+        raise Exception("unknown code %s" % args.code)
+
+    path = args.part + ext
+    print >> sys.stderr, "writing to:", path
+
+    drawing = dxf.drawing(path)
     config = Config()
 
     config.latitude = 50.37
@@ -491,13 +514,13 @@ if __name__ == "__main__":
 
     work = Collection()
 
-    if 0:
+    if args.part == 'rear':
         p = rear_plate(config)
         work.add(p)
         p = rear_limb(config)
         work.add(p)
 
-    if 1:
+    if args.part == 'mater':
         p = plate(config)
         work.add(p)
         p = mater(config)
