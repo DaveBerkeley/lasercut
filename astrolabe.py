@@ -3,6 +3,7 @@
 import sys
 import math
 import argparse
+import subprocess
 
 from laser.laser import Arc, Circle, Polygon, Collection, Config, Text
 from laser.laser import radians, degrees
@@ -479,7 +480,6 @@ def rear_plate(config):
 #
 #   Star data to export to openscad
 #
-#   http://www.faculty.virginia.edu/rwoclass/astr1230/table-of-brightest-stars-Cosmobrain.html
 
 stars = [
     "Sirius",
@@ -548,14 +548,19 @@ def make_stars(path, config):
 if __name__ == "__main__":
 
     p = argparse.ArgumentParser()
-    p.add_argument('part', default='mater')
+    p.add_argument('part', nargs='*', default=[])
     p.add_argument('--code', default='dxf')
     p.add_argument('--lat', type=float, default=50.37)
+    p.add_argument('--qcad', action='store_true')
+    p.add_argument('--stars', action='store_true')
 
     args = p.parse_args()
-    parts = [ 'mater', 'rete', 'rear', 'stars', ]
-    assert args.part in parts, (args, parts)
-    print >> sys.stderr, "Generating:", args.part
+    print args
+    parts = [ 'plate', 'mater', 'rete', 'rear', ]
+
+    for arg in args.part:
+        assert arg in parts, (args, parts)
+        #print >> sys.stderr, "Generating:", arg
 
     if args.code == 'dxf':
         dxf = DXF
@@ -566,11 +571,12 @@ if __name__ == "__main__":
     else:
         raise Exception("unknown code %s" % args.code)
 
-    if args.part == "stars":
-        ext = ".scad"
-
-    path = args.part + ext
-    print >> sys.stderr, "writing to:", path
+    if len(args.part) == 0:
+        path = "/dev/null"
+    elif len(args.part) > 1:
+        path = "output" + ext
+    else:
+        path = args.part[0] + ext
 
     drawing = dxf.drawing(path)
     config = Config()
@@ -585,31 +591,45 @@ if __name__ == "__main__":
     config.almucantar = 2
     config.azimuth = 15
 
-    config.size = 20.0
+    # radius of the edge of the plate (tropic of Capricorn)
+    config.size = 200.0
     config.outer = config.size * 1.2
 
     work = Collection()
 
-    if args.part == 'rear':
+    if 'rear' in args.part:
+        print >> sys.stderr, "Generating rear"
         p = rear_plate(config)
         work.add(p)
         p = rear_limb(config)
         work.add(p)
 
-    if args.part == 'mater':
-        p = plate(config)
-        work.add(p)
+    if 'mater' in args.part:
+        print >> sys.stderr, "Generating mater"
         p = mater(config)
         work.add(p)
 
-    if args.part == "stars":
-        print >> sys.stderr, "Generating star data"
-        make_stars(path, config)
-        sys.exit(0)
+    if 'plate' in args.part:
+        print >> sys.stderr, "Generating plate"
+        p = plate(config)
+        work.add(p)
+
+    if args.stars:
+        print >> sys.stderr, "Generating stars"
+        spath = "stars.scad"
+        print >> sys.stderr, "writing to:", spath
+        make_stars(spath, config)
 
     #s = config.size * 1.4
     #work.translate(s, s)
     work.draw(drawing)
+    print >> sys.stderr, "Writing to", path
     drawing.save()
+
+    # call qcad to view the output
+    if args.qcad:
+        cmd = "qcad %s" % path
+        print >> sys.stderr, "Call %s" % cmd
+        subprocess.call(cmd, shell=True)
 
 # FIN

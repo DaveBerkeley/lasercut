@@ -168,16 +168,37 @@ class GCODE:
         header = [
             # junk I copied from the emulator
             # FIX THIS
+            "(G90 distance mode, G94 feed rate mode, G17 xy plane, G69 Turn off coordinate system rotation )",
             "G90 G94 G17 G69",
-            "G20",
+            "(G21 metric )",
+            "G21",
+            "(G53 goto position)",
             "G53 G0 Z0",
+            "(T1 select tool 1, M6 tool change)",
             "T1 M6",
-            "S7640 M3",
+            #"()",
+            #"S7640 M3",
+            "(G54 select co-ordinate system 1)",
             "G54",
+            "(M8 turn flood coolant on)",
             "M8",
-            "G0 X4.4764 Y2.9321",
+            #"G0 X4.4764 Y2.9321",
+            "(G43 tool length offset Z<offset> H<tool>)",
             "G43 Z1.4 H1",
-            "T3",
+            #"(T3 select tool 3)",
+            #"T3",
+        ]
+
+        tail = [
+            # TODO : home, turn stuff off
+            "(M5 stop spindle)",
+            "M5",
+            "(M9 turn flood coolant off)",
+            "M9",
+            "(G53 goto position)",
+            "G53 G0 Z0.",
+            "(M30 end of program)",
+            "M30",
         ]
 
         for line in header:
@@ -192,6 +213,9 @@ class GCODE:
                     self.plot_circle(line)
                 if line['fn'] == "arc":
                     self.plot_arc(line)
+
+        for line in tail:
+            self.write(line)
 
     def get_plot(self, color):
         if not color in self.plot:
