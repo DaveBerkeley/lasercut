@@ -31,8 +31,9 @@ min_angle = 1; // todo 1;
 
 module add_star (x, y, name)
 {
+    r = 0.2;
     translate([ x, y, 0 ])
-        cylinder(thick+1, r1=1, r2=1, $fa=min_angle);
+        cylinder(thick+1, r1=r, r2=r, $fa=min_angle);
 }
 
 // Add the stars
