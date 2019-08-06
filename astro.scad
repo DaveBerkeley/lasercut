@@ -1,7 +1,7 @@
 
 include <stars.scad>;
 
-thick = 0.60;
+thick = 6.0;
 z_lo = thick * 0.3;
 z_hi = thick * 0.7;
 
@@ -12,33 +12,71 @@ r_width = rad_outer / 18.0;
 r_outer = rad_outer;
 r_inner = r_outer - r_width;
 
-r_solar_outer = 14.00; // TODO
+r_solar_outer = 140.0; // TODO
 
 r_solar_width = 2.0 * r_width;
 r_solar_inner = r_solar_outer - r_solar_width;
 r_solar_bevel = r_solar_outer - r_width;
 
 r_inner_disk = rad_outer / 10;
-r_hole = 0.50;
+r_hole = 2.5;
 
 // offset to centre of Ecliptic
-x_solar = 2.00; // TODO
+x_solar = 20.0; // TODO
 
 // structure holding ecliptic to outer
-band = 1.00;
+band = 10.0;
 
-min_angle = 1; // todo 1;
+min_angle = 3; // todo 1;
 
-module add_star (x, y, name)
+module add_star (x, y, name, angle, ext)
 {
-    r = 0.2;
+    r = 3;
+    w = r_outer / 20;
+    h = w * 1.5;
+    z = thick;
     translate([ x, y, 0 ])
-        cylinder(thick+1, r1=r, r2=0, $fa=min_angle);
+    {
+        rotate(a=angle)
+        {
+            union()
+            {
+                //cylinder(thick * 2.0, r1=r, r2=0, $fa=min_angle);
+                linear_extrude(height=z)
+                    polygon(points=[ 
+                        [0,0], 
+                        [-w, h/6], [-w, h/2], 
+                        [-2*w*ext, h/2], 
+                        [-2*w*ext, -h/2],
+                        [-w, -h/2], [-w, -h/6],
+                        [0, 0],
+                    ]);
+            }
+        }
+    }
 }
 
 // Add the stars
 for (star = stars)
-    add_star(star[1], star[2], star[0]);
+{
+    name = star[0];
+    if (name == "Sirius") 
+    {
+        add_star(star[1], star[2], name, -15, 1.5);
+    }
+    if (name == "Arcturus") 
+    {
+        add_star(star[1], star[2], name, 45, 1);
+    }
+    if (name == "Vega") 
+    {
+        add_star(star[1], star[2], name, -5, 2);
+    }
+    if (name == "Capella") 
+    {
+        add_star(star[1], star[2], name, 10, 2);
+    }
+}
 
 // Ecliptic
 translate([ x_solar, 0, 0])
