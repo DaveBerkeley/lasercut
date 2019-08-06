@@ -63,6 +63,10 @@ def almucantar(a, req, lat):
     ya = req * math.cos(ll) / (math.sin(ll) + math.sin(aa))
     return ra, ya
 
+def r_dec(r_eq, dec):
+    # radius of declination 
+    return r_eq * math.tan(radians((90.0 - dec) / 2.0))
+
 #
 #   Intersection of 2 circles.
 #   
@@ -256,11 +260,12 @@ def plate(config):
     make_lines([ (0, -s), (0, s), ])
 
     # draw the almucantar lines
-    for a in range(0, 90, config.almucantar):
-        colour = config.thin_colour
-        if (a % 10) == 0:
-            colour = config.thick_colour
-        draw_almucantar(a, config, colour, work, rad_equator, outer)
+    if config.almucantar:
+        for a in range(0, 90, config.almucantar):
+            colour = config.thin_colour
+            if (a % 10) == 0:
+                colour = config.thick_colour
+            draw_almucantar(a, config, colour, work, rad_equator, outer)
 
     # twilight arcs
     if config.twilight:
@@ -470,7 +475,73 @@ def rear_plate(config):
             work.add(c)
 
     return work
-    
+
+#
+#   Star data to export to openscad
+#
+#   http://www.faculty.virginia.edu/rwoclass/astr1230/table-of-brightest-stars-Cosmobrain.html
+
+stars = [
+    "Sirius",
+    "Arcturus",
+    "Vega",
+    "Capella",
+    "Rigel",
+    "Procyon",
+    "Betelgeuse",
+    "Altair",
+    "Aldebaran",
+    "Spica",
+    "Pollux",
+    "Deneb",
+    "Regulus",
+    "Castor",
+    "Bellatrix",
+    "Elnath",
+    "Alnilam",
+    "Alioth",
+    "Dubhe",
+]
+
+def make_stars(path, config):
+
+    try:
+        import ephem
+    except:
+        # https://rhodesmill.org/pyephem/quick.html
+        raise Exception("needs pyephem")
+
+    f = open(path, "w")
+
+    print >> f, "// Auto generated, do not edit"
+    print >> f
+
+    rad_capricorn = config.size
+    rad_equator = r_eq(rad_capricorn)
+
+    print >> f, "rad_outer = %s;" % config.size
+    print >> f, "rad_equator = %s;" % rad_equator
+    print >> f
+
+    for name in stars:
+        lower = name.lower()
+        s = ephem.star(name)
+        r = r_dec(rad_equator, degrees(s._dec))
+        angle = s._ra
+        x, y = r * math.sin(angle), r * math.cos(angle)
+        print >> f, '%s = [ "%s", %s, %s ];' % (lower, name, x, y)
+
+    print >> f
+    print >> f, "stars = [ ",
+    for name in stars:
+        lower = name.lower()
+        print >> f, '%s,' % lower,
+    print >> f, "];"
+    print >> f
+    print >> f, "// FIN"
+
+    f.close()
+
 #
 #
 
@@ -479,9 +550,10 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument('part', default='mater')
     p.add_argument('--code', default='dxf')
+    p.add_argument('--lat', type=float, default=50.37)
 
     args = p.parse_args()
-    parts = [ 'mater', 'rete', 'rear' ]
+    parts = [ 'mater', 'rete', 'rear', 'stars', ]
     assert args.part in parts, (args, parts)
     print >> sys.stderr, "Generating:", args.part
 
@@ -494,22 +566,26 @@ if __name__ == "__main__":
     else:
         raise Exception("unknown code %s" % args.code)
 
+    if args.part == "stars":
+        ext = ".scad"
+
     path = args.part + ext
     print >> sys.stderr, "writing to:", path
 
     drawing = dxf.drawing(path)
     config = Config()
 
-    config.latitude = 50.37
+    config.latitude = args.lat
     config.twilight = [ 
         Twilight.nautical, 
         Twilight.civil, 
         Twilight.astronomical,
     ]
+    # colour of lines
     config.almucantar = 2
     config.azimuth = 15
 
-    config.size = 70.0
+    config.size = 20.0
     config.outer = config.size * 1.2
 
     work = Collection()
@@ -526,8 +602,13 @@ if __name__ == "__main__":
         p = mater(config)
         work.add(p)
 
-    s = config.size * 1.4
-    work.translate(s, s)
+    if args.part == "stars":
+        print >> sys.stderr, "Generating star data"
+        make_stars(path, config)
+        sys.exit(0)
+
+    #s = config.size * 1.4
+    #work.translate(s, s)
     work.draw(drawing)
     drawing.save()
 

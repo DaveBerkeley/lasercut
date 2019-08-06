@@ -1,23 +1,43 @@
 
+include <stars.scad>;
+
 thick = 0.60;
 z_lo = thick * 0.3;
 z_hi = thick * 0.7;
 
-r_outer = 18.00;
-r_inner = 17.00;
+// imported from stars.scad
+// rad_outer
 
-r_solar_outer = 14.00;
-r_solar_inner = 12.00;
-r_solar_bevel = 13.00;
+r_width = rad_outer / 18.0;
+r_outer = rad_outer;
+r_inner = r_outer - r_width;
 
-r_inner_disk = 2.00;
+r_solar_outer = 14.00; // TODO
+
+r_solar_width = 2.0 * r_width;
+r_solar_inner = r_solar_outer - r_solar_width;
+r_solar_bevel = r_solar_outer - r_width;
+
+r_inner_disk = rad_outer / 10;
 r_hole = 0.50;
 
-x_solar = 3.00;
+// offset to centre of Ecliptic
+x_solar = 2.00; // TODO
 
+// structure holding ecliptic to outer
 band = 1.00;
 
 min_angle = 1; // todo 1;
+
+module add_star (x, y, name)
+{
+    translate([ x, y, 0 ])
+        cylinder(thick+1, r1=1, r2=1, $fa=min_angle);
+}
+
+// Add the stars
+for (star = stars)
+    add_star(star[1], star[2], star[0]);
 
 // Ecliptic
 translate([ x_solar, 0, 0])
@@ -56,3 +76,5 @@ difference()
     }
     cylinder(thick, r1=r_hole, r2=r_hole, $fa=min_angle);
 }
+
+//  FIN
