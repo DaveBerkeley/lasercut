@@ -33,7 +33,7 @@ module add_star (x, y, name)
 {
     r = 0.2;
     translate([ x, y, 0 ])
-        cylinder(thick+1, r1=r, r2=r, $fa=min_angle);
+        cylinder(thick+1, r1=r, r2=0, $fa=min_angle);
 }
 
 // Add the stars
@@ -42,6 +42,7 @@ for (star = stars)
 
 // Ecliptic
 translate([ x_solar, 0, 0])
+{
     difference()
     {
         union()
@@ -52,6 +53,18 @@ translate([ x_solar, 0, 0])
         }
         cylinder(thick, r1=r_solar_inner, r2=r_solar_inner, $fa=min_angle);
     }
+    
+      // graduated scale on bevel
+      //for (angle = [ 0 : 5 : 360 ])
+      //{
+      //  width = 1.0;
+      //  r = 0.2;
+      //  rotate(a=angle)
+      //      translate([ r_solar_outer, width/2, 0])
+      //          rotate([ 0, -60, 0 ])
+      //              cylinder(1, r1=r, r2=r, $fa=min_angle);
+      //}
+}
 
 // Outer disk
 difference()
