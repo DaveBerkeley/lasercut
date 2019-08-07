@@ -31,9 +31,9 @@ min_angle = 3; // todo 1;
 
 module add_star (x, y, name, angle, ext)
 {
-    r = 3;
-    w = r_outer / 20;
-    h = w * 1.5;
+    width = r_outer / 30;
+    pointer = r_outer / 10;
+    length = (r_outer / 10) * ext;
     z = thick;
     translate([ x, y, 0 ])
     {
@@ -41,16 +41,15 @@ module add_star (x, y, name, angle, ext)
         {
             union()
             {
-                //cylinder(thick * 2.0, r1=r, r2=0, $fa=min_angle);
                 linear_extrude(height=z)
                     polygon(points=[ 
                         [0,0], 
-                        [-w, h/6], [-w, h/2], 
-                        [-2*w*ext, h/2], 
-                        [-2*w*ext, -h/2],
-                        [-w, -h/2], [-w, -h/6],
+                        [-pointer, width/2], [-pointer, width/2], 
+                        [-pointer, -width/2], [-pointer, -width/2],
                         [0, 0],
                     ]);
+                translate([-(pointer+length), -width/2, 0])
+                    cube([length, width, z]);
             }
         }
     }
@@ -62,19 +61,19 @@ for (star = stars)
     name = star[0];
     if (name == "Sirius") 
     {
-        add_star(star[1], star[2], name, -15, 1.5);
+        add_star(star[1], star[2], name, -15, 0.5);
     }
     if (name == "Arcturus") 
     {
-        add_star(star[1], star[2], name, 45, 1);
+        add_star(star[1], star[2], name, 45, 0);
     }
     if (name == "Vega") 
     {
-        add_star(star[1], star[2], name, -5, 2);
+        add_star(star[1], star[2], name, -5, 1);
     }
     if (name == "Capella") 
     {
-        add_star(star[1], star[2], name, 10, 2);
+        add_star(star[1], star[2], name, 10, 1);
     }
     if (name == "Rigel") 
     {
@@ -83,11 +82,66 @@ for (star = stars)
     }
     if (name == "Procyon") 
     {
-        add_star(star[1], star[2], name, 150, 1);
+        add_star(star[1], star[2], name, 150, 0);
     }
     if (name == "Betelgeuse") 
     {
-        add_star(star[1], star[2], name, 180, 1.5);
+        add_star(star[1], star[2], name, 180, 0.6);
+    }
+    if (name == "Altair") 
+    {
+        // no use as it lies within the ecliptic ring
+        //add_star(star[1], star[2], name, 0, 1);
+    }
+    if (name == "Aldebaran") 
+    {
+        add_star(star[1], star[2], name, 200, 1);
+    }
+    if (name == "Spica") 
+    {
+        add_star(star[1], star[2], name, 70, 1);
+    }
+    if (name == "Pollux") 
+    {
+        // not sure yet where to put this
+        //add_star(star[1], star[2], name, 0, 1);
+    }
+    if (name == "Deneb") 
+    {
+        add_star(star[1], star[2], name, -35, 1.5);
+    }
+    if (name == "Regulus") 
+    {
+        add_star(star[1], star[2], name, 115, 0);
+    }
+    if (name == "Castor") 
+    {
+        // not sure yet where to put this
+        //add_star(star[1], star[2], name, 0, 1);
+    }
+    if (name == "Bellatrix") 
+    {
+        add_star(star[1], star[2], name, 190, 0);
+    }
+    if (name == "Elnath") 
+    {
+        // not sure yet where to put this
+        //add_star(star[1], star[2], name, 0, 1);
+    }
+    if (name == "Alnilam") 
+    {
+        // too close to ecliptic ring
+        //add_star(star[1], star[2], name, 190, 0);
+    }
+    if (name == "Alioth") 
+    {
+        // right on the bar
+        //add_star(star[1], star[2], name, 0, 1);
+    }
+    if (name == "Dubhe") 
+    {
+        // not sure about this one ..
+        add_star(star[1], star[2], name, 0, 0);
     }
 }
 
