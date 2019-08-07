@@ -231,12 +231,9 @@ def cut_plate(config):
 
 def plate(config):
 
-    work = Collection()
-
-    p = cut_plate(config)
-    work.add(p)
-
     s = config.size
+
+    work = Collection()
 
     # equator and tropics
     rad_capricorn = s
@@ -245,6 +242,8 @@ def plate(config):
 
     outer = Circ(0, rad_capricorn)
 
+    c = Circle((0, 0), rad_capricorn, colour=config.thick_colour)
+    work.add(c)
     c = Circle((0, 0), rad_equator, colour=config.thick_colour)
     work.add(c)
     c = Circle((0, 0), rad_cancer, colour=config.thick_colour)
@@ -325,7 +324,7 @@ def plate(config):
 def mater(config):
     work = Collection(colour=config.thick_colour)
 
-    p = cut_plate(config)
+    p = Circle((0, 0), config.size)
     work.add(p)
 
     inner = config.size
@@ -334,9 +333,11 @@ def mater(config):
     small = (mid + outer) / 2
 
     # draw ticks
-    ticks(work, (0, 0), inner, mid, 0, 360, 15, colour=config.thick_colour)
-    ticks(work, (0, 0), mid, small, 0, 360, 3, colour=config.thick_colour)
-    ticks(work, (0, 0), small, outer, 0, 360, 1, colour=config.thin_colour)
+    a_start = 0
+    a_end = 360
+    ticks(work, (0, 0), inner, mid, a_start, a_end, 15, colour=config.thick_colour)
+    ticks(work, (0, 0), mid, small, a_start, a_end, 3, colour=config.thick_colour)
+    ticks(work, (0, 0), small, outer, a_start, a_end, 1, colour=config.thin_colour)
 
     # draw / cut circles
 
@@ -573,10 +574,10 @@ if __name__ == "__main__":
 
     if len(args.part) == 0:
         path = "/dev/null"
-    elif len(args.part) > 1:
-        path = "output" + ext
-    else:
+    elif len(args.part) == 1:
         path = args.part[0] + ext
+    else:
+        path = "output" + ext
 
     drawing = dxf.drawing(path)
     config = Config()

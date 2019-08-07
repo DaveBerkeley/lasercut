@@ -76,6 +76,19 @@ for (star = stars)
     {
         add_star(star[1], star[2], name, 10, 2);
     }
+    if (name == "Rigel") 
+    {
+        // no use as it lies within the ecliptic ring
+        //add_star(star[1], star[2], name, 0, 1);
+    }
+    if (name == "Procyon") 
+    {
+        add_star(star[1], star[2], name, 150, 1);
+    }
+    if (name == "Betelgeuse") 
+    {
+        add_star(star[1], star[2], name, 180, 1.5);
+    }
 }
 
 // Ecliptic
@@ -89,6 +102,7 @@ translate([ x_solar, 0, 0])
                 cylinder(z_hi, r1=r_solar_outer, r2=r_solar_bevel, $fa=min_angle);
             cylinder(z_lo, r1=r_solar_outer, r2=r_solar_outer, $fa=min_angle);
         }
+        
         cylinder(thick, r1=r_solar_inner, r2=r_solar_inner, $fa=min_angle);
     }
     

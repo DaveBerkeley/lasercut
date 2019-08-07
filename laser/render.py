@@ -59,12 +59,13 @@ class Plot:
 
 class GCODE:
 
-    def __init__(self, filename="test.mgc"):
+    def __init__(self, filename="test.ngc"):
         self.plot = {}
         self.x = None
         self.y = None
         self.z = None
         self.d = {
+            # TODO : these should be passed as tool / machine info
             'fast' : 300,
             'cut' : 50,
             'feedup' : 300,
@@ -97,7 +98,7 @@ class GCODE:
             return
 
         self.up()
-        self.write("G00 X%s Y%s F%s" % (x, y, self.d['fast']))
+        self.write("G00 X%.4f Y%.4f F%.4f" % (x, y, self.d['fast']))
         self.down()
         self.setxy(x, y)
 
@@ -112,7 +113,7 @@ class GCODE:
             x0, y0, x1, y1 = x1, y1, x0, y0
 
         self.goto(x0, y0)
-        self.write("G01 X%s Y%s F%s" % (x1, y1, self.d['cut']))
+        self.write("G01 X%.4f Y%.4f F%.4f" % (x1, y1, self.d['cut']))
         self.setxy(x1, y1)
 
     def plot_circle(self, line):
@@ -120,7 +121,7 @@ class GCODE:
         xc, yc = line['center']
         x0, y0 = xc - radius, yc
         self.goto(x0, y0)
-        self.write("G02 I%s F%s" % (radius, self.d['cut']))
+        self.write("G02 I%.4f F%.4f" % (radius, self.d['cut']))
         self.setxy(x0, y0)
 
     def plot_arc(self, line):
@@ -157,9 +158,9 @@ class GCODE:
         self.goto(x0, y0)
 
         if line.get('reverse'):
-            self.write("G02 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut']))
+            self.write("G02 I%.4f J%.4f X%.4f Y%.4f F%.4f" % (i, j, x1, y1, self.d['cut']))
         else:
-            self.write("G03 I%s J%s X%s Y%s F%s" % (i, j, x1, y1, self.d['cut']))
+            self.write("G03 I%.4f J%.4f X%.4f Y%.4f F%.4f" % (i, j, x1, y1, self.d['cut']))
 
         self.setxy(x1, y1)
 
