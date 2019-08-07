@@ -163,12 +163,17 @@ translate([ x_solar, 0, 0])
       // graduated scale on bevel
       //for (angle = [ 0 : 5 : 360 ])
       //{
-      //  width = 1.0;
-      //  r = 0.2;
+      //  dr = r_solar_outer - r_solar_bevel; 
+      //  // hypotenuse of bevel
+      //  length = sqrt((z_hi*z_hi) + (dr*dr));
+      //  bevel_angle = asin(z_hi / length);
+      //  w = r_outer / 80;
       //  rotate(a=angle)
       //      translate([ r_solar_outer, width/2, 0])
-      //          rotate([ 0, -60, 0 ])
-      //              cylinder(1, r1=r, r2=r, $fa=min_angle);
+      //          rotate(a=[0, -90, 0])
+      //              rotate(a=[45, 0, 0])
+      //                  translate([ 0, 0, z_lo - (w/2)])
+      //                      cube([length, w, w]);
       //}
 }
 
