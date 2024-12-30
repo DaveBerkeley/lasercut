@@ -1,7 +1,7 @@
 
 
-from laser import Rectangle, Polygon, Circle, Arc, Collection, Config
-from laser import TCut
+from .laser import Rectangle, Polygon, Circle, Arc, Collection, Config
+from .laser import TCut
 
 #
 #   Parts

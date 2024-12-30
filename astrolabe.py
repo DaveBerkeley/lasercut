@@ -514,15 +514,15 @@ def make_stars(path, config):
 
     f = open(path, "w")
 
-    print >> f, "// Auto generated, do not edit"
-    print >> f
+    print("// Auto generated, do not edit", file=f)
+    print(file=f)
 
     rad_capricorn = config.size
     rad_equator = r_eq(rad_capricorn)
 
-    print >> f, "rad_outer = %s;" % config.size
-    print >> f, "rad_equator = %s;" % rad_equator
-    print >> f
+    print("rad_outer = %s;" % config.size, file=f)
+    print("rad_equator = %s;" % rad_equator, file=f)
+    print(file=f)
 
     for name in stars:
         lower = name.lower()
@@ -530,16 +530,16 @@ def make_stars(path, config):
         r = r_dec(rad_equator, degrees(s._dec))
         angle = s._ra
         x, y = r * math.sin(angle), r * math.cos(angle)
-        print >> f, '%s = [ "%s", %s, %s ];' % (lower, name, x, y)
+        print('%s = [ "%s", %s, %s ];' % (lower, name, x, y), file=f)
 
-    print >> f
-    print >> f, "stars = [ ",
+    print(file=f)
+    print("stars = [ ", end=' ', file=f)
     for name in stars:
         lower = name.lower()
-        print >> f, '%s,' % lower,
-    print >> f, "];"
-    print >> f
-    print >> f, "// FIN"
+        print('%s,' % lower, end=' ', file=f)
+    print("];", file=f)
+    print(file=f)
+    print("// FIN", file=f)
 
     f.close()
 
@@ -556,7 +556,7 @@ if __name__ == "__main__":
     p.add_argument('--stars', action='store_true')
 
     args = p.parse_args()
-    print args
+    print(args)
     parts = [ 'plate', 'mater', 'rete', 'rear', ]
 
     for arg in args.part:
@@ -599,38 +599,38 @@ if __name__ == "__main__":
     work = Collection()
 
     if 'rear' in args.part:
-        print >> sys.stderr, "Generating rear"
+        print("Generating rear", file=sys.stderr)
         p = rear_plate(config)
         work.add(p)
         p = rear_limb(config)
         work.add(p)
 
     if 'mater' in args.part:
-        print >> sys.stderr, "Generating mater"
+        print("Generating mater", file=sys.stderr)
         p = mater(config)
         work.add(p)
 
     if 'plate' in args.part:
-        print >> sys.stderr, "Generating plate"
+        print("Generating plate", file=sys.stderr)
         p = plate(config)
         work.add(p)
 
     if args.stars:
-        print >> sys.stderr, "Generating stars"
+        print("Generating stars", file=sys.stderr)
         spath = "stars.scad"
-        print >> sys.stderr, "writing to:", spath
+        print("writing to:", spath, file=sys.stderr)
         make_stars(spath, config)
 
     #s = config.size * 1.4
     #work.translate(s, s)
     work.draw(drawing)
-    print >> sys.stderr, "Writing to", path
+    print("Writing to", path, file=sys.stderr)
     drawing.save()
 
     # call qcad to view the output
     if args.qcad:
         cmd = "qcad %s" % path
-        print >> sys.stderr, "Call %s" % cmd
+        print("Call %s" % cmd, file=sys.stderr)
         subprocess.call(cmd, shell=True)
 
 # FIN

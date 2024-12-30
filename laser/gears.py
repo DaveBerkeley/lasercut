@@ -3,9 +3,9 @@
 import sys
 import math
 
-from laser import Polygon, Circle, Collection, Config
-from laser import radians, rotate_2d
-from render import DXF as dxf
+from .laser import Polygon, Circle, Collection, Config
+from .laser import radians, rotate_2d
+from .render import DXF as dxf
 
 # Involute gears, see :
 # http://www.cartertools.com/involute.html

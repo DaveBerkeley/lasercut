@@ -6,7 +6,7 @@ import math
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
 
-from laser import radians, distance
+from .laser import radians, distance
 
 #
 #
@@ -205,7 +205,7 @@ class GCODE:
         for line in header:
             self.write(line)
 
-        for color, plot in self.plot.items():
+        for color, plot in list(self.plot.items()):
             #print color
             for line in plot.data:
                 if line['fn'] == "line":

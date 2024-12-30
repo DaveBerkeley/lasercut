@@ -1,7 +1,7 @@
 
 import math
 
-from laser import Polygon, Arc, Collection, rotate_2d, radians
+from .laser import Polygon, Arc, Collection, rotate_2d, radians
 
 from shapely.geometry import MultiPolygon
 from shapely.geometry import Polygon as sPolygon

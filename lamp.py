@@ -114,7 +114,7 @@ def xdesign():
         n = 5
         p = Polygon()
         for angle in range(0, 360, 360/n):
-            print angle
+            print(angle)
             x, y = rotate_2d(radians(angle), 0, d)
             p.add(x, y)
             angle += 180/n

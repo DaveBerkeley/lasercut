@@ -723,7 +723,7 @@ def splice(parent, item):
         w = splice_inner(src, item)
         change_shape(parent, src, w)
     else:
-        print "no match found for", item
+        print("no match found for", item)
     return parent
 
 def splice_inner(src, item):

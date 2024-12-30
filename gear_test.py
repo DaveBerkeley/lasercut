@@ -42,7 +42,7 @@ if __name__ == "__main__":
     x, y = 0, 0
     for i, N in enumerate(range(10, 21, 1)):
         pd = m * N
-        print pd, N, "kerf=", kerf
+        print(pd, N, "kerf=", kerf)
         work = make_involute(pd, N, PA)
         work = dekerf(work, kerf, False)
         x += work.info["outside_dia"]
