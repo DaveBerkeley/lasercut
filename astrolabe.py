@@ -9,6 +9,8 @@ from laser.laser import Arc, Circle, Polygon, Collection, Config, Text
 from laser.laser import radians, degrees
 from laser.render import DXF, GCODE, SCAD
 
+import rete
+
 #
 #
 #   http://solarsystem.nasa.gov/planets/earth/facts
@@ -559,6 +561,7 @@ if __name__ == "__main__":
     p.add_argument('--stdout', action='store_true')
     p.add_argument('--almucantar', type=int, default=5)
     p.add_argument('--azimuth', type=int, default=15)
+    p.add_argument('--size', type=int, default=80)
     # draw twilight lines
     p.add_argument('--nautical', action='store_true')
     p.add_argument('--civil', action='store_true')
@@ -566,7 +569,7 @@ if __name__ == "__main__":
 
     args = p.parse_args()
     print(args)
-    parts = [ 'plate', 'mater', 'rete', 'rear', ]
+    parts = [ 'plate', 'mater', 'rear', 'rete' ]
 
     for arg in args.part:
         assert arg in parts, (args, parts)
@@ -611,10 +614,16 @@ if __name__ == "__main__":
     config.azimuth = args.azimuth
 
     # radius of the edge of the plate (tropic of Capricorn)
-    config.size = 100.0
+    config.size = args.size
     config.outer = config.size * 1.2
 
     work = Collection()
+
+    if 'rete' in args.part:
+        print("Generating rete", file=sys.stderr)
+        r = rete.Rete("rete" + ext, config)
+        r.draw()
+        sys.exit()
 
     if 'rear' in args.part:
         print("Generating rear", file=sys.stderr)

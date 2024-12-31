@@ -20,14 +20,17 @@ class Render:
 
 class Block(object):
 
-    def __init__(self, f=None, text=""):
-        self.f = f
+    def __init__(self, scad=None, text=""):
+        self.scad = scad
+        self.f = scad.f
         self.text = text
 
     def __enter__(self):
+        self.scad.nest += 1
         print(self.text, "{", file=self.f)
 
     def __exit__(self, *args):
+        self.scad.nest -= 1
         print("}", file=self.f)
 
 class Difference(Block):
@@ -45,17 +48,19 @@ class Intersection(Block):
 class SCAD(Render):
 
     def __init__(self, filename="test.scad"):
+        self.nest = 0
         if filename is None:
             import sys
             self.f = sys.stdout
         else:
             self.f = open(filename, "w")
 
-        #print("scale([ 0.1, 0.1, 0.2 ] ) {", file=self.f)
-
     def save(self):
         #print("} // end scale()", file=self.f)
         self.f.close()
+
+    #def emit(self, *args):
+    #    print(' ' * self.next, *args, file=self.f)
 
     def color_to_line(self, color):
         # TODO : map colour to line width
@@ -64,6 +69,9 @@ class SCAD(Render):
     def dotted(self, color):
         return color == Config.dotted_colour
 
+    def comment(self, *args):
+        print("//", *args, file=self.f)
+
     def xform(self, fn, **kwargs):
         print(f"{fn}(", file=self.f, end="")
         first = True
@@ -71,6 +79,11 @@ class SCAD(Render):
             if not first:
                 print(",", file=self.f, end="")
             first = False
+            # booleans are different in Python/scad
+            if v is True:
+                v = "true"
+            elif v is False:
+                v = "false"
             print(f"{k} = {v}", file=self.f, end="")
         print(")", file=self.f)
 
@@ -78,41 +91,46 @@ class SCAD(Render):
         self.xform(fn, **kwargs);
         print(";", file=self.f)
 
+    def cylinder(self, h=None, r1=None, r2=None):
+        if r2 is None:
+            r2 = r1
+        self.function("cylinder", h=h, r1=r1, r2=r2)
+
     def circle(self, radius=None, center=None, color=None):
         width = self.color_to_line(color)
         if center:
             self.xform("translate", v=[ center[0], center[1], 0 ])
 
         self.xform("linear_extrude", height=width)
-        with Difference(self.f):
+        with Difference(self):
             self.function("circle", r=radius+(width/2.0))
             rr = radius - (width/2.0)
             if rr > 0.0:
                 self.function("circle", r=rr)
 
     def arc(self, radius=None, center=None, startangle=None, endangle=None, color=None):
-        print(f"// arc(r={radius}, s={startangle}, e={endangle})")
+        #print(f"// arc(r={radius}, s={startangle}, e={endangle})")
 
         if startangle < 0.0:
             startangle += 360
             endangle += 360
         elif endangle < startangle:
             endangle += 360
-            
+
         dotted = self.dotted(color)
         width = self.color_to_line(color)
         if center:
             self.xform("translate", v=[ center[0], center[1], 0 ])
-        with Union(self.f):
+        with Union(self):
             step = 1.0 # !!!!
             a1 = startangle
             while (a1+step) < endangle:
-                print(a1)
                 a2 = a1 + step
                 xy0 = [ radius * math.cos(radians(a1)), radius * math.sin(radians(a1)) ]
                 xy1 = [ radius * math.cos(radians(a2)), radius * math.sin(radians(a2)) ]
                 a1 += step
                 if dotted:
+                    self.xform("linear_extrude", height=width)
                     self.xform("translate", v=xy0)
                     self.function("circle", r=width/2.0)
                 else:
@@ -132,10 +150,27 @@ class SCAD(Render):
         ]
         points.append(points[0])
         self.xform("linear_extrude", height=width)
-        self.function("polygon", points=points)
+        with Union(self):
+            self.function("polygon", points=points)
+            for xy in [ xy0, xy1 ]:
+                self.xform("translate", v=list(xy) )
+                self.function("circle", r=width/2)
 
     def text(self, text, insert=None, rotation=0, color=None, **kwargs):
-        pass
+        #print(f"'{text}'", insert, rotation, color, kwargs)
+        width = self.color_to_line(color)
+        h = kwargs.get("height", 1)
+        self.xform("linear_extrude", height=width)
+        if insert:
+            z = complex(*insert)
+            # move the point 'h' nearer to the centre
+            ph = cmath.phase(z)
+            zz = cmath.rect(h, ph)
+            z -= zz
+            self.xform("translate", v=[ z.real, z.imag, ])
+        if rotation:
+            self.xform("rotate", a=rotation)
+        self.function("text", text=f'"{text}"', size=h)
 
     @staticmethod
     def drawing(*args):
