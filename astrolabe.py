@@ -7,7 +7,7 @@ import subprocess
 
 from laser.laser import Arc, Circle, Polygon, Collection, Config, Text
 from laser.laser import radians, degrees
-from laser.render import DXF, GCODE
+from laser.render import DXF, GCODE, SCAD
 
 #
 #
@@ -301,7 +301,9 @@ def plate(config):
 
             # intersection with the tropic of capricorn
             inter = intersect2((0, 0), rad_capricorn, (yc, xa), ra)
-            assert inter, angle
+            if inter is None:
+                # latitude is below the tropic of capricorn
+                continue
             (x1, y1), (x2, y2) = inter
             # calculate the arc angle
             a3 = arc_angle(x2, y2)
@@ -554,6 +556,13 @@ if __name__ == "__main__":
     p.add_argument('--lat', type=float, default=50.37)
     p.add_argument('--qcad', action='store_true')
     p.add_argument('--stars', action='store_true')
+    p.add_argument('--stdout', action='store_true')
+    p.add_argument('--almucantar', type=int, default=5)
+    p.add_argument('--azimuth', type=int, default=15)
+    # draw twilight lines
+    p.add_argument('--nautical', action='store_true')
+    p.add_argument('--civil', action='store_true')
+    p.add_argument('--astronomical', action='store_true')
 
     args = p.parse_args()
     print(args)
@@ -569,6 +578,9 @@ if __name__ == "__main__":
     elif args.code == 'gcode':
         dxf = GCODE
         ext = '.ngc'
+    elif args.code == 'scad':
+        dxf = SCAD
+        ext = '.scad'
     else:
         raise Exception("unknown code %s" % args.code)
 
@@ -579,21 +591,27 @@ if __name__ == "__main__":
     else:
         path = "output" + ext
 
+    if args.stdout:
+        path = None
+
     drawing = dxf.drawing(path)
     config = Config()
 
     config.latitude = args.lat
-    config.twilight = [ 
-        Twilight.nautical, 
-        Twilight.civil, 
-        Twilight.astronomical,
-    ]
-    # colour of lines
-    config.almucantar = 2
-    config.azimuth = 15
+    config.twilight = [ ]
+    if args.nautical:
+        config.twilight.append(Twilight.nautical)
+    if args.civil:
+        config.twilight.append(Twilight.civil)
+    if args.astronomical:
+        config.twilight.append(Twilight.astronomical)
+
+    # pitch of lines
+    config.almucantar = args.almucantar
+    config.azimuth = args.azimuth
 
     # radius of the edge of the plate (tropic of Capricorn)
-    config.size = 200.0
+    config.size = 100.0
     config.outer = config.size * 1.2
 
     work = Collection()

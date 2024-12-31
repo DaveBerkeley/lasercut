@@ -2,17 +2,144 @@
 #
 
 import math
+import cmath
 
 # https://pypi.python.org/pypi/dxfwrite/
 from dxfwrite import DXFEngine as dxf
 
-from .laser import radians, distance
+from .laser import radians, distance, Config
 
 #
 #
 
 class Render:
     pass
+
+#
+#
+
+class Block(object):
+
+    def __init__(self, f=None, text=""):
+        self.f = f
+        self.text = text
+
+    def __enter__(self):
+        print(self.text, "{", file=self.f)
+
+    def __exit__(self, *args):
+        print("}", file=self.f)
+
+class Difference(Block):
+    def __init__(self, f):
+        super().__init__(f, "difference()")
+
+class Union(Block):
+    def __init__(self, f):
+        super().__init__(f, "union()")
+
+class Intersection(Block):
+    def __init__(self, f):
+        super().__init__(f, "intersection()")
+
+class SCAD(Render):
+
+    def __init__(self, filename="test.scad"):
+        if filename is None:
+            import sys
+            self.f = sys.stdout
+        else:
+            self.f = open(filename, "w")
+
+        #print("scale([ 0.1, 0.1, 0.2 ] ) {", file=self.f)
+
+    def save(self):
+        #print("} // end scale()", file=self.f)
+        self.f.close()
+
+    def color_to_line(self, color):
+        # TODO : map colour to line width
+        return 1
+
+    def dotted(self, color):
+        return color == Config.dotted_colour
+
+    def xform(self, fn, **kwargs):
+        print(f"{fn}(", file=self.f, end="")
+        first = True
+        for k, v in kwargs.items():
+            if not first:
+                print(",", file=self.f, end="")
+            first = False
+            print(f"{k} = {v}", file=self.f, end="")
+        print(")", file=self.f)
+
+    def function(self, fn, **kwargs):
+        self.xform(fn, **kwargs);
+        print(";", file=self.f)
+
+    def circle(self, radius=None, center=None, color=None):
+        width = self.color_to_line(color)
+        if center:
+            self.xform("translate", v=[ center[0], center[1], 0 ])
+
+        self.xform("linear_extrude", height=width)
+        with Difference(self.f):
+            self.function("circle", r=radius+(width/2.0))
+            rr = radius - (width/2.0)
+            if rr > 0.0:
+                self.function("circle", r=rr)
+
+    def arc(self, radius=None, center=None, startangle=None, endangle=None, color=None):
+        print(f"// arc(r={radius}, s={startangle}, e={endangle})")
+
+        if startangle < 0.0:
+            startangle += 360
+            endangle += 360
+        elif endangle < startangle:
+            endangle += 360
+            
+        dotted = self.dotted(color)
+        width = self.color_to_line(color)
+        if center:
+            self.xform("translate", v=[ center[0], center[1], 0 ])
+        with Union(self.f):
+            step = 1.0 # !!!!
+            a1 = startangle
+            while (a1+step) < endangle:
+                print(a1)
+                a2 = a1 + step
+                xy0 = [ radius * math.cos(radians(a1)), radius * math.sin(radians(a1)) ]
+                xy1 = [ radius * math.cos(radians(a2)), radius * math.sin(radians(a2)) ]
+                a1 += step
+                if dotted:
+                    self.xform("translate", v=xy0)
+                    self.function("circle", r=width/2.0)
+                else:
+                    self.line(xy0, xy1, color=color)
+
+    def line(self, xy0, xy1, color=None):
+        width = self.color_to_line(color)
+        za = complex(*xy0)
+        zb = complex(*xy1)
+        ph = cmath.phase(za - zb)
+        u = cmath.rect(width/2.0, ph + cmath.pi/2.0)
+        points = [
+            [ (za+u).real, (za+u).imag ],
+            [ (za-u).real, (za-u).imag ],
+            [ (zb-u).real, (zb-u).imag ],
+            [ (zb+u).real, (zb+u).imag ],
+        ]
+        points.append(points[0])
+        self.xform("linear_extrude", height=width)
+        self.function("polygon", points=points)
+
+    def text(self, text, insert=None, rotation=0, color=None, **kwargs):
+        pass
+
+    @staticmethod
+    def drawing(*args):
+        return SCAD(*args)
 
 #
 #
