@@ -7,7 +7,7 @@ import subprocess
 
 from laser.laser import Arc, Circle, Polygon, Collection, Config, Text
 from laser.laser import radians, degrees
-from laser.render import DXF, GCODE, SCAD
+from laser.render import DXF, GCODE, SCAD, PDF
 
 import rete
 
@@ -584,6 +584,9 @@ if __name__ == "__main__":
     elif args.code == 'scad':
         dxf = SCAD
         ext = '.scad'
+    elif args.code == 'pdf':
+        dxf = PDF
+        ext = '.pdf'
     else:
         raise Exception("unknown code %s" % args.code)
 

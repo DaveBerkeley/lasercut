@@ -410,4 +410,59 @@ class GCODE:
     def drawing(*args):
         return GCODE(*args)
 
+#
+#
+
+class PDF:
+    def __init__(self, path):
+        print(path)
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import A4
+        self.c = canvas.Canvas(path, pagesize=A4)
+        self.c.translate(A4[0]/2, A4[1]/2)
+
+    def tocolor(self, color):
+        from reportlab.lib.colors import black
+        return black
+
+    def circle(self, radius=None, center=None, color=None):
+        x, y = center or (0, 0)
+        self.c.setStrokeColor(self.tocolor(color))
+        self.c.circle(x, y, radius)
+
+    def line(self, xy0, xy1, color=None):
+        self.c.setStrokeColor(self.tocolor(color))
+        self.c.line(xy0[0], xy0[1], xy1[0], xy1[1])
+
+    def arc(self, radius=None, center=None, startangle=None, endangle=None, color=None):
+        print(radius, center, startangle, endangle)
+        if (startangle > 0) and (endangle < 0):
+            endangle += 360
+        x, y = center or (0, 0)
+        s = startangle
+        e = endangle - s
+        if e < 0:
+            e = (endangle + 360) - s
+        self.c.setStrokeColor(self.tocolor(color))
+        self.c.arc( x-radius, y-radius, x+radius, y+radius, startAng=s, extent=e)
+
+    def text(self, text, insert=None, rotation=0, color=None, **kwargs):
+        self.c.setStrokeColor(self.tocolor(color))
+        obj = self.c.beginText()
+        #self.c.rotate(rotation)
+        obj.setTextOrigin(*(insert or (0, 0)))
+        obj.textOut(text)
+        self.c.drawText(obj)
+        #self.c.rotate(0)
+        print(text, insert, rotation, kwargs)
+
+    def save(self):
+        self.c.showPage()
+        self.c.save()
+
+    @staticmethod
+    def drawing(*args):
+        import reportlab
+        return PDF(*args)
+
 # FIN
