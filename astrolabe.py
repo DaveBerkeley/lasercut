@@ -312,11 +312,15 @@ def plate(config):
             if a3 < a2:
                 a2 = a3
 
+            colour = config.thin_colour
+            if (angle % 10) == 0:
+                colour = config.thick_colour
+
             # add azimuth arc
-            c = Arc((yc, xa), ra, a1, a2)
+            c = Arc((yc, xa), ra, a1, a2, colour=colour)
             work.add(c)
             # add same reflected in the x axis
-            c = Arc((yc, xa), ra, a1, a2)
+            c = Arc((yc, xa), ra, a1, a2, colour=colour)
             c.reflect_h()
             work.add(c)
 
@@ -368,7 +372,8 @@ def mater(config):
             label = a
 
         # degrees
-        t = Text((0, 0), "%0.1d" % label, height=config.size/35.0)
+        height = config.size/35.0
+        t = Text((0, 0), "%0.1d" % label, height=height, adjust=True)
         t.rotate(-a)
         r = small - 1
         x, y = r * math.sin(rad), r * math.cos(rad)
@@ -377,7 +382,8 @@ def mater(config):
         work.add(t)
 
         # hours
-        t = Text((0, 0), hours[idx % 12], height=config.size/20.0)
+        height = config.size/20.0
+        t = Text((0, 0), hours[idx % 12], height=height, adjust=True)
         t.rotate(-a)
         r = mid - 2
         x, y = r * math.sin(rad), r * math.cos(rad)
