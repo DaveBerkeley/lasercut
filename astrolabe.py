@@ -251,6 +251,10 @@ def plate(config):
     c = Circle((0, 0), rad_cancer, colour=config.thick_colour)
     work.add(c)
 
+    if config.hole:
+        c = Circle((0, 0), config.hole, colour=config.cut_colour)
+        work.add(c)
+
     # quarters
     def make_lines(points):
         p = Polygon(colour=config.thick_colour)
@@ -558,43 +562,40 @@ def make_stars(path, config):
 
 if __name__ == "__main__":
 
+    codes = { 
+        "dxf"   : ( DXF, '.dxf' ),
+        "gcode" : ( GCODE, '.ngc' ),
+        "scad"  : ( SCAD, '.scad' ),
+        "pdf"   : ( PDF, '.pdf' ),
+    }
+    parts = [ 'plate', 'mater', 'rear', 'rete' ]
+
     p = argparse.ArgumentParser()
-    p.add_argument('part', nargs='*', default=[])
-    p.add_argument('--code', default='dxf')
-    p.add_argument('--lat', type=float, default=50.37)
-    p.add_argument('--qcad', action='store_true')
+    p.add_argument('part', nargs='*', default=[], help=" ".join(parts))
+    p.add_argument('--code', default='dxf', help="|".join(codes.keys()))
+    p.add_argument('--lat', type=float, default=50.37, help="latitude")
+    p.add_argument('--qcad', action='store_true', help="call qcad to view the output")
     p.add_argument('--stars', action='store_true')
     p.add_argument('--stdout', action='store_true')
-    p.add_argument('--almucantar', type=int, default=5)
-    p.add_argument('--azimuth', type=int, default=15)
-    p.add_argument('--size', type=int, default=80)
-    # draw twilight lines
-    p.add_argument('--nautical', action='store_true')
-    p.add_argument('--civil', action='store_true')
-    p.add_argument('--astronomical', action='store_true')
+    p.add_argument('--almucantar', type=int, default=5, help="step in degrees of almucantar lines")
+    p.add_argument('--azimuth', type=int, default=15, help="step in degrees of azimuth lines")
+    p.add_argument('--size', type=int, default=220, help="radius of tropic of capricorn")
+    p.add_argument('--nautical', action='store_true', help="nautical twilight")
+    p.add_argument('--civil', action='store_true', help="civil twilight")
+    p.add_argument('--astronomical', action='store_true', help="astronomical twilight")
+    p.add_argument('--hole', type=float, help="cut central hole of size n")
 
     args = p.parse_args()
     print(args)
-    parts = [ 'plate', 'mater', 'rear', 'rete' ]
 
     for arg in args.part:
         assert arg in parts, (args, parts)
         #print >> sys.stderr, "Generating:", arg
 
-    if args.code == 'dxf':
-        dxf = DXF
-        ext = '.dxf'
-    elif args.code == 'gcode':
-        dxf = GCODE
-        ext = '.ngc'
-    elif args.code == 'scad':
-        dxf = SCAD
-        ext = '.scad'
-    elif args.code == 'pdf':
-        dxf = PDF
-        ext = '.pdf'
-    else:
-        raise Exception("unknown code %s" % args.code)
+    try:
+        dxf, ext = codes[args.code]
+    except KeyError:
+        raise Exception("unknown code '%s'" % args.code)
 
     if len(args.part) == 0:
         path = "/dev/null"
@@ -625,6 +626,7 @@ if __name__ == "__main__":
     # radius of the edge of the plate (tropic of Capricorn)
     config.size = args.size
     config.outer = config.size * 1.2
+    config.hole = args.hole
 
     work = Collection()
 

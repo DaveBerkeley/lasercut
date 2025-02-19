@@ -182,6 +182,7 @@ class SCAD(Render):
 class DXF(Render):
 
     def __init__(self, filename="test.dxf"):
+        assert filename, "can't output DXF to stdout"
         self.drawing = dxf.drawing(filename)
 
     def save(self):
@@ -415,6 +416,7 @@ class GCODE:
 
 class PDF:
     def __init__(self, path):
+        assert path, "can't output PDF to stdout"
         print(path)
         from reportlab.pdfgen import canvas
         from reportlab.lib.pagesizes import A4
