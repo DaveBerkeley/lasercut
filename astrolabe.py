@@ -634,6 +634,7 @@ if __name__ == "__main__":
         print("Generating rete", file=sys.stderr)
         r = rete.Rete("rete" + ext, config)
         r.draw()
+        r.save()
         sys.exit()
 
     if 'rear' in args.part:

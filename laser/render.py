@@ -59,12 +59,16 @@ class SCAD(Render):
         else:
             self.f = open(filename, "w")
 
-    def save(self):
-        #print("} // end scale()", file=self.f)
-        self.f.close()
+        # enclose everything in a "module filename() {"
+        path = filename.split('/')[-1]
+        self.module_name = path.rsplit('.', 1)[0]
+        print("module", self.module_name, "() {", file=self.f)
 
-    #def emit(self, *args):
-    #    print(' ' * self.next, *args, file=self.f)
+    def save(self):
+        # end module definition and invoke it
+        print("}", file=self.f)
+        print(self.module_name, "();", file=self.f)
+        self.f.close()
 
     def color_to_line(self, color):
         # TODO : map colour to line width
