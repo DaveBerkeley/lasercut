@@ -45,6 +45,10 @@ class Intersection(Block):
     def __init__(self, f):
         super().__init__(f, "intersection()")
 
+class Hull(Block):
+    def __init__(self, f):
+        super().__init__(f, "hull()")
+
 class SCAD(Render):
 
     def __init__(self, filename="test.scad"):
@@ -158,7 +162,7 @@ class SCAD(Render):
 
     def text(self, text, insert=None, rotation=0, color=None, **kwargs):
         #print(f"'{text}'", insert, rotation, color, kwargs)
-        width = self.color_to_line(color)
+        width = kwargs.get("depth", 1)
         h = kwargs.get("height", 1)
         self.xform("linear_extrude", height=width)
         if insert:
