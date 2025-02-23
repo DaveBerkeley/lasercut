@@ -252,7 +252,7 @@ def plate(config):
     work.add(c)
 
     if config.hole:
-        c = Circle((0, 0), config.hole, colour=config.cut_colour)
+        c = Circle((0, 0), config.hole * 2, colour=config.cut_colour)
         work.add(c)
 
     # quarters
@@ -579,7 +579,7 @@ if __name__ == "__main__":
     p.add_argument('--stdout', action='store_true')
     p.add_argument('--almucantar', type=int, default=5, help="step in degrees of almucantar lines")
     p.add_argument('--azimuth', type=int, default=15, help="step in degrees of azimuth lines")
-    p.add_argument('--size', type=int, default=220, help="radius of tropic of capricorn")
+    p.add_argument('--size', type=int, default=155, help="diameter of tropic of capricorn")
     p.add_argument('--nautical', action='store_true', help="nautical twilight")
     p.add_argument('--civil', action='store_true', help="civil twilight")
     p.add_argument('--astronomical', action='store_true', help="astronomical twilight")

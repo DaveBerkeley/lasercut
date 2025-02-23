@@ -428,8 +428,19 @@ class PDF:
         print(path)
         from reportlab.pdfgen import canvas
         from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import mm
         self.c = canvas.Canvas(path, pagesize=A4)
         self.set_defaults()
+        self.mm = mm
+
+    def mm2p(self, *args):
+        # mm to points (1/72 inch!)
+        def scale(x):
+            return x * self.mm / 2
+        if len(args) == 1:
+            return scale(args[0])
+        # mm to point size
+        return [ scale(x) for x in args ]
 
     def set_defaults(self):
         from reportlab.lib.pagesizes import A4
@@ -459,11 +470,11 @@ class PDF:
     def circle(self, radius=None, center=None, color=None):
         x, y = center or (0, 0)
         self.set_color(color)
-        self.c.circle(x, y, radius)
+        self.c.circle(*self.mm2p(x, y, radius))
 
     def line(self, xy0, xy1, color=None):
         self.set_color(color)
-        self.c.line(xy0[0], xy0[1], xy1[0], xy1[1])
+        self.c.line(*self.mm2p(xy0[0], xy0[1], xy1[0], xy1[1]))
 
     def arc(self, radius=None, center=None, startangle=None, endangle=None, color=None):
         if (startangle > 0) and (endangle < 0):
@@ -474,13 +485,13 @@ class PDF:
         if e < 0:
             e = (endangle + 360) - s
         self.set_color(color)
-        self.c.arc(x-radius, y-radius, x+radius, y+radius, startAng=s, extent=e)
+        self.c.arc(*self.mm2p(x-radius, y-radius, x+radius, y+radius), startAng=s, extent=e)
 
     def text(self, text, insert=None, rotation=0, color=None, **kwargs):
         self.c.saveState()
         x, y = insert or (0, 0)
         height = kwargs['height']
-        self.c.setFontSize(height)
+        self.c.setFontSize(int(self.mm2p(height)))
         self.set_color(color)
         obj = self.c.beginText()
         if 'adjust' in kwargs:
@@ -489,7 +500,7 @@ class PDF:
             r = cmath.polar(z)
             z = cmath.rect(r[0]-height, r[1])
             x, y = z.real, z.imag
-        self.c.translate(x, y)
+        self.c.translate(*self.mm2p(x, y))
         self.c.rotate(rotation)
         obj.textOut(text)
         self.c.drawText(obj)
