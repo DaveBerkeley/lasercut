@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 import cmath
 import math
 
@@ -10,12 +11,12 @@ import ephem.stars as stars
 from laser.render import Difference, Union, Intersection, Hull, SCAD
 from laser.laser import radians, degrees
 
-#radius = 80
 outer_disc_w = 8
 ecliptic_w = 8
 disc_thick = 1.5
 chamfer = 3
 centre_surround = 4
+text_h = 0.25
 
 zodiac = [ 
     "Aries", "Taurus", "Gemini",
@@ -24,11 +25,45 @@ zodiac = [
     "Capricorn", "Aquarius", "Pisces",
 ]
 
+def zodiac_path(idx):
+    return os.path.join('/tmp', zodiac[idx] + '.png')    
+
+def create_zodiac():
+    zodiac_signs = [
+        "♈︎︎", "♉︎︎", "♊︎︎",
+        "♋︎︎", "♌︎︎", "♍︎︎",
+        "♎︎︎", "♏︎︎", "♐︎︎",
+        "♑︎︎", "♒︎︎", "♓︎︎",
+    ];
+    #zodiac_signs = zodiac
+
+    from PIL import ImageFont, ImageDraw, Image
+
+    font = ImageFont.truetype("Symbola_hint.ttf", 60)
+    for idx, c in enumerate(zodiac_signs):
+        path = zodiac_path(idx)
+        #print(idx, c, path)
+        #if os.path.exists(path):
+        #    continue
+        # find the size of the endered char
+        im = Image.new("L", (800, 100), (255,))
+        draw = ImageDraw.Draw(im)
+        width, height = draw.textsize(c, font=font)
+        print(width, height)
+        # create an image just big enough to hold the char
+        im = Image.new("L", (width, height), (0,))
+        draw = ImageDraw.Draw(im)
+        draw.text((0, 0), c, font=font, fill=(1,))
+        print("creating", path, file=sys.stderr)
+        im.save(path)
+
 class Rete(SCAD):
  
     def __init__(self, filename, config):
         super().__init__(filename)
         self.config = config
+
+        create_zodiac()
 
         from astrolabe import r_eq, r_can, r_dec
         self.rad_capricorn = config.size/2
@@ -77,13 +112,27 @@ class Rete(SCAD):
             self.ticks(disc_thick, x, r, chamfer*2, 30, 0.75, ecliptic_w)
             self.ticks(disc_thick, x, r, chamfer*2, 5, 0.5, chamfer)
 
-        # TODO : label eclipic with Zodiac
-        return
-        for idx, house in enumerate(zodiac):
-            angle = 90 + (idx * 30)
-            z = cmath.rect(r, radians(angle))
-            self.xform("translate", v= [ x + z.real, z.imag, disc_thick*2 ])
-            self.text(house, height=3, rotation=angle-95)
+        # label ecliptic with Zodiac
+        #return
+        for idx in range(0, 12):
+            path = zodiac_path(idx)
+            scale = 1/15
+            angle = 90 + (idx * 30) + 15
+            rangle = radians(angle)
+
+            rr = r - outer_disc_w + 0.5
+            # solve intersection with eliptic for angle from origin
+            a = x * math.cos(rangle)
+            c = x * math.sin(rangle)
+            b = math.sqrt((rr*rr) - (c * c))
+            z = cmath.rect(a + b, rangle)
+            self.xform("translate", v= [ z.real, z.imag, disc_thick*2 ])
+            self.xform("scale", v= [ scale, scale, text_h ])
+            zz = complex(x, 0)
+            zzz = z - zz
+            beta = cmath.phase(zzz)
+            self.xform("rotate", a= [ 0, 0, degrees(beta) -90 ])
+            self.function("surface", file=f'"{path}"')
 
     def ecliptic_cut(self):
         self.comment("ecliptic_cut")
@@ -173,7 +222,7 @@ class Rete(SCAD):
             self.star_mount(name, self.rad_equator * setting[2], rot)
 
             self.xform("translate", v= [ z.real, z.imag, (disc_thick*2) - 0.01 ])
-            self.text(text=setting[1] or name, height=text_height, rotation=rot, depth=disc_thick)
+            self.text(text=setting[1] or name, height=text_height, rotation=rot, depth=text_h)
  
     def stars(self):
         for name in stars.stars.keys():
