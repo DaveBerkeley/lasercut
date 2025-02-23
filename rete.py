@@ -12,11 +12,11 @@ from laser.render import Difference, Union, Intersection, Hull, SCAD
 from laser.laser import radians, degrees
 
 outer_disc_w = 8
-ecliptic_w = 8
+ecliptic_w = 10
 disc_thick = 1.5
 chamfer = 3
 centre_surround = 4
-text_h = 0.25
+text_h = 0.5
 
 zodiac = [ 
     "Aries", "Taurus", "Gemini",
@@ -53,7 +53,7 @@ def create_zodiac():
         # create an image just big enough to hold the char
         im = Image.new("L", (width, height), (0,))
         draw = ImageDraw.Draw(im)
-        draw.text((0, 0), c, font=font, fill=(1,))
+        draw.text((0, 0), c, font=font, fill=(1,), stroke_width=2)
         print("creating", path, file=sys.stderr)
         im.save(path)
 
@@ -113,25 +113,25 @@ class Rete(SCAD):
             self.ticks(disc_thick, x, r, chamfer*2, 5, 0.5, chamfer)
 
         # label ecliptic with Zodiac
-        #return
+        self.comment("label ecliptic with Zodiac")
         for idx in range(0, 12):
             path = zodiac_path(idx)
-            scale = 1/15
-            angle = 90 + (idx * 30) + 15
+            scale = 1/12
+            angle = 90 + (idx * 30) + 15 + 5
             rangle = radians(angle)
 
-            rr = r - outer_disc_w + 0.5
+            rr = r - ecliptic_w + 0.5
             # solve intersection with eliptic for angle from origin
             a = x * math.cos(rangle)
             c = x * math.sin(rangle)
             b = math.sqrt((rr*rr) - (c * c))
             z = cmath.rect(a + b, rangle)
             self.xform("translate", v= [ z.real, z.imag, disc_thick*2 ])
-            self.xform("scale", v= [ scale, scale, text_h ])
             zz = complex(x, 0)
             zzz = z - zz
             beta = cmath.phase(zzz)
-            self.xform("rotate", a= [ 0, 0, degrees(beta) -90 ])
+            self.xform("rotate", a= [ 0, 0, degrees(beta) -90 - 5 ])
+            self.xform("scale", v= [ scale*1.5, scale, text_h*3 ])
             self.function("surface", file=f'"{path}"')
 
     def ecliptic_cut(self):
@@ -178,7 +178,6 @@ class Rete(SCAD):
         "Procyon" : (0, None, 0.5),
         "Vega" : (180, "Vga", 0.5),
         "Deneb" : (180, "Db", 0.35),
-        "Arcturus" : (0, None, 0.43),
         "Mirfak" : (250, "Mrk", 0.2),
         "Aldebaran" : (180, " ", 0.2),
         "Alhena" : (180, " ", 0.2),
@@ -188,10 +187,10 @@ class Rete(SCAD):
         "Bellatrix" : (25, None, 0.55),
         "Menkalinan" : (150, "Menkl", 0.4),
         "Capella" : (180, "Cp", 0.3),
-        "Alphard" : (0, "Alp", 0.25),
+        "Alphard" : (0, "Alp.", 0.25),
         "Rigel" : (0, "Rigl", 0.25),
         "Spica" : (300, "Spica", 0.4),
-        "Arcturus" : (0, "Arctr", 0.42),
+        "Arcturus" : (0, "Arctrs", 0.42),
     }
 
     def star(self, name, star):
