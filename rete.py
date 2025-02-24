@@ -42,14 +42,12 @@ def create_zodiac():
     font = ImageFont.truetype("Symbola_hint.ttf", 60)
     for idx, c in enumerate(zodiac_signs):
         path = zodiac_path(idx)
-        #print(idx, c, path)
-        #if os.path.exists(path):
-        #    continue
+        if os.path.exists(path):
+            continue
         # find the size of the endered char
         im = Image.new("L", (800, 100), (255,))
         draw = ImageDraw.Draw(im)
         width, height = draw.textsize(c, font=font)
-        print(width, height)
         # create an image just big enough to hold the char
         im = Image.new("L", (width, height), (0,))
         draw = ImageDraw.Draw(im)

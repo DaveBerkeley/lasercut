@@ -231,16 +231,76 @@ def cut_plate(config):
 #
 #   Plate detail
 
-def plate(config):
+from laser.ops import arc_to_poly
 
-    s = config.size
+def circle_intersection(r1, r2, d):
+    # https://mathworld.wolfram.com/Circle-CircleIntersection.html
+    # assumes both on the x-axis (ie centre y is 0)
+    x = ((d*d) - (r1*r1) + (r2*r2)) / (2 * d)
+    y = math.sqrt((r2*r2) - (x*x))
+    return x, y
+
+class Points:
+
+    def __init__(self, *args, **kwargs):
+        self.points = []
+        self.kwargs = kwargs
+
+    def add(self, p):
+        self.points.append(p)
+
+    def draw(self, drawing, color):
+        fill = self.kwargs.get("fill")
+        if fill:
+            drawing.polygon(points=self.points, color=fill, fill=fill)
+
+#
+#
+
+def fill_plate(work, config):
+    # background colour
+    rad_capricorn = config.size
+    rad_equator = r_eq(rad_capricorn)
+
+    capricorn = Circle((0, 0), rad_capricorn)
+
+    r, x = almucantar(0, rad_equator, config.latitude)
+    horizon = Circle((x, 0), r)
+
+    xx, yy = circle_intersection(r, rad_capricorn, x)
+
+    def paint(circle, colour, fn):
+        points = Points(fill=colour)
+        s = arc_to_poly(circle)
+        for x, y in s.points:
+            if fn(x, xx):
+                points.add((x, y)) 
+        work.add(points)
+
+    def fn(x, xx): return True
+    paint(capricorn, config.night_colour, fn)
+
+    def fn(x, xx): return x > xx
+    paint(capricorn, config.day_colour, fn)
+
+    def fn(x, xx): return x < xx
+    paint(horizon, config.day_colour, fn)
+
+#
+#
+#
+
+def plate(config):
 
     work = Collection()
 
     # equator and tropics
-    rad_capricorn = s
+    rad_capricorn = config.size
     rad_equator = r_eq(rad_capricorn)
     rad_cancer = r_can(rad_equator)
+
+    if config.clock:
+        fill_plate(work, config)
 
     outer = Circ(0, rad_capricorn)
 
@@ -262,8 +322,8 @@ def plate(config):
             p.add(*point)
         work.add(p)
 
-    make_lines([ (-s, 0), (s, 0), ])
-    make_lines([ (0, -s), (0, s), ])
+    make_lines([ (-rad_capricorn, 0), (rad_capricorn, 0), ])
+    make_lines([ (0, -rad_capricorn), (0, rad_capricorn), ])
 
     # draw the almucantar lines
     if config.almucantar:
@@ -336,13 +396,20 @@ def plate(config):
 def mater(config):
     work = Collection(colour=config.thick_colour)
 
-    p = Circle((0, 0), config.size)
-    work.add(p)
-
     inner = config.size
     outer = config.outer
     mid = (inner + outer) / 2
     small = (mid + outer) / 2
+
+    # draw / cut circles
+
+    c = Circle((0, 0), outer, colour=config.cut(), fill=config.main_colour)
+    work.add(c)
+    c = Circle((0, 0), mid, colour=config.thick_colour)
+    work.add(c)
+
+    p = Circle((0, 0), config.size)
+    work.add(p)
 
     # draw ticks
     a_start = 0
@@ -351,15 +418,8 @@ def mater(config):
     ticks(work, (0, 0), mid, small, a_start, a_end, 3, colour=config.thick_colour)
     ticks(work, (0, 0), small, outer, a_start, a_end, 1, colour=config.thin_colour)
 
-    # draw / cut circles
-
-    c = Circle((0, 0), mid, colour=config.thick_colour)
-    work.add(c)
-    c = Circle((0, 0), outer, colour=config.cut())
-    work.add(c)
-
     hours = [ 
-        "I", "II", "III", "IIII", "V", "VI", 
+        "I", "II", "III", "IV", "V", "VI", 
         "VII", "VIII", "IX", "X", "XI", "XII", 
     ] 
     # label the limb
@@ -376,40 +436,25 @@ def mater(config):
             label = a
 
         # degrees
-        height = config.size/35.0
-        t = Text((0, 0), "%0.1d" % label, height=height, adjust=True)
-        t.rotate(-a)
-        r = small - 1
-        x, y = r * math.sin(rad), r * math.cos(rad)
-        t.translate(x, y)
-        t.rotate(-0.3)
-        work.add(t)
+        if not config.clock:
+            height = config.size/35.0
+            t = Text((0, 0), "%0.1d" % label, height=height, adjust=True)
+            t.rotate(-a)
+            r = small - 1
+            x, y = r * math.sin(rad), r * math.cos(rad)
+            t.translate(x, y)
+            t.rotate(-0.3)
+            work.add(t)
 
         # hours
         height = config.size/20.0
         t = Text((0, 0), hours[idx % 12], height=height, adjust=True)
-        t.rotate(-a)
+        t.rotate(-a - 3)
         r = mid - 2
         x, y = r * math.sin(rad), r * math.cos(rad)
         t.translate(x, y)
-        t.rotate(-90 - 8)
+        t.rotate(-90 - 16)
         work.add(t)
-
-    # throne
-    if 0:
-        throne_base = outer * 1.05
-        throne_angle = 10
-        throne_r = config.size / 8.0
-        throne_hole = throne_r / 4
-        p = Collection()
-        c = Arc((0, 0), throne_base, -throne_angle, throne_angle)
-        p.add(c)
-        work.add(p)
-
-        c = Circle((outer + throne_r, 0), throne_r)
-        work.add(c)
-        c = Circle((outer + throne_r, 0), throne_hole, colour=config.cut())
-        work.add(c)
 
     return work
 
@@ -584,6 +629,7 @@ if __name__ == "__main__":
     p.add_argument('--civil', action='store_true', help="civil twilight")
     p.add_argument('--astronomical', action='store_true', help="astronomical twilight")
     p.add_argument('--hole', type=float, help="cut central hole of size n")
+    p.add_argument('--clock', action='store_true')
 
     args = p.parse_args()
     print(args)
@@ -627,6 +673,11 @@ if __name__ == "__main__":
     config.size = args.size
     config.outer = config.size * 1.2
     config.hole = args.hole
+    config.clock = args.clock
+
+    config.night_colour = (0.65, 0.65, 1)
+    config.day_colour = (0.85, 0.85, 1)
+    config.main_colour = (0.9, 0.9, 0.2)
 
     work = Collection()
 

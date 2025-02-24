@@ -467,10 +467,14 @@ class PDF:
         else:
             self.c.setDash(1, 0)
 
-    def circle(self, radius=None, center=None, color=None):
+    def circle(self, radius=None, center=None, color=None, **kwargs):
         x, y = center or (0, 0)
         self.set_color(color)
-        self.c.circle(*self.mm2p(x, y, radius))
+        fill = 0;
+        if kwargs.get("fill"):
+            self.c.setFillColorRGB(*kwargs.get("fill"))
+            fill = 1
+        self.c.circle(*self.mm2p(x, y, radius), fill=fill)
 
     def line(self, xy0, xy1, color=None):
         self.set_color(color)
@@ -487,11 +491,26 @@ class PDF:
         self.set_color(color)
         self.c.arc(*self.mm2p(x-radius, y-radius, x+radius, y+radius), startAng=s, extent=e)
 
+    def polygon(self, center=None, points=[], color=None, *args, **kwargs):
+        fill = kwargs.get("fill", (0, 0, 0))
+        prev = None
+        p = self.c.beginPath()
+        for xy in points:
+            if prev:
+                p.lineTo(*self.mm2p(*xy))
+            else:
+                p.moveTo(*self.mm2p(*xy))
+            prev = xy
+
+        self.c.setFillColor(fill)
+        self.c.drawPath(p, fill=1, stroke=0)
+
     def text(self, text, insert=None, rotation=0, color=None, **kwargs):
         self.c.saveState()
         x, y = insert or (0, 0)
         height = kwargs['height']
         self.c.setFontSize(int(self.mm2p(height)))
+        self.c.setFillColor((0, 0, 0))
         self.set_color(color)
         obj = self.c.beginText()
         if 'adjust' in kwargs:

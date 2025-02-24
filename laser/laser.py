@@ -295,7 +295,7 @@ class Arc:
     def draw(self, drawing, colour):
         colour = self.kwargs.get("colour", colour)
         if self.is_circle():
-            drawing.circle(radius=self.radius, center=(self.x, self.y), color=colour)
+            drawing.circle(radius=self.radius, center=(self.x, self.y), color=colour, **self.kwargs)
         else:
             drawing.arc(radius=self.radius, center=(self.x, self.y), startangle=self.start_angle, endangle=self.end_angle, color=colour)
 
