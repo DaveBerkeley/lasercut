@@ -412,11 +412,19 @@ def mater(config):
     work.add(p)
 
     # draw ticks
-    a_start = 0
-    a_end = 360
-    ticks(work, (0, 0), inner, mid, a_start, a_end, 15, colour=config.thick_colour)
-    ticks(work, (0, 0), mid, small, a_start, a_end, 3, colour=config.thick_colour)
-    ticks(work, (0, 0), small, outer, a_start, a_end, 1, colour=config.thin_colour)
+
+    tick = [
+        [   inner, mid, 15, config.thick_colour, ],
+        [   mid, small, 3, config.thick_colour, ],
+        [   small, outer, 1, config.thin_colour, ],
+    ]
+    if config.clock:
+        tick[0][2] = 360/24 # hours
+        tick[1][2] = 360/(24*4) # quarters
+        tick[2][2] = 360/(24*12) # 5 mins
+
+    for a, b, n, colour in tick:
+        ticks(work, (0, 0), a, b, 0, 360, n, colour=colour)
 
     hours = [ 
         "I", "II", "III", "IV", "V", "VI", 
