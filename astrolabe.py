@@ -396,6 +396,15 @@ def plate(config):
             c.reflect_h()
             work.add(c)
 
+    # engrave the latitude number
+    height = config.size/20.0
+    lat = config.latitude + 0.5
+    text = str(int(lat / 10)) + "  " + str(int(lat % 10))
+    t = Text((0, -rad_equator*1.15), text, height=height, adjust=True, colour=config.thick_colour)
+    t.rotate(270)
+    t.translate(0, height*0.8)
+    work.add(t)
+
     return work
 
 #
