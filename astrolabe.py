@@ -267,7 +267,15 @@ def fill_plate(work, config):
     r, x = almucantar(0, rad_equator, config.latitude)
     horizon = Circle((x, 0), r)
 
-    xx, yy = circle_intersection(r, rad_capricorn, x)
+    try:
+        xx, yy = circle_intersection(r, rad_capricorn, x)
+    except ValueError:
+        # horizon is within capricorn so can paint as circles
+        c = Circle((0, 0), rad_capricorn, colour=Config.draw_colour, fill=config.night_colour)
+        work.add(c)
+        c = Circle((x, 0), r, colour=Config.draw_colour, fill=config.day_colour)
+        work.add(c)
+        return
 
     def paint(circle, colour, fn):
         points = Points(fill=colour)
